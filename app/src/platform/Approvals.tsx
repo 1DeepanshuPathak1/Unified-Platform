@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import AegisTable from '../components/AegisTable';
 import { Icon } from '../lib/Icon';
-import { APPROVAL_RULES, type Approval } from '../data/platform';
-import { Btn, Field, FilterInput, InfoTip, RadioCard, Seg, SelectInput, TextArea, Toggle } from '../ui/controls';
+import { APPROVAL_RULES, CUSTOMERS, type Approval } from '../data/platform';
+import { Btn, CheckBox, Field, FilterInput, InfoTip, RadioCard, Seg, SelectInput, TextArea, Toggle } from '../ui/controls';
 import { Activity, Bar, Facts, H3, Spacer, TableArea, Toolbar, plural } from '../ui/layout';
 import { Dialog, Drawer, StepUp, useClosable } from '../ui/overlay';
 import type { Ctx } from '../ui/ctx';
@@ -251,6 +251,8 @@ type Rule = (typeof APPROVAL_RULES)[number];
 export function ApprovalRulesTab({ ctx }: { ctx: Ctx }) {
   const [rules, setRules] = useState<Rule[]>(APPROVAL_RULES);
   const dlg = useClosable<Rule | 'new'>();
+  const quorum = useClosable<boolean>();
+  const [quorumState, setQuorumState] = useState(QUORUM);
   const cfg = ctx.can('admin', 'Changing approval rules');
   return (
     <>
@@ -260,10 +262,25 @@ export function ApprovalRulesTab({ ctx }: { ctx: Ctx }) {
           <InfoTip tip="Mandatory rules come from Host360 policy or a regulator and cannot be switched off by a customer. Optional rules can be turned off per customer." />
         </span>
         <Spacer />
+        <Btn kind="outline" icon="users" perm={cfg} onClick={() => quorum.open(true)}>
+          Quorum per customer…
+        </Btn>
         <Btn kind="primary" icon="plus" perm={cfg} onClick={() => dlg.open('new')}>
           Add a rule
         </Btn>
       </Toolbar>
+      <div style={{ padding: '0 24px 12px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {Object.entries(quorumState).map(([cid, q]) =>
+          Object.entries(q)
+            .filter(([, v]) => v.n !== QUORUM_DEFAULT[v.action])
+            .map(([k, v]) => (
+              <span key={cid + k} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, height: 28, padding: '0 10px', border: '1px solid var(--ln-2)', font: '12px var(--f-ui)' }}>
+                <Icon name={v.mandatory ? 'pin' : 'users'} size={12} style={{ color: 'var(--tx-3)' }} />
+                {CUSTOMERS.find(c => c.id === cid)?.name.split(' ')[0]}: {v.action} needs {v.n === 0 ? 'no approval' : plural(v.n, 'approver')}
+              </span>
+            ))
+        )}
+      </div>
       <TableArea>
         <AegisTable
           label="Approval rules"
@@ -283,6 +300,18 @@ export function ApprovalRulesTab({ ctx }: { ctx: Ctx }) {
           onEmpty={() => dlg.open('new')}
         />
       </TableArea>
+      {quorum.value ? (
+        <QuorumDialog
+          ctx={ctx}
+          value={quorumState}
+          closing={quorum.closing}
+          onClose={quorum.close}
+          onSave={(cid, q) => {
+            setQuorumState(x => ({ ...x, [cid]: q }));
+            quorum.close();
+          }}
+        />
+      ) : null}
       {dlg.value ? (
         <RuleDialog
           rule={dlg.value === 'new' ? null : dlg.value}
@@ -346,6 +375,73 @@ function RuleDialog({ rule, closing, onClose, onSave, perm }: { rule: Rule | nul
       <Toggle on={mandatory} onChange={setMandatory} label="Mandatory">
         Mandatory: customers cannot switch it off
       </Toggle>
+    </Dialog>
+  );
+}
+
+/** How many approvers each action needs by default, before a customer overrides it. */
+const QUORUM_DEFAULT: Record<string, number> = { 'Delete recovery points': 2, 'Fail over': 1, 'Cut over': 1, Restore: 1, 'Change a global policy': 1, 'Log in as owner': 0 };
+type Q = Record<string, { action: string; n: number; from: string; mandatory: boolean }>;
+const q = (n: Partial<Record<string, [number, boolean]>>): Q =>
+  Object.fromEntries(Object.keys(QUORUM_DEFAULT).map(a => [a, { action: a, n: n[a]?.[0] ?? QUORUM_DEFAULT[a], from: a === 'Restore' ? 'Owner, Admin' : a === 'Cut over' ? 'Migration Approver' : a === 'Fail over' ? 'Failover Approver' : 'Owner, Admin', mandatory: n[a]?.[1] ?? a === 'Delete recovery points' }]));
+const QUORUM: Record<string, Q> = {
+  mer: q({ 'Fail over': [2, true], 'Delete recovery points': [3, true], 'Log in as owner': [1, true] }),
+  sah: q({ Restore: [2, true] }),
+  kav: q({}),
+  h360: q({})
+};
+
+/** Per-customer quorum: how many people approve each kind of action, and whether the customer may lower it. */
+function QuorumDialog({ ctx, value, closing, onClose, onSave }: { ctx: Ctx; value: Record<string, Q>; closing: boolean; onClose: () => void; onSave: (cid: string, q: Q) => void }) {
+  const [cid, setCid] = useState('mer');
+  const [draft, setDraft] = useState<Q>(value[cid] || q({}));
+  const [mfa, setMfa] = useState(false);
+  const pick = (c: string) => {
+    setCid(c);
+    setDraft(value[c] || q({}));
+  };
+  const set = (a: string, p: Partial<Q[string]>) => setDraft(d => ({ ...d, [a]: { ...d[a], ...p } }));
+  return (
+    <Dialog
+      size="lg"
+      title="Quorum per customer"
+      sub="Dual or multi-person authorisation for each kind of action. A customer can tighten Host360's default; mandatory rows cannot be loosened."
+      closing={closing}
+      onClose={onClose}
+      footer={
+        <>
+          <Btn kind="ghost" onClick={onClose}>Cancel</Btn>
+          <Btn kind="primary" icon="check" disabled={!mfa} why="Confirm it is you first." perm={ctx.can('admin', 'Changing approval quorum')} onClick={() => { audit({ who: 'priya.raman', customer: cid, what: 'Changed approval quorum', object: CUSTOMERS.find(c => c.id === cid)!.name, when: ctx.now(), r: 'ok', after: Object.values(draft).map(x => [x.action, `${x.n}${x.mandatory ? ', mandatory' : ''}`] as [string, string]) }); ctx.toast(`Quorum saved for ${CUSTOMERS.find(c => c.id === cid)!.name}`, 'ok'); onSave(cid, draft); }}>
+            Save quorum
+          </Btn>
+        </>
+      }
+    >
+      <Field id="qu-c" label="Customer">
+        <SelectInput id="qu-c" value={cid} onChange={pick} options={CUSTOMERS.filter(c => c.status !== 'archived').map(c => ({ v: c.id, label: c.name }))} />
+      </Field>
+      <div role="table" aria-label="Quorum" style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) 200px minmax(0,1fr) 110px', gap: 12, alignItems: 'center', font: '13px/18px var(--f-ui)' }}>
+        {['Action', 'Approvers needed', 'From', 'Mandatory'].map(h => (
+          <span key={h} role="columnheader" style={{ font: '12px var(--f-ui)', color: 'var(--tx-2)', paddingBottom: 6, borderBottom: '1px solid var(--ln)' }}>{h}</span>
+        ))}
+        {Object.values(draft).map(r => {
+          const floor = QUORUM_DEFAULT[r.action];
+          return (
+            <div key={r.action} role="row" style={{ display: 'contents' }}>
+              <span role="cell" style={{ fontWeight: 600 }}>{r.action}</span>
+              <span role="cell">
+                <Seg label={`Approvers for ${r.action}`} value={String(r.n)} onChange={v => set(r.action, { n: +v })} options={['0', '1', '2', '3'].map(n => ({ v: n, label: n === '0' ? 'None' : n, disabled: +n < floor && r.mandatory, tip: +n < floor && r.mandatory ? `Host360 requires at least ${floor}` : undefined }))} />
+              </span>
+              <span role="cell" style={{ color: 'var(--tx-2)' }}>{r.n ? r.from : '—'}</span>
+              <span role="cell">
+                <CheckBox on={r.mandatory} onChange={v => set(r.action, { mandatory: v })} label={`${r.action} mandatory`}>{r.mandatory ? 'Yes' : 'No'}</CheckBox>
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <p style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>The requester never counts. With 2 or more, approvers must be different people from different teams where the customer has more than one.</p>
+      <StepUp verified={mfa} onVerified={() => setMfa(true)} />
     </Dialog>
   );
 }

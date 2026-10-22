@@ -1,6 +1,8 @@
 /* Host360 Aegis — design tokens. Dark is the default; [data-theme="light"] overrides.
    Square corners throughout (radius 0). Motion ≤ 150 ms. */
 [data-ae] {
+  /* Chart series for the three products, validated for colour-blind separation (dataviz palette slots 1–3). */
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
   --f-head: "ES Build", Jost, "Source Sans 3", sans-serif;
   --f-body: "Source Sans 3", sans-serif;
   --f-ui: Tahoma, Verdana, "DejaVu Sans", sans-serif;
@@ -41,6 +43,7 @@
   color-scheme: dark;
 }
 [data-ae][data-theme="light"] {
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a;
   --app: oklch(0.962 0.007 255);
   --hdr: oklch(1 0 0);
   --nav: oklch(0.948 0.009 255);
