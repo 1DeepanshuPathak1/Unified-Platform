@@ -167,7 +167,7 @@ function Row({ c }: { c: CovItem }) {
         {c.screens.length ? (
           c.screens.map((s, i) =>
             s.route ? (
-              <a key={i} href={`#/${/^(dr|mig|backup|admin)\//.test(s.route) ? s.route : `backup/${s.route}`}`} style={{ color: 'var(--acc-tx)', fontWeight: 600 }}>
+              <a key={i} href={`#/${/^(dr|mig|backup|admin)\/|^signup$/.test(s.route) ? s.route : `backup/${s.route}`}`} style={{ color: 'var(--acc-tx)', fontWeight: 600 }}>
                 {s.label}
               </a>
             ) : (
