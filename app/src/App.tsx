@@ -3,6 +3,7 @@ import { DC } from './lib/dc';
 import AegisConsole from './pages/AegisConsole';
 import AegisDesignSystem from './pages/AegisDesignSystem';
 import AegisHandoff from './pages/AegisHandoff';
+import Coverage from './pages/Coverage';
 
 const preview = new URLSearchParams(location.search);
 const UI_STATES: Record<string, string> = { live: 'Live', reading: 'Reading…', unreachable: 'Unreachable', empty: 'Empty' };
@@ -20,7 +21,7 @@ export default class App extends DC {
   read() {
     const h = location.hash || '';
     if (!h.startsWith('#/')) return;
-    const v = h.startsWith('#/design-system') ? 'ds' : h.startsWith('#/handoff') ? 'handoff' : 'console';
+    const v = h.startsWith('#/design-system') ? 'ds' : h.startsWith('#/handoff') ? 'handoff' : h.startsWith('#/coverage') ? 'coverage' : 'console';
     if (v !== this.state.view) {
       this.setState({ view: v });
       window.scrollTo(0, 0);
@@ -29,7 +30,7 @@ export default class App extends DC {
   }
   renderVals() {
     const v = this.state.view;
-    return { consoleDisplay: v === 'console' ? 'block' : 'none', isDs: v === 'ds', isHandoff: v === 'handoff' };
+    return { consoleDisplay: v === 'console' ? 'block' : 'none', isDs: v === 'ds', isHandoff: v === 'handoff', isCoverage: v === 'coverage' };
   }
 
   render() {
@@ -49,6 +50,11 @@ export default class App extends DC {
         {v.isHandoff ? (
           <div>
             <AegisHandoff hub={true} />
+          </div>
+        ) : null}
+        {v.isCoverage ? (
+          <div>
+            <Coverage hub={true} />
           </div>
         ) : null}
       </>

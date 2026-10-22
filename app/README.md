@@ -1,12 +1,16 @@
-# Host360 Aegis console
+# Host360 Aegis Unified Platform
 
-React + TypeScript implementation of the Claude Design handoff in [`../project`](../project), the design published as `Aegis Mockup (standalone).html`. It contains three pages:
+React + TypeScript app for the Host360 Aegis Unified Platform. One console holds three products and the platform they share:
 
-- **Console**: Backup & Recovery, Disaster Recovery and Migration, with the shared Infrastructure, Operations and Administration screens. All drawers, dialogs, wizards, menus, search, live jobs, toasts and the theme toggle work.
+- **Protection** (Backup & Recovery), **Resilience** (Disaster Recovery) and **Mobility** (Migration). Switch between them from the header. The product block in the left navigation changes; the platform sections stay where they are.
+- **Platform sections**: Inbox, Customers (provider only), Workloads, Applications, Sites, Nodes and proxies, Repositories, Mappings, Alerts & Activity, Reports, Automation, Billing & Licensing and Settings.
+- **Shell**: product switcher, search (Ctrl K) with a full results page, the running-jobs tray, alerts, the tenant and project picker, the clock with its time zone named, the theme toggle and the user menu (profile, sign-in and MFA, API tokens). A provider can log in as a customer's owner. A banner then stays on screen, and every action is audited under the provider user.
+
+The app also has three reference pages, opened from the user menu:
+
+- **Coverage** (`#/coverage`): every item in Parts 2 to 7 of the brief, with the screens that serve it, its status (Designed, Partly designed, Not designed), its priority (P0 to P4) and the platform object it reads. It is updated at the end of every turn, and "Changed in turn N" lists that turn's rows.
 - **Design system** (`#/design-system`): tokens, type, spacing, icons and components, read from the live tokens.
-- **Handoff values** (`#/handoff`): the values and CSS a developer needs, also read live.
-
-Open the second and third from the user menu (initials, top right). Each has "Open the console" to come back.
+- **Handoff** (`#/handoff`): token values and CSS, the rules every screen follows (Part 7) and the screen catalogue. For each screen the catalogue gives its level, the object it reads, its actions, its states and its priority.
 
 ## Running it
 
@@ -21,44 +25,58 @@ The build uses relative URLs, so `dist/` can be opened from a static host or a s
 
 ### Previewing roles and data states
 
-The design tool's Tweaks panel is replaced by query parameters:
-
 | Parameter | Values | Effect |
 | --- | --- | --- |
-| `role` | `Owner` (default), `Admin`, `Operator`, `Restore`, `Viewer` | Actions the role can't use are disabled, and hovering one says why. |
+| `role` | `Owner` (default), `Admin`, `Operator`, `Restore`, `Viewer` | Actions the role can't use stay visible but disabled, and their tooltip says why. |
 | `state` | `live` (default), `reading`, `unreachable`, `empty` | Every table and panel shows that state. |
 
-Example: `http://localhost:5173/?role=Viewer&state=empty#/backup/guests`.
+Example: `http://localhost:5173/?role=Viewer&state=empty#/backup/workloads`.
+
+Routes are `#/{product}/{page}/{tab}?open={id}`. For example, `#/backup/activity/jobs` shows the Jobs tab and `#/backup/workloads?open=sql01` opens SQL01's drawer. The old addresses `jobs`, `alerts`, `audit` and `access` redirect to their new tabs.
 
 ## How it's built
 
 | Path | What it holds |
 | --- | --- |
-| `src/App.tsx` | Switches between the console, design system and handoff pages on the URL hash. |
-| `src/pages/` | The console shell (header, navigation, search, running jobs, alerts, toasts) and the two reference pages. |
-| `src/screens/` | One component per screen. `AegisList` covers the list-style screens (Nodes, Repositories, Jobs, Alerts, Audit, Policies, Backup copies, DR history, Migration plans). |
-| `src/components/AegisTable.tsx` | The shared table: sorting, selection, the loading, empty and unreachable states, and the footer. |
-| `src/lib/` | `Icon` (Lucide geometry, stroke 1.5), `Ind` (the sliding tab and segment indicator), tooltips, the `pc()` pseudo-class helper and the `DC` base class. |
-| `src/data/` | Sample data (`aegis.ts`) and the design-system specification (`spec.ts`). |
+| `src/App.tsx` | Switches between the console, Coverage, Design system and Handoff pages on the URL hash. |
+| `src/pages/AegisConsole.tsx` | The console: header, navigation, search, running jobs, alerts, toasts, acting-as-owner and the screen switch. |
+| `src/shell/` | Navigation (`Nav`, `routes.ts` with the sections and redirects), the tenant and project picker, and the account menu and dialogs. |
+| `src/platform/` | Platform screens (Workloads, Applications, Customers, Inbox, Search, Alerts & Activity, Automation, Settings, Billing). `store.ts` holds the state these screens share, so an approval made in Automation also clears its Inbox item. Each change writes an audit record. |
+| `src/ui/` | Building blocks for the platform screens. `controls.tsx` has buttons, segments, tabs and form fields. `layout.tsx` has page, section, toolbar, bars, panels, facts, status and steps. `overlay.tsx` has the drawer, dialog, wizard, step-up MFA and `DangerDialog`. `ctx.ts` defines the screen context type. |
+| `src/screens/` | The product screens (Overview, Protected guests, Restore, Sites, DR servers, Recovery plans, Migration servers…). `AegisList` covers the simpler list screens. |
+| `src/components/AegisTable.tsx` | The shared table used by every list: sorting, selection, the loading, empty, no-match and unreachable states, and the footer. |
+| `src/data/` | Sample data. `platform.ts` holds the platform model (customers, partners, workloads, applications, users, roles, policies, approvals, audit and alerts), and `aegis.ts` holds the product data. `coverage.ts` holds the Coverage rows, and `screens.ts` the screen catalogue and Part 7 rules. `spec.ts` holds the design-system specification. |
+| `src/lib/` | `Icon` (Lucide geometry, stroke 1.5), `Ind` (the sliding tab and segment indicator), tooltips (`data-tip`), the `pc()` pseudo-class helper and the `DC` base class used by the product screens. |
 | `src/styles/tokens.css` | Colour, font and motion tokens for both themes, resets, focus ring and keyframes. |
 
-Screens keep the prototype's structure, so a screen can be compared with its design file line for line. `renderVals()` derives a flat view model from props and state, and `render()` reads it as `v`. Styles are inline and taken from the tokens. Hover, focus and pressed styles use `pc('hover', '…')`, which generates a class whose rule overrides the inline style. Routing is hash-based (`#/backup/sites`, `#/dr/servers?open=sql-prod-02`).
+The code is the source of truth. The design export in `../project` was the starting point, and the port script that read it has been retired.
 
-## Updating from a new design export
+Platform screens are function components that take a `ctx: Ctx` prop. Product screens are class components on `DC`: `renderVals()` derives a flat view model and `render()` reads it as `v`. Styles are inline and taken from the tokens. For hover, focus and pressed states, `pc('hover', '…')` generates a class whose rule overrides the inline style.
 
-When the design changes in Claude Design, replace `../project` with the new export and run:
+### Adding a screen
 
-```sh
-npm run port
-npm run typecheck
-```
+1. Add the route to `src/shell/routes.ts`, and add the key to the `PLATFORM` map in `AegisConsole.tsx` if the screen is platform-level.
+2. Build it from `src/ui` and `AegisTable`, and give every list all of the list states.
+3. Add it to `SCREENS` in `src/data/screens.ts` and to the screens of its Coverage rows in `src/data/coverage.ts`. Bump `CURRENT_TURN` and set `turn` on the rows that changed.
 
-`scripts/port-design.mjs` regenerates `src/App.tsx`, `src/pages`, `src/screens`, `src/components`, `src/data`, `src/lib/iconPaths.ts` and `src/styles/tokens.css`, then re-applies the hand edits listed in its `FIXUPS` table. If a fixup no longer matches, the script stops and names it. Changes made directly to the generated files are overwritten unless they are added to `FIXUPS`. The hand-written files (`src/main.tsx`, `src/lib/Icon.tsx`, `Ind.tsx`, `dc.ts`, `pseudo.ts`, `tooltip.ts`, `src/styles/global.css`) are never touched.
+## Rules every screen follows
 
-## Where it differs from the prototype
+These are listed in full on the Handoff page. In short:
 
-- **Screens and tables fill their column.** The console gives each screen, and each screen its table, `flex:1`. The prototype's runtime passes only position properties to the element that wraps an import, so it drops that style: tables end after their last row and drawers reach only as far down as the table. Here tables reach the bottom of the page with the footer pinned, and drawers are full height, as the design system page specifies.
-- **Dropdowns show the saved value.** The guest picker in Restore and the mapping editors bind the select's value instead of marking an option as selected. This fixes the dropdown issue the design chat left open.
-- **The page scrolls inside `#root`.** The console's minimum width is 1024 px. Below that it pans inside the app instead of scrolling the whole page.
-- **Fonts are bundled.** Jost and Source Sans 3 come from `@fontsource` instead of Google Fonts, so the app works offline. Headings use Jost as a stand-in for ES Build, as in the design. Add the ES Build files with an `@font-face` rule and they take over, because `--f-head` already lists ES Build first. Tahoma falls back to Verdana where it isn't installed.
-- `Aegis Directions.dc.html` (the three early shell options) isn't implemented. Direction 1c was the one chosen.
+- **List states.** Loading shows "Reading…" with 8 skeleton rows. Every list also has an empty state and a "Could not be read: <reason>" state. Never show an unreachable thing as empty or zero.
+- **Icons.** A shield always means encryption and a padlock always means immutability.
+- **Time zones.** Times always name their zone.
+- **Info icons.** At most two per view.
+- **Drawers.** They follow one structure: kicker, title, status, actions, tabs.
+- **Long-running actions.** They show a live log and keep running when their drawer closes.
+- **Destructive actions.** The confirmation is armed in the same dialog. It lists exactly what will be removed, asks for the name to be typed, and requires step-up MFA and, where policy says, an approval.
+- **Tables.** They fit 1440 px and never wrap names, badges or buttons.
+
+## Where it differs from the design export
+
+- **Screens and tables fill their column**, with the table footer pinned and drawers at full height.
+- **Dropdowns show the saved value.** The guest picker in Restore and the mapping editors bind the select's value.
+- **The page scrolls inside `#root`.** The console's minimum width is 1024 px.
+- **Fonts are bundled.** Jost and Source Sans 3 come from `@fontsource`. Jost stands in for ES Build; add the ES Build files with an `@font-face` rule and they take over. Tahoma falls back to Verdana.
+- **Products are named for what they do.** They are Protection, Resilience and Mobility. The product switcher also shows each engine name (Backup & Recovery, Disaster Recovery, Migration).
+- **Some legacy screens moved.** Jobs, Alerts and Audit are tabs of Alerts & Activity. Access is now Settings › People and Settings › Roles.

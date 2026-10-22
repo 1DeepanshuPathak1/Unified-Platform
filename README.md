@@ -1,3 +1,11 @@
+# Host360 Aegis Unified Platform
+
+The app is in [`app/`](app). Its [README](app/README.md) covers running it, how it is built and the rules every screen follows. Open `#/coverage` in the running app to see how much of the brief is designed.
+
+The rest of this file is the original Claude Design handoff note. The design export it describes is in `project/` and `chats/`.
+
+---
+
 # CODING AGENTS: READ THIS FIRST
 
 This is a **handoff bundle** from Claude Design (claude.ai/design).

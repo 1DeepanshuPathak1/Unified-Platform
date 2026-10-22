@@ -14,10 +14,23 @@ import AegisOverview from '../screens/AegisOverview';
 import AegisRecovery from '../screens/AegisRecovery';
 import AegisProtPlans from '../screens/AegisProtPlans';
 import AegisMappings from '../screens/AegisMappings';
-import AegisAccess from '../screens/AegisAccess';
-import AegisSettings from '../screens/AegisSettings';
 import AegisReports from '../screens/AegisReports';
 import AegisRestore from '../screens/AegisRestore';
+import { Nav } from '../shell/Nav';
+import { TenantMenu } from '../shell/TenantMenu';
+import { AccountDialog, ActingBanner, LoginAsDialog, UserMenu, ownerOf, type AccountTab } from '../shell/Account';
+import { COMMON_PAGES, PRODUCT_LABEL, REDIRECTS, sectionOf } from '../shell/routes';
+import Workloads from '../platform/Workloads';
+import Applications from '../platform/Applications';
+import Inbox, { inboxItems } from '../platform/Inbox';
+import Customers from '../platform/Customers';
+import SearchPage, { searchAll } from '../platform/Search';
+import SettingsSection from '../platform/Settings';
+import BillingSection from '../platform/Billing';
+import Policies from '../platform/Policies';
+import { ActivitySection, AutomationSection } from '../platform/sections';
+import { audit } from '../platform/store';
+import { CUSTOMERS } from '../data/platform';
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = n => String(n).padStart(2, '0');
@@ -38,9 +51,23 @@ const SEV = {
   warning: ['triangle-alert', 'Warning', 'var(--warn)'],
   info: ['info', 'Info', 'var(--tx-2)']
 };
-const SICON = { Site: 'map-pin', Guest: 'monitor', Server: 'server', Job: 'activity', Repository: 'database', Plan: 'list-ordered' };
-const LIST_PAGES = ['nodes', 'repos', 'jobs', 'alerts', 'audit', 'backup/policies', 'backup/copies', 'dr/history', 'mig/plans'];
-const PROD_LABEL = { backup: 'Backup & Recovery', dr: 'Disaster Recovery', mig: 'Migration' };
+const SICON = { Site: 'map-pin', Guest: 'monitor', Server: 'server', Job: 'activity', Repository: 'database', Plan: 'list-ordered', Workload: 'layers', Application: 'workflow', Customer: 'users', Person: 'user', Alert: 'bell', Policy: 'clipboard-list' };
+const LIST_PAGES = ['nodes', 'repos', 'backup/copies', 'dr/history', 'mig/plans'];
+const customerName = id => CUSTOMERS.find(c => c.id === id).name;
+const PROD_LABEL = PRODUCT_LABEL;
+/** Screens built on the platform layer, by route key. */
+const PLATFORM = {
+  inbox: 1,
+  workloads: 1,
+  applications: 1,
+  customers: 1,
+  search: 1,
+  activity: 1,
+  automation: 1,
+  settings: 1,
+  billing: 1,
+  'backup/policies': 1
+};
 
 export default class AegisConsole extends DC {
   state: any = {
@@ -51,7 +78,14 @@ export default class AegisConsole extends DC {
     menu: null,
     q: '',
     si: 0,
-    project: 'Base-Project',
+    project: 'All projects',
+    tab: '',
+    actingAs: null,
+    actingUntil: '',
+    account: null,
+    accountClosing: false,
+    loginAs: null,
+    loginAsClosing: false,
     toasts: [],
     jobs: [],
     acked: {},
@@ -136,13 +170,19 @@ export default class AegisConsole extends DC {
     const [path, q] = h.split('?');
     const parts = path.split('/');
     if (!['backup', 'dr', 'mig'].includes(parts[0])) return;
+    if (REDIRECTS[parts[1]]) {
+      location.replace(`#/${parts[0]}/${REDIRECTS[parts[1]]}${q ? `?${q}` : ''}`);
+      return;
+    }
     const route = parts.slice(0, 2).join('/');
+    const tab = parts.slice(2).join('/');
     const openId = q && q.startsWith('open=') ? decodeURIComponent(q.slice(5)) : null;
     if (route !== this.state.route) {
-      this.setState(s => ({ route, menu: null, reading: true, openId: openId || null, nonce: s.nonce + 1 }));
+      this.setState(s => ({ route, tab, menu: null, reading: true, openId: openId || null, nonce: s.nonce + 1 }));
       clearTimeout(this.readT);
       this.readT = setTimeout(() => this.setState({ reading: false }), 380);
-    } else if (openId) this.setState(s => ({ openId, nonce: s.nonce + 1 }));
+    } else if (tab !== this.state.tab) this.setState(s => ({ tab, openId: openId || null, nonce: s.nonce + 1, menu: null }));
+    else if (openId) this.setState(s => ({ openId, nonce: s.nonce + 1 }));
   }
 
   go(target, openId) {
@@ -222,6 +262,41 @@ export default class AegisConsole extends DC {
     finished.forEach(j => this.toast(j.doneToast || `${j.name} finished for ${j.object}`, 'ok'));
   }
 
+  jobCtl(id, a) {
+    const d = nowD();
+    this.setState(s => ({
+      jobs: s.jobs.map(j =>
+        j.id !== id
+          ? j
+          : {
+              ...j,
+              status: a === 'pause' ? 'paused' : a === 'resume' ? 'run' : 'cancelled',
+              log: j.log.concat([{ t: hms(d), text: a === 'pause' ? 'Paused by priya.raman' : a === 'resume' ? 'Resumed by priya.raman' : 'Cancelled by priya.raman', lv: a === 'cancel' ? 'warn' : 'info' }])
+            }
+      )
+    }));
+  }
+
+  startActing(customerId, reason) {
+    const o = ownerOf(customerId);
+    const until = new Date(nowD().getTime() + 60 * 60000);
+    this.setState({ actingAs: o, actingUntil: `${pad(until.getHours())}:${pad(until.getMinutes())} IST`, loginAs: null, project: 'All projects', menu: null });
+    audit({ who: 'priya.raman', as: o.ownerEmail, customer: customerId, what: 'Opened the customer console as owner', object: o.owner, when: fmtD(nowD()), r: 'ok', note: `Reason: ${reason}` });
+    location.hash = `/${this.state.route.split('/')[0]}/workloads`;
+    this.toast(`Acting as ${o.owner}. Every action is recorded under priya.raman.`, 'warn');
+  }
+  stopActing() {
+    const o = this.state.actingAs;
+    if (o) audit({ who: 'priya.raman', as: o.ownerEmail, customer: o.customer, what: 'Returned to the Host360 console', object: o.owner, when: fmtD(nowD()), r: 'ok' });
+    this.setState({ actingAs: null, project: 'All projects' });
+    location.hash = `/${this.state.route.split('/')[0]}/customers`;
+    this.toast('Back in the Host360 console', 'info');
+  }
+  closeDlg(key) {
+    this.setState({ [key + 'Closing']: true });
+    setTimeout(() => this.setState({ [key]: null, [key + 'Closing']: false }), 150);
+  }
+
   can(action, verb) {
     const role = this.props.role || 'Owner';
     const ok = (ROLE_CAN[action] || []).includes(role);
@@ -243,25 +318,10 @@ export default class AegisConsole extends DC {
     const up = p => this.setState(p);
     const menu = m => () => this.setState(st => ({ menu: st.menu === m ? null : m }));
     const [prod, page] = s.route.split('/');
-    const commonIds = A.shared.flatMap(g => g.items.map(i => i[0]));
-    const isCommon = commonIds.includes(page);
+    const isCommon = COMMON_PAGES.includes(page);
     const key = isCommon ? page : s.route;
     const meta = A.pages[key] || ['', ''];
     const collapsed = s.collapsed;
-    const navItem = ([id, label, icon]) => {
-      const on = page === id;
-      return {
-        label,
-        icon,
-        href: `#/${prod}/${id}`,
-        current: on ? 'page' : undefined,
-        tip: collapsed ? label : undefined,
-        fg: on ? 'var(--tx)' : 'var(--tx-2)',
-        fw: on ? 600 : 400,
-        ic: on ? 'var(--acc)' : 'var(--tx-3)',
-        hbg: on ? 'transparent' : 'var(--hover)'
-      };
-    };
     const switchTo = id => {
       if (id === prod) {
         this.setState({ menu: null });
@@ -307,16 +367,17 @@ export default class AegisConsole extends DC {
     const crit = activeAlerts.some(a => a.sev === 'critical');
 
     const q = s.q.trim().toLowerCase();
-    const res = q ? A.search.filter(x => (x.label + ' ' + x.sub).toLowerCase().includes(q)).slice(0, 8) : [];
+    const res = q ? searchAll(q).slice(0, 7).concat([{ type: 'All', label: `See every result for “${s.q.trim()}”`, sub: 'Workloads, recovery points, plans, alerts, people and customers together', route: `search/${encodeURIComponent(s.q.trim())}`, id: undefined }]) : [];
     const si = Math.min(s.si, Math.max(0, res.length - 1));
     const openResult = x => {
       this.setState({ q: '', menu: null });
       this.searchRef.current && this.searchRef.current.blur();
       this.go(x.route, x.id);
+      this.setState({ q: '' });
     };
     const results = res.map((x, i) => ({
       ...x,
-      icon: SICON[x.type],
+      icon: SICON[x.type] || (x.type === 'All' ? 'search' : 'circle-dot'),
       on: i === si,
       bg: i === si ? 'var(--hover)' : 'transparent',
       onClick: () => openResult(x),
@@ -325,14 +386,18 @@ export default class AegisConsole extends DC {
 
     const ui = s.reading ? 'loading' : { 'Reading…': 'loading', Unreachable: 'unreach', Empty: 'empty' }[this.props.uiState] || 'live';
     const project = s.project;
-    const ctx = {
+    const ctx: any = {
       route: s.route,
       product: prod,
       page,
       key,
       title: meta[0],
       sub: meta[1].replace('{p}', project),
-      section: isCommon ? A.shared.find(g => g.items.some(i => i[0] === page)).group : cur.label,
+      section: isCommon ? sectionOf(page) : cur.label,
+      tab: s.tab,
+      audience: s.actingAs ? 'customer' : 'provider',
+      actingAs: s.actingAs,
+      loginAsOwner: id => this.setState({ loginAs: id, loginAsClosing: false }),
       project,
       role: roleNow,
       ui,
@@ -358,8 +423,7 @@ export default class AegisConsole extends DC {
       protPlans: key === 'dr/plans',
       recovery: key === 'dr/recovery',
       mappings: key === 'mappings',
-      access: key === 'access',
-      settings: key === 'settings',
+      platform: !!PLATFORM[key],
       reports: key === 'reports',
       restore: key === 'backup/restore'
     };
@@ -373,8 +437,7 @@ export default class AegisConsole extends DC {
       'recovery',
       'protPlans',
       'mappings',
-      'access',
-      'settings',
+      'platform',
       'reports',
       'restore'
     ];
@@ -382,8 +445,6 @@ export default class AegisConsole extends DC {
       if (!BUILT.includes(k)) is[k] = false;
     });
     is.pending = !BUILT.some(k => is[k]);
-    const projList = A.projects.map(p => ({ name: p.name, role: p.name === 'Base-Project' ? roleNow : 'Owner' }));
-    if (roleNow === 'Owner') projList.push({ name: 'All projects', role: 'System owner' });
 
     return {
       theme: s.theme,
@@ -462,24 +523,39 @@ export default class AegisConsole extends DC {
       alertsAria: activeAlerts.length ? `${activeAlerts.length} active alerts` : 'No active alerts',
       bellColor: crit ? 'var(--err)' : activeAlerts.length ? 'var(--warn)' : 'var(--tx-3)',
       project,
-      projects: projList.map(p => ({
-        ...p,
-        on: p.name === project,
-        icon: p.name === project ? 'check' : '',
-        onClick: () => {
-          this.setState({ project: p.name, menu: null });
-          if (p.name !== project) this.toast(`Working in ${p.name}`, 'info');
-        }
-      })),
-      roleLine: `${roleNow} in ${project}`,
+      roleLine: s.actingAs ? `Acting as ${s.actingAs.owner}, Owner` : project === 'All projects' ? `${roleNow} of every customer` : `${roleNow} in ${project}`,
+      sideLine: s.actingAs ? 'Recorded under priya.raman' : 'Host360 Managed Services · provider',
+      pickProject: p => {
+        this.setState({ project: p, menu: null });
+        if (p !== project) this.toast(p === 'All projects' ? 'Working in all projects' : `Working in ${p}`, 'info');
+      },
+      projectLabel: s.actingAs && project === 'All projects' ? customerName(s.actingAs.customer) : project,
+      navProps: {
+        product: prod,
+        page,
+        productItems: A.nav[prod],
+        collapsed,
+        provider: !s.actingAs,
+        counts: { inbox: inboxItems(ctx).length }
+      },
+      actingAs: s.actingAs,
+      actingUntil: s.actingUntil,
+      stopActing: () => this.stopActing(),
+      account: s.account,
+      accountClosing: s.accountClosing,
+      openAccount: t => this.setState({ account: t, accountClosing: false, menu: null }),
+      closeAccount: () => this.closeDlg('account'),
+      loginAs: s.loginAs,
+      loginAsClosing: s.loginAsClosing,
+      closeLoginAs: () => this.closeDlg('loginAs'),
+      startActing: (id, reason) => this.startActing(id, reason),
+      jobCtl: (id, a) => this.jobCtl(id, a),
+      key,
       clock: fmtD(nowD()),
       navW: collapsed ? '56px' : '240px',
       labelOp: collapsed ? 0 : 1,
-      groupLine: collapsed ? 'var(--ln)' : 'transparent',
       collapseLabel: collapsed ? 'Expand navigation' : 'Collapse navigation',
       toggleNav: () => this.setState(st => ({ collapsed: !st.collapsed })),
-      productNav: A.nav[prod].map(navItem),
-      groups: A.shared.map(g => ({ label: g.group, items: g.items.map(navItem) })),
       is,
       ctx,
       toasts: s.toasts.map(t => ({
@@ -523,6 +599,7 @@ export default class AegisConsole extends DC {
         }}
       >
         {v.anyMenu ? <div onClick={v.closeMenu} style={{ position: 'absolute', inset: 0, zIndex: 40 }} /> : null}
+        {v.actingAs ? <ActingBanner customer={customerName(v.actingAs.customer)} owner={v.actingAs.owner} until={v.actingUntil} onReturn={v.stopActing} /> : null}
         <header
           style={{
             height: '52px',
@@ -1010,52 +1087,10 @@ export default class AegisConsole extends DC {
                 className={pc('hover', 'background:var(--hover)')}
               >
                 <Icon name="box" style={{ color: 'var(--tx-3)' }} />
-                <span style={{ fontWeight: 600 }}>{v.project}</span>
+                <span style={{ fontWeight: 600, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>{v.projectLabel}</span>
                 <Icon name="chevron-down" style={{ color: 'var(--tx-3)' }} />
               </button>
-              {v.projectOpen ? (
-                <div
-                  role="menu"
-                  aria-label="Projects"
-                  style={{
-                    position: 'absolute',
-                    top: '44px',
-                    right: 0,
-                    width: '300px',
-                    padding: '4px 0',
-                    background: 'var(--overlay)',
-                    border: '1px solid var(--ln-2)',
-                    boxShadow: 'var(--sh-menu)',
-                    animation: 'ae-pop 140ms var(--ease)'
-                  }}
-                >
-                  <div style={{ padding: '8px 12px 4px', font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Work in</div>
-                  {arr(v.projects).map((pj: any, i: number) => (
-                    <button
-                      key={i}
-                      role="menuitemradio"
-                      aria-checked={pj.on}
-                      onClick={pj.onClick}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        width: '100%',
-                        height: '40px',
-                        padding: '0 12px',
-                        transition: 'background-color 100ms'
-                      }}
-                      className={pc('hover', 'background:var(--hover)')}
-                    >
-                      <span style={{ width: '16px', display: 'flex', color: 'var(--acc)' }}>
-                        <Icon name={pj.icon} />
-                      </span>
-                      <span style={{ flex: 1, fontWeight: 600, whiteSpace: 'nowrap' }}>{pj.name}</span>
-                      <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{pj.role}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
+              {v.projectOpen ? <TenantMenu project={v.project} onPick={v.pickProject} actingAs={v.actingAs ? v.actingAs.customer : null} role={v.ctx?.role} /> : null}
             </div>
             <span
               data-tip="Orchestrator time zone: India Standard Time (UTC+05:30)"
@@ -1118,116 +1153,21 @@ export default class AegisConsole extends DC {
                 <Icon name="chevron-down" style={{ color: 'var(--tx-3)' }} />
               </button>
               {v.userOpen ? (
-                <div
-                  role="menu"
-                  aria-label="User"
-                  style={{
-                    position: 'absolute',
-                    top: '44px',
-                    right: 0,
-                    width: '280px',
-                    background: 'var(--overlay)',
-                    border: '1px solid var(--ln-2)',
-                    boxShadow: 'var(--sh-menu)',
-                    animation: 'ae-pop 140ms var(--ease)'
-                  }}
-                >
-                  <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--ln)' }}>
-                    <div style={{ fontWeight: 600 }}>Priya Raman</div>
-                    <div style={{ font: '12px/18px var(--f-ui)', color: 'var(--tx-3)' }}>priya.raman@host360.ai</div>
-                    <div style={{ marginTop: '6px', font: '12px/18px var(--f-ui)', color: 'var(--tx-2)' }}>{v.roleLine}</div>
-                  </div>
-                  <div style={{ padding: '4px 0' }}>
-                    <button
-                      role="menuitem"
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        width: '100%',
-                        height: '36px',
-                        padding: '0 16px',
-                        transition: 'background-color 100ms'
-                      }}
-                      className={pc('hover', 'background:var(--hover)')}
-                    >
-                      <Icon name="user" style={{ color: 'var(--tx-3)' }} />
-                      Profile and password
-                    </button>
-                    <button
-                      role="menuitem"
-                      onClick={v.toggleTheme}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        width: '100%',
-                        height: '36px',
-                        padding: '0 16px',
-                        transition: 'background-color 100ms'
-                      }}
-                      className={pc('hover', 'background:var(--hover)')}
-                    >
-                      <Icon name={v.themeIcon} style={{ color: 'var(--tx-3)' }} />
-                      {v.themeLabel}
-                    </button>
-                  </div>
-                  <div style={{ padding: '4px 0', borderTop: '1px solid var(--ln)' }}>
-                    <a
-                      role="menuitem"
-                      href={v.dsHref}
-                      onClick={v.closeMenu}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        height: '36px',
-                        padding: '0 16px',
-                        transition: 'background-color 100ms'
-                      }}
-                      className={pc('hover', 'background:var(--hover)')}
-                    >
-                      <Icon name="layers" style={{ color: 'var(--tx-3)' }} />
-                      Design system
-                    </a>
-                    <a
-                      role="menuitem"
-                      href={v.handoffHref}
-                      onClick={v.closeMenu}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        height: '36px',
-                        padding: '0 16px',
-                        transition: 'background-color 100ms'
-                      }}
-                      className={pc('hover', 'background:var(--hover)')}
-                    >
-                      <Icon name="file-text" style={{ color: 'var(--tx-3)' }} />
-                      Handoff values
-                    </a>
-                  </div>
-                  <div style={{ padding: '4px 0', borderTop: '1px solid var(--ln)' }}>
-                    <button
-                      role="menuitem"
-                      onClick={v.signOut}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                        width: '100%',
-                        height: '36px',
-                        padding: '0 16px',
-                        transition: 'background-color 100ms'
-                      }}
-                      className={pc('hover', 'background:var(--hover)')}
-                    >
-                      <Icon name="log-out" style={{ color: 'var(--tx-3)' }} />
-                      Sign out
-                    </button>
-                  </div>
-                </div>
+                <UserMenu
+                  roleLine={v.roleLine}
+                  side={v.sideLine}
+                  themeIcon={v.themeIcon}
+                  themeLabel={v.themeLabel}
+                  onTheme={v.toggleTheme}
+                  onAccount={(t: AccountTab) => v.openAccount(t)}
+                  links={[
+                    { href: '#/coverage', label: 'Coverage', icon: 'list' },
+                    { href: v.dsHref, label: 'Design system', icon: 'layers' },
+                    { href: v.handoffHref, label: 'Handoff values', icon: 'file-text' }
+                  ]}
+                  onSignOut={v.signOut}
+                  onClose={v.closeMenu}
+                />
               ) : null}
             </div>
           </div>
@@ -1246,91 +1186,7 @@ export default class AegisConsole extends DC {
               overflow: 'hidden'
             }}
           >
-            <nav style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', padding: '12px 8px' }}>
-              <Ind mode="fill" style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ height: '168px', flex: 'none', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  {arr(v.productNav).map((n: any, i: number) => (
-                    <a
-                      key={i}
-                      href={n.href}
-                      aria-current={n.current}
-                      data-tip={n.tip}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '12px',
-                        height: '32px',
-                        padding: '0 10px',
-                        color: n.fg,
-                        fontWeight: n.fw,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        transition: 'color 100ms,background-color 100ms',
-                        animation: 'ae-fade 150ms var(--ease)'
-                      }}
-                      className={pc('hover', `color:var(--tx);background:${n.hbg}`)}
-                    >
-                      <Icon name={n.icon} style={{ color: n.ic, transition: 'color 100ms' }} />
-                      <span style={{ opacity: v.labelOp, transition: 'opacity 100ms' }}>{n.label}</span>
-                    </a>
-                  ))}
-                </div>
-                {arr(v.groups).map((g: any, i: number) => (
-                  <Fragment key={i}>
-                    <div
-                      role="presentation"
-                      style={{
-                        height: '36px',
-                        display: 'flex',
-                        alignItems: 'flex-end',
-                        padding: '0 10px 6px',
-                        marginTop: '8px',
-                        borderTop: `1px solid ${v.groupLine}`,
-                        transition: 'border-color 150ms'
-                      }}
-                    >
-                      <span
-                        style={{
-                          font: '600 12px/16px var(--f-body)',
-                          color: 'var(--tx-3)',
-                          whiteSpace: 'nowrap',
-                          opacity: v.labelOp,
-                          transition: 'opacity 100ms'
-                        }}
-                      >
-                        {g.label}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                      {arr(g.items).map((n: any, j: number) => (
-                        <a
-                          key={j}
-                          href={n.href}
-                          aria-current={n.current}
-                          data-tip={n.tip}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '12px',
-                            height: '32px',
-                            padding: '0 10px',
-                            color: n.fg,
-                            fontWeight: n.fw,
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            transition: 'color 100ms,background-color 100ms'
-                          }}
-                          className={pc('hover', `color:var(--tx);background:${n.hbg}`)}
-                        >
-                          <Icon name={n.icon} style={{ color: n.ic, transition: 'color 100ms' }} />
-                          <span style={{ opacity: v.labelOp, transition: 'opacity 100ms' }}>{n.label}</span>
-                        </a>
-                      ))}
-                    </div>
-                  </Fragment>
-                ))}
-              </Ind>
-            </nav>
+            {v.navProps ? <Nav {...v.navProps} /> : <nav style={{ flex: 1 }} />}
             <div
               style={{
                 flex: 'none',
@@ -1415,16 +1271,21 @@ export default class AegisConsole extends DC {
                 <AegisMappings ctx={v.ctx} />
               </div>
             ) : null}
-            {v.is?.access ? (
+            {v.is?.platform ? (
               <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisAccess ctx={v.ctx} />
+                {v.key === 'inbox' ? <Inbox ctx={v.ctx} /> : null}
+                {v.key === 'workloads' ? <Workloads ctx={v.ctx} /> : null}
+                {v.key === 'applications' ? <Applications ctx={v.ctx} /> : null}
+                {v.key === 'customers' ? <Customers ctx={v.ctx} /> : null}
+                {v.key === 'search' ? <SearchPage key={v.ctx.tab} ctx={v.ctx} /> : null}
+                {v.key === 'activity' ? <ActivitySection ctx={v.ctx} jobCtl={v.jobCtl} /> : null}
+                {v.key === 'automation' ? <AutomationSection ctx={v.ctx} /> : null}
+                {v.key === 'settings' ? <SettingsSection ctx={v.ctx} /> : null}
+                {v.key === 'billing' ? <BillingSection ctx={v.ctx} /> : null}
+                {v.key === 'backup/policies' ? <Policies ctx={v.ctx} fixedType="Backup" /> : null}
               </div>
             ) : null}
-            {v.is?.settings ? (
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisSettings ctx={v.ctx} />
-              </div>
-            ) : null}
+
             {v.is?.reports ? (
               <div style={{ flex: 1, minHeight: 0 }}>
                 <AegisReports ctx={v.ctx} />
@@ -1453,7 +1314,7 @@ export default class AegisConsole extends DC {
                   }}
                 >
                   <p style={{ maxWidth: '440px', textAlign: 'center', color: 'var(--tx-2)' }}>
-                    This screen is next in the build order. The other screens in this product are ready to use from the navigation.
+                    There is no screen at this address. Choose a section from the navigation.
                   </p>
                 </div>
               </div>
@@ -1528,6 +1389,8 @@ export default class AegisConsole extends DC {
             </div>
           ))}
         </div>
+        {v.account ? <AccountDialog ctx={v.ctx} tab={v.account} closing={v.accountClosing} onClose={v.closeAccount} /> : null}
+        {v.loginAs ? <LoginAsDialog ctx={v.ctx} customerId={v.loginAs} closing={v.loginAsClosing} onClose={v.closeLoginAs} onStart={(reason: string) => v.startActing(v.loginAs, reason)} /> : null}
         {v.signedOut ? (
           <div
             style={{

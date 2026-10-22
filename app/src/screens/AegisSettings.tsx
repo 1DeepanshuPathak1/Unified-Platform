@@ -46,7 +46,7 @@ export default class AegisSettings extends DC {
         fg: s.tab === t ? 'var(--tx)' : 'var(--tx-2)',
         onClick: () => this.setState({ tab: t })
       })),
-      tab: { notif: s.tab === 'Notifications', self: s.tab === 'Aegis backup', tun: s.tab === 'Tunables', lic: s.tab === 'Licence' },
+      tab: (t => ({ notif: t === 'Notifications', self: t === 'Aegis backup', tun: t === 'Tunables', lic: t === 'Licence' }))(this.props.embedTab || s.tab),
       admDis: adm.dis,
       admWhy: adm.why,
       admOp: adm.op,
@@ -194,6 +194,9 @@ export default class AegisSettings extends DC {
     const v = this.vals();
     return (
       <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-page 150ms var(--ease)' }}>
+        {/* Embedded as a tab of the Settings section: the section draws the header and tabs. */}
+        {v.embedTab ? null : (
+        <>
         <div style={{ flex: 'none', padding: '20px 24px 0' }}>
           <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Administration</div>
           <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Settings</h1>
@@ -217,6 +220,8 @@ export default class AegisSettings extends DC {
             </button>
           ))}
         </Ind>
+        </>
+        )}
         <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 24px 24px' }}>
           {v.tab?.notif ? (
             <div

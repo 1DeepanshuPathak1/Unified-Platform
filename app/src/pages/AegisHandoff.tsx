@@ -4,6 +4,7 @@ import { DC, arr } from '../lib/dc';
 import { pc } from '../lib/pseudo';
 import { Icon, ICON_NAMES } from '../lib/Icon';
 import { AEGIS_SPEC } from '../data/spec';
+import { RULES, SCREENS } from '../data/screens';
 
 export default class AegisHandoff extends DC {
   state: any = { theme: 'dark', vals: null, css: 'Reading…' };
@@ -437,6 +438,60 @@ export default class AegisHandoff extends DC {
                 </Fragment>
               ))}
             </dl>
+          </section>
+          <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Platform rules (Part 7)</h2>
+            <dl
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '200px minmax(0,1fr)',
+                background: 'var(--panel)',
+                border: '1px solid var(--ln)',
+                padding: '0 16px',
+                font: '13px/20px var(--f-ui)'
+              }}
+            >
+              {RULES.map(([k, d]) => (
+                <Fragment key={k}>
+                  <dt style={{ padding: '10px 0', borderBottom: '1px solid var(--ln)', fontWeight: 700 }}>{k}</dt>
+                  <dd style={{ padding: '10px 0', borderBottom: '1px solid var(--ln)', textWrap: 'pretty' }}>{d}</dd>
+                </Fragment>
+              ))}
+            </dl>
+          </section>
+          <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Screen catalogue</h2>
+            <p style={{ font: '13px/20px var(--f-ui)', color: 'var(--tx-2)' }}>
+              Every screen with the platform object it reads, its actions, its states, its priority and whether it is platform-level or product-level. {SCREENS.length} screens. “All list states” means live, Reading… (8 skeleton rows), empty (one sentence and one primary action), no matches (Clear filters) and Could not be read: &lt;reason&gt;.
+            </p>
+            <div style={{ overflowX: 'auto', background: 'var(--panel)', border: '1px solid var(--ln)' }}>
+              <table style={{ width: '100%', minWidth: '1080px', borderCollapse: 'collapse', font: '13px/18px var(--f-ui)' }}>
+                <thead>
+                  <tr>
+                    {['Screen', 'Level', 'Reads', 'Actions', 'States', 'Priority'].map(h => (
+                      <th key={h} style={{ padding: '0 12px', height: '36px', textAlign: 'left', fontWeight: 600, color: 'var(--tx-2)', borderBottom: '1px solid var(--ln)', whiteSpace: 'nowrap', background: 'var(--panel-2)' }}>
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {SCREENS.map(r => (
+                    <tr key={r.name}>
+                      <td style={{ ...{ padding: '8px 12px', borderBottom: '1px solid var(--ln)', verticalAlign: 'top', textWrap: 'pretty' }, width: '220px' }}>
+                        <span style={{ display: 'block', fontWeight: 600 }}>{r.name}</span>
+                        <span style={{ display: 'block', font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>{r.route}</span>
+                      </td>
+                      <td style={{ ...{ padding: '8px 12px', borderBottom: '1px solid var(--ln)', verticalAlign: 'top', textWrap: 'pretty' }, width: '80px', whiteSpace: 'nowrap' }}>{r.level}</td>
+                      <td style={{ ...{ padding: '8px 12px', borderBottom: '1px solid var(--ln)', verticalAlign: 'top', textWrap: 'pretty' }, width: '170px' }}>{r.reads}</td>
+                      <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--ln)', verticalAlign: 'top', textWrap: 'pretty' }}>{r.actions}</td>
+                      <td style={{ ...{ padding: '8px 12px', borderBottom: '1px solid var(--ln)', verticalAlign: 'top', textWrap: 'pretty' }, width: '240px', color: 'var(--tx-2)' }}>{r.states}</td>
+                      <td style={{ ...{ padding: '8px 12px', borderBottom: '1px solid var(--ln)', verticalAlign: 'top', textWrap: 'pretty' }, width: '64px', whiteSpace: 'nowrap', fontWeight: 600 }}>{r.prio}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Icon names</h2>

@@ -6,9 +6,9 @@ export const AEGIS: any = (function () {
   const NOW = T('21 Oct', '16:05');
 
   const products = [
-    { id: 'backup', label: 'Backup & Recovery', icon: 'archive', desc: 'Back up and restore Proxmox VE and OpenStack guests' },
-    { id: 'dr', label: 'Disaster Recovery', icon: 'life-buoy', desc: 'Replicate servers and bring them online at a recovery site' },
-    { id: 'mig', label: 'Migration', icon: 'forward', desc: 'Move VMs from VMware to Proxmox VE or OpenStack' }
+    { id: 'backup', label: 'Protection', engine: 'Backup & Recovery', icon: 'archive', desc: 'Backup & Recovery · back up and restore Proxmox VE and OpenStack guests' },
+    { id: 'dr', label: 'Resilience', engine: 'Disaster Recovery', icon: 'life-buoy', desc: 'Disaster Recovery · replicate servers and bring them online at a recovery site' },
+    { id: 'mig', label: 'Mobility', engine: 'Migration', icon: 'forward', desc: 'Migration · move VMs from VMware to Proxmox VE or OpenStack' }
   ];
   const nav = {
     backup: [['overview', 'Overview', 'layout-dashboard'], ['guests', 'Protected guests', 'monitor'], ['policies', 'Policies', 'clipboard-list'], ['restore', 'Restore', 'rotate-ccw'], ['copies', 'Backup copies', 'copy']],
@@ -51,7 +51,7 @@ export const AEGIS: any = (function () {
     { id: 'clp', name: 'Chennai_Lab_Proxmox', platform: 'Proxmox VE', fam: 'Proxmox VE', version: '9.2.2', access: 'SSH only', nodes: 1, guests: 9, usedBy: ['Backup'], status: 'ok', seen: T('21 Oct', '16:03'), addr: '10.20.9.40:22', added: T('02 Apr', '15:12') + ' by priya.raman', proxies: 'aegis-proxy-director-lab', account: 'root (key installed)', fp: 'SHA256:q3Lk…Vt8 (host key)' },
     { id: 'pos', name: 'production-openstack', platform: 'OpenStack', fam: 'OpenStack', version: '2025.1', access: 'Keystone v3, password', nodes: 4, guests: 62, usedBy: ['Backup', 'DR', 'Migration'], status: 'ok', seen: T('21 Oct', '16:04'), addr: 'keystone.prod.host360.local:5000', added: T('18 Jan', '09:20') + ' by arun.kumar', proxies: 'aegis-appliance-os1', account: 'aegis-svc (domain Default)', fp: 'B1:07:6E:D2:3A:90:CC:15:48:F7:2B:6D:01:AE:53:9C' },
     { id: 'r2', name: 'region-2-os', platform: 'OpenStack', fam: 'OpenStack', version: '2025.1', access: 'Keystone v3, password', nodes: null, guests: null, usedBy: ['DR'], status: 'unreach', seen: T('21 Oct', '14:52'), addr: '10.40.0.5:5000', added: T('30 Jun', '11:05') + ' by arun.kumar', proxies: 'aegis-proxy-nova-248d', account: 'aegis-svc (domain Default)', fp: '77:C0:9E:12:AB:34:F1:08:6D:E2:5B:90:3C:A7:41:D6', reason: 'Keystone at 10.40.0.5:5000 did not answer within 30 s.' },
-    { id: 'vc', name: 'Chennai vCenter', platform: 'VMware vCenter', fam: 'VMware', version: '8.0.3', access: 'vSphere API', nodes: 3, guests: 41, usedBy: ['DR', 'Migration'], status: 'ok', seen: T('21 Oct', '16:04'), addr: 'vcenter.chennai.host360.local:443', added: T('04 Aug', '14:30') + ' by priya.raman', proxies: 'aegis-orchestrator', account: 'svc-aegis@vsphere.local', fp: 'E4:51:0A:9B:C3:7D:22:F8:16:6E:A0:3F:B9:54:C2:08', vmw: true },
+    { id: 'vc', name: 'Chennai vCenter', platform: 'VMware vCenter', fam: 'VMware', version: '8.0.3', access: 'vSphere API', nodes: 3, guests: 41, usedBy: ['DR', 'Migration'], status: 'ok', seen: T('21 Oct', '16:04'), addr: '172.25.10.177:443', added: T('04 Aug', '14:30') + ' by priya.raman', proxies: 'aegis-orchestrator', account: 'svc-aegis@vsphere.local', fp: 'E4:51:0A:9B:C3:7D:22:F8:16:6E:A0:3F:B9:54:C2:08', vmw: true },
     { id: 'esx', name: 'esxi-edge-07', platform: 'ESXi', fam: 'VMware', version: '8.0.2', access: 'vSphere API', nodes: 1, guests: 7, usedBy: ['Migration'], status: 'degraded', seen: T('21 Oct', '16:01'), addr: '10.20.12.7:443', added: T('09 Sep', '17:48') + ' by arun.kumar', proxies: 'aegis-orchestrator', account: 'root', fp: '0D:6B:E8:31:5F:A2:94:C7:08:1E:B3:6A:D9:22:F0:45', vmw: true, reason: 'Datastore ds-edge-01 is 93 % full.' }
   ];
   const mkNodes = (names, g, cpu, mem) => names.map((n, i) => ({ name: n, guests: g[i], cpu, mem }));
