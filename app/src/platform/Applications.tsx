@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import AegisTable from '../components/AegisTable';
 import { Icon } from '../lib/Icon';
-import { CUSTOMERS, TIERS, TIER_RULES, W_ICON, WORKLOADS, type Application, type Tier, type Workload } from '../data/platform';
-import { Btn, CheckBox, Field, FilterInput, InfoTip, SelectFilter, SelectInput, TextArea, TextInput } from '../ui/controls';
+import { CUSTOMERS, TIERS, TIER_RULES, TIER_SHORT, W_ICON, WORKLOADS, type Application, type Tier, type Workload } from '../data/platform';
+import { Btn, CheckBox, Field, FilterInput, InfoTip, Seg, SelectFilter, SelectInput, TextArea, TextInput } from '../ui/controls';
+import { DepGraph } from '../ui/DepGraph';
 import { Bar, DrawerTiles, Facts, H3, MiniTable, Page, PageHeader, Spacer, Status, TableArea, Toolbar, plural } from '../ui/layout';
 import { Dialog, Drawer, useClosable } from '../ui/overlay';
 import type { Ctx } from '../ui/ctx';
@@ -27,6 +28,8 @@ export default function Applications({ ctx }: { ctx: Ctx }) {
   const s = useStore();
   const [q, setQ] = useState('');
   const [tier, setTier] = useState('All');
+  const [view, setView] = useState<'list' | 'map'>(ctx.tab === 'map' ? 'map' : 'list');
+  const [overlay, setOverlay] = useState<'groups' | 'boot' | 'waves'>('boot');
   const drawer = useClosable<string>();
   const [tab, setTab] = useState('Overview');
   const create = useClosable<Application | 'new'>();
@@ -59,7 +62,35 @@ export default function Applications({ ctx }: { ctx: Ctx }) {
         <FilterInput value={q} onChange={setQ} placeholder="Filter by name, owner or description" label="Filter applications" />
         <SelectFilter label="Criticality" value={tier} onChange={setTier} options={['All', ...TIERS]} />
         <Spacer />
+        {view === 'map' ? <Seg label="Show on the map" value={overlay} onChange={setOverlay} options={[{ v: 'boot', label: 'DR boot order' }, { v: 'groups', label: 'Consistency groups' }, { v: 'waves', label: 'Migration waves' }]} /> : null}
+        <Seg label="View" value={view} onChange={v => { setView(v); ctx.go(`applications/${v}`); }} options={[{ v: 'list', label: 'List', icon: 'list' }, { v: 'map', label: 'Map', icon: 'git-branch' }]} />
       </Toolbar>
+      {view === 'map' ? (
+        <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {rows.length ? (
+            <DepGraph
+              label="Application dependencies"
+              nodes={rows.map(a => {
+                const m = mem(a);
+                const needsPlan = !a.drPlan && (a.tier === 'Mission Critical' || a.tier === 'Business Critical');
+                return overlay === 'groups'
+                  ? { id: a.id, label: a.name, sub: `${plural(m.length, 'member')}: ${m.map(w => w.name).join(', ')}`, badge: TIER_SHORT[a.tier], group: a.customer }
+                  : overlay === 'boot'
+                    ? { id: a.id, label: a.name, sub: a.drPlan || 'No recovery plan', badge: TIER_SHORT[a.tier], tone: needsPlan ? ('warn' as const) : undefined, icon: needsPlan ? 'triangle-alert' : undefined, group: a.customer }
+                    : { id: a.id, label: a.name, sub: a.wave || 'Not migrating', badge: a.wave ? a.wave.split(' · ')[0] : undefined, group: a.wave || 'zz' };
+              })}
+              edges={rows.flatMap(a => a.dependsOn.map(d => [d, a.id] as [string, string]))}
+              columnLabel={i => (overlay === 'waves' ? (i ? `Moves after step ${i}` : 'Can move first') : overlay === 'boot' ? (i ? `Boots in step ${i + 1}` : 'Boots first') : i ? `Depends on step ${i}` : 'Depends on nothing')}
+              onOpen={id => { drawer.open(id); setTab('Dependencies'); }}
+            />
+          ) : (
+            <p style={{ color: 'var(--tx-2)' }}>No applications match. Clear the filters to see the map.</p>
+          )}
+          <p style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>
+            {overlay === 'boot' ? 'In a failover each column comes up after the one to its left. Applications without a recovery plan are marked.' : overlay === 'groups' ? 'Each application is one consistency group: its members are snapshotted together so they restore to the same moment.' : 'An application moves no earlier than what it depends on. Waves are set in Mobility › Migration plans.'} Dependencies come from network flows seen during discovery and from what owners add.
+          </p>
+        </div>
+      ) : (
       <TableArea>
         <AegisTable
           label="Applications"
@@ -103,6 +134,7 @@ export default function Applications({ ctx }: { ctx: Ctx }) {
           sort="state"
         />
       </TableArea>
+      )}
       {d ? <AppDrawer ctx={ctx} a={d} members={mem(d)} tab={tab} setTab={setTab} closing={drawer.closing} onClose={drawer.close} onEdit={() => create.open(d)} /> : null}
       {create.value ? (
         <AppDialog

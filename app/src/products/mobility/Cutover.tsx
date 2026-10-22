@@ -135,7 +135,7 @@ export function CutoverDialog({ ctx, srv, closing, onClose, onGo }: { ctx: Ctx; 
       {blocks.length ? <Bar tone="err" multiline>{plural(blocks.length, 'check')} {blocks.length === 1 ? 'blocks' : 'block'} the cutover: {blocks.map(b => b.label.toLowerCase()).join(', ')}. Record a no-go, or fix it and come back.</Bar> : null}
       {decision === 'nogo' ? (
         <Field id="co-why" label="Reason">
-          <TextInput id="co-why" value={why} onChange={setWhy} placeholder="Application team not available on Saturday" />
+          <TextInput id="co-why" value={why} onChange={setWhy} placeholder="Application team not available on Sunday" />
         </Field>
       ) : !blocks.length ? (
         <>

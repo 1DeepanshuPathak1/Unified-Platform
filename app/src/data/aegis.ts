@@ -213,9 +213,9 @@ export const AEGIS: any = (function () {
     ready: ['circle-check', 'Ready for cutover', 'ok', 3], cutover: ['power', 'Cut over', 'warn', 4], committed: ['check', 'Committed', 'ok', 5], rolledback: ['undo-2', 'Rolled back', 'warn', 5]
   };
   const migPlans = [
-    { id: 'w1', name: 'Wave 1 · CRM', servers: ['crm-app-01', 'crm-db-01', 'hr-portal'], window: 'Sat 25 Oct 2026, 22:00 to 02:00 IST', mapping: 'Chennai vCenter → production-openstack', ready: [1, 3], owner: 'priya.raman' },
-    { id: 'w2', name: 'Wave 2 · Terminal servers', servers: ['win-ts-01', 'win-ts-02', 'citrix-sf-01'], window: 'Sat 01 Nov 2026, 22:00 to 04:00 IST', mapping: 'Chennai vCenter → Chennai-proxmox-prod', ready: [0, 3], owner: 'meera.iyer' },
-    { id: 'm2', name: 'Wave 2 · Core banking reporting', servers: ['SQL01', 'rpt-app-01'], window: 'Sat 25 Oct 2026, 22:00 to 04:00 IST', mapping: 'Chennai vCenter → Chennai-proxmox-prod', ready: [0, 2], owner: 's.iyer@meridianbank.in' },
+    { id: 'w1', name: 'Wave 1 · CRM', servers: ['crm-app-01', 'crm-db-01', 'hr-portal'], window: 'Sun 25 Oct 2026, 22:00 to 02:00 IST', mapping: 'Chennai vCenter → production-openstack', ready: [1, 3], owner: 'priya.raman' },
+    { id: 'w2', name: 'Wave 2 · Terminal servers', servers: ['win-ts-01', 'win-ts-02', 'citrix-sf-01'], window: 'Sun 01 Nov 2026, 22:00 to 04:00 IST', mapping: 'Chennai vCenter → Chennai-proxmox-prod', ready: [0, 3], owner: 'meera.iyer' },
+    { id: 'm2', name: 'Wave 2 · Core banking reporting', servers: ['SQL01', 'rpt-app-01'], window: 'Sun 25 Oct 2026, 22:00 to 04:00 IST', mapping: 'Chennai vCenter → Chennai-proxmox-prod', ready: [0, 2], owner: 's.iyer@meridianbank.in' },
     { id: 'w3', name: 'Wave 3 · Legacy', servers: ['legacy-erp', 'print-srv-02', 'rhel-oracle-01'], window: null, mapping: 'esxi-edge-07 → production-openstack', ready: [0, 3], owner: 'arun.kumar' }
   ];
 

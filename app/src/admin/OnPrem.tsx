@@ -212,7 +212,7 @@ function PatchWizard({ ctx, o, closing, onClose, onDone }: { ctx: Ctx; o: OnPrem
       {step === 2 ? (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <RadioCard on={when === 'window'} onClick={() => setWhen('window')} icon="calendar-clock" title="In their next maintenance window" note="Sun 02 Nov, 02:00 local; the customer is told 7 days ahead" />
+            <RadioCard on={when === 'window'} onClick={() => setWhen('window')} icon="calendar-clock" title="In their next maintenance window" note="Mon 02 Nov, 02:00 local; the customer is told 7 days ahead" />
             <RadioCard on={when === 'now'} onClick={() => setWhen('now')} icon="arrow-up" title="Now" note="For urgent security fixes; tell the customer first" />
           </div>
           {when === 'now' ? <StepUp verified={mfa} onVerified={() => setMfa(true)} /> : null}

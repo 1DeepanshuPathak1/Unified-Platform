@@ -34,6 +34,7 @@ import RecoveryPlans from '../products/resilience/RecoveryPlans';
 import MobilityOverview from '../products/mobility/Overview';
 import Sources from '../products/mobility/Sources';
 import Assessment from '../products/mobility/Assessment';
+import MigrationPlans from '../products/mobility/Plans';
 import Home from '../platform/Home';
 import Agents from '../platform/Agents';
 import SecuritySection from '../platform/Security';
@@ -59,7 +60,7 @@ const SEV = {
   info: ['info', 'Info', 'var(--tx-2)']
 };
 const SICON = { Site: 'map-pin', Guest: 'monitor', Server: 'server', Job: 'activity', Repository: 'database', Plan: 'list-ordered', Workload: 'layers', Application: 'workflow', Customer: 'users', Person: 'user', Alert: 'bell', Policy: 'clipboard-list' };
-const LIST_PAGES = ['nodes', 'repos', 'backup/copies', 'dr/history', 'mig/plans'];
+const LIST_PAGES = ['nodes', 'repos', 'backup/copies', 'dr/history'];
 const customerName = id => CUSTOMERS.find(c => c.id === id).name;
 const PROD_LABEL = PRODUCT_LABEL;
 /** Screens built on the platform layer, by route key. */
@@ -80,6 +81,7 @@ const PLATFORM = {
   'mig/overview': 1,
   'mig/sources': 1,
   'mig/assessment': 1,
+  'mig/plans': 1,
   home: 1,
   agents: 1,
   security: 1,
@@ -1322,6 +1324,7 @@ export default class AegisConsole extends DC {
                 {v.key === 'mig/overview' ? <MobilityOverview ctx={v.ctx} /> : null}
                 {v.key === 'mig/sources' ? <Sources key={v.ctx.tab} ctx={v.ctx} /> : null}
                 {v.key === 'mig/assessment' ? <Assessment key={v.ctx.tab} ctx={v.ctx} /> : null}
+                {v.key === 'mig/plans' ? <MigrationPlans ctx={v.ctx} /> : null}
                 {v.key === 'home' ? <Home ctx={v.ctx} /> : null}
                 {v.key === 'agents' ? <Agents ctx={v.ctx} /> : null}
                 {v.key === 'security' ? <SecuritySection ctx={v.ctx} /> : null}

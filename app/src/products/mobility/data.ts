@@ -169,12 +169,12 @@ export interface Wave {
   approval?: string;
 }
 export const WAVES: Wave[] = [
-  { id: 'w0', customer: 'h360', name: W0, window: 'Sat 18 Oct 2026, 22:00 to 02:00 IST', budgetMin: 240, usedMin: 95, state: 'done' },
-  { id: 'w1', customer: 'h360', name: W1, window: 'Sat 25 Oct 2026, 22:00 to 02:00 IST', budgetMin: 240, usedMin: 0, state: 'scheduled' },
-  { id: 'w2', customer: 'h360', name: W2, window: 'Sat 01 Nov 2026, 22:00 to 04:00 IST', budgetMin: 360, usedMin: 0, state: 'scheduled' },
+  { id: 'w0', customer: 'h360', name: W0, window: 'Sun 18 Oct 2026, 22:00 to 02:00 IST', budgetMin: 240, usedMin: 95, state: 'done' },
+  { id: 'w1', customer: 'h360', name: W1, window: 'Sun 25 Oct 2026, 22:00 to 02:00 IST', budgetMin: 240, usedMin: 0, state: 'scheduled' },
+  { id: 'w2', customer: 'h360', name: W2, window: 'Sun 01 Nov 2026, 22:00 to 04:00 IST', budgetMin: 360, usedMin: 0, state: 'scheduled' },
   { id: 'w3', customer: 'h360', name: W3, window: null, budgetMin: 480, usedMin: 145, state: 'in progress' },
-  { id: 'm1', customer: 'mer', name: M1, window: 'Sat 04 Oct 2026, 22:00 to 03:00 IST', budgetMin: 300, usedMin: 125, state: 'done' },
-  { id: 'm2', customer: 'mer', name: M2, window: 'Sat 25 Oct 2026, 22:00 to 04:00 IST', budgetMin: 360, usedMin: 0, state: 'scheduled', approval: 'APR-1042' }
+  { id: 'm1', customer: 'mer', name: M1, window: 'Sun 04 Oct 2026, 22:00 to 03:00 IST', budgetMin: 300, usedMin: 125, state: 'done' },
+  { id: 'm2', customer: 'mer', name: M2, window: 'Sun 25 Oct 2026, 22:00 to 04:00 IST', budgetMin: 360, usedMin: 0, state: 'scheduled', approval: 'APR-1042' }
 ];
 
 /** Weekly servers-left-to-migrate, per customer. Planned runs to 14 Dec; actual to the last Monday. */
@@ -205,3 +205,47 @@ export const PROTECTED_AFTER: Record<string, AfterCutover> = {
 export const COMMITTED_AT: Record<string, string> = {
   'ubuntu-build-03': '18 Oct', 'wiki-01': '18 Oct', 'jira-01': '18 Oct', 'grafana-01': '18 Oct', 'proxy-squid-01': '18 Oct', 'ntp-01': '18 Oct', 'mer-hrms-01': '04 Oct'
 };
+
+/** Change freezes: no cutover window may start inside one. Dates are inclusive, in the customer's zone. */
+export interface Blackout {
+  id: string;
+  customer: string;
+  name: string;
+  from: string;
+  to: string;
+  why: string;
+}
+export const BLACKOUTS: Blackout[] = [
+  { id: 'b1', customer: 'mer', name: 'Diwali and October close', from: '2026-10-29', to: '2026-11-04', why: 'Branch peak and month-end close; RBI asks banks not to change core systems' },
+  { id: 'b2', customer: 'mer', name: 'Quarter-end close', from: '2026-12-26', to: '2027-01-05', why: 'Q3 close and statutory reporting' },
+  { id: 'b3', customer: 'h360', name: 'Year-end change freeze', from: '2026-12-19', to: '2027-01-04', why: 'Reduced staff over the holidays' },
+  { id: 'b4', customer: 'h360', name: 'Data centre audit', from: '2026-11-16', to: '2026-11-17', why: 'ISO 27001 surveillance audit at Chennai DC1' }
+];
+
+/** Network flows seen by discovery between servers on the VMware sources (7 days). */
+export const FLOWS: { from: string; to: string; port: string; perDay: number }[] = [
+  { from: 'crm-db-01', to: 'crm-app-01', port: 'TCP 1433 (SQL Server)', perDay: 184000 },
+  { from: 'crm-db-01', to: 'hr-portal', port: 'TCP 1433 (SQL Server)', perDay: 2100 },
+  { from: 'citrix-ddc-01', to: 'citrix-sf-01', port: 'TCP 80, 443 (XML broker)', perDay: 9600 },
+  { from: 'citrix-ddc-01', to: 'win-ts-01', port: 'TCP 80 (VDA registration)', perDay: 4300 },
+  { from: 'citrix-ddc-01', to: 'win-ts-02', port: 'TCP 80 (VDA registration)', perDay: 4100 },
+  { from: 'file-srv-01', to: 'win-ts-01', port: 'TCP 445 (SMB)', perDay: 61000 },
+  { from: 'file-srv-01', to: 'win-ts-02', port: 'TCP 445 (SMB)', perDay: 58000 },
+  { from: 'rhel-oracle-01', to: 'legacy-erp', port: 'TCP 1521 (Oracle)', perDay: 36000 },
+  { from: 'oracle-rac-01', to: 'sap-app-01', port: 'TCP 1521 (Oracle)', perDay: 412000 },
+  { from: 'oracle-rac-02', to: 'sap-app-01', port: 'TCP 1521 (Oracle)', perDay: 398000 },
+  { from: 'oracle-rac-01', to: 'oracle-rac-02', port: 'Shared disk and interconnect', perDay: 0 },
+  { from: 'SQL01', to: 'rpt-app-01', port: 'TCP 1433 (SQL Server)', perDay: 92000 },
+  { from: 'mer-dwh-01', to: 'mer-crm-01', port: 'TCP 5432 (PostgreSQL)', perDay: 12000 },
+  { from: 'mer-crm-01', to: 'mer-doc-01', port: 'TCP 443 (REST)', perDay: 8800 },
+  { from: 'mer-crm-01', to: 'mer-rpa-01', port: 'TCP 443 (REST)', perDay: 15400 },
+  { from: 'mer-hrms-01', to: 'mer-lms-01', port: 'TCP 443 (SSO and REST)', perDay: 3100 }
+];
+
+/** Applications suggested from the flows, for servers that are not yet in an application. */
+export const SUGGESTED_APPS: { id: string; customer: string; name: string; members: string[]; confidence: 'High' | 'Medium'; evidence: string }[] = [
+  { id: 's1', customer: 'h360', name: 'SAP on Oracle RAC', members: ['oracle-rac-01', 'oracle-rac-02', 'sap-app-01'], confidence: 'High', evidence: '810,000 Oracle connections a day from sap-app-01 to both RAC nodes; the nodes share disks' },
+  { id: 's2', customer: 'h360', name: 'Citrix virtual apps', members: ['citrix-ddc-01', 'citrix-sf-01', 'win-ts-01', 'win-ts-02', 'file-srv-01'], confidence: 'High', evidence: 'Every terminal server registers with citrix-ddc-01 and maps profiles from file-srv-01' },
+  { id: 's3', customer: 'mer', name: 'Meridian CRM', members: ['mer-crm-01', 'mer-dwh-01', 'mer-doc-01', 'mer-rpa-01'], confidence: 'Medium', evidence: 'mer-crm-01 is the hub; mer-dwh-01 reads from it nightly only, so it may belong to reporting instead' },
+  { id: 's4', customer: 'h360', name: 'Legacy ERP', members: ['rhel-oracle-01', 'legacy-erp'], confidence: 'High', evidence: '36,000 Oracle connections a day; nothing else talks to rhel-oracle-01' }
+];
