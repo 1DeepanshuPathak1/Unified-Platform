@@ -199,11 +199,28 @@ function finish(r: DrRun, rb: Runbook, ctx: Ctx) {
       }
     });
   }
-  if (r.kind === 'Failback')
+  if (r.kind === 'Failback') {
     servers.forEach(id => {
       const w = wl(id);
       if (w) w.dr = { ...w.dr, s: 'protected', note: undefined };
     });
+    // The reconciliation report: what was written at the recovery site and whether it all came back.
+    const t = store.failbackTarget[rb.id] || { target: `${rb.from} (original hosts)`, same: true };
+    store.reconciliations.unshift({
+      plan: rb.id,
+      when: ctx.now(),
+      target: t.target,
+      same: t.same,
+      rows: servers.map((id, i) => {
+        const w = wl(id);
+        const gb = ((w?.sizeGB || 40) * (0.012 + (i % 3) * 0.007)).toFixed(1);
+        return { server: w?.name || id, written: `${gb} GB`, copied: t.same ? `${gb} GB` : `${w?.sizeGB || 40} GB (full copy)`, check: 'Matched' as const, state: `Running at ${t.target.split(' (')[0]}` };
+      }),
+      notes: [t.same ? 'Only blocks changed at the recovery site were copied back' : 'Disks converted for the new platform; drivers and network settings applied from Mappings', `Recovery-site copies kept for 7 days in case ${rb.from} fails again`, 'No data written at the recovery site was lost'],
+      signed: `SHA-256 ${Math.random().toString(16).slice(2, 6)}…${Math.random().toString(16).slice(2, 6)}, signed by aegis-orchestrator, ${ctx.now()}`
+    });
+    delete store.failbackTarget[rb.id];
+  }
   if (r.kind !== 'Failback')
     store.drills.unshift({ id: 'd' + Date.now(), plan: rb.id, when: r.started, kind: KIND_LABEL[r.kind] as 'Test failover', r: met ? 'ok' : 'warn', dur, rtoMet: met, by: r.by, evidence: `DRL-${String(Date.now()).slice(-4)} · timings, log and screenshots` });
   audit({ who: 'system', side: 'System', customer: rb.customer, what: `${KIND_LABEL[r.kind]} finished`, object: rb.name, when: ctx.now(), r: 'ok', note: `${dur}; RTO target ${rb.rtoTarget}` });

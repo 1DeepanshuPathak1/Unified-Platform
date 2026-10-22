@@ -13,6 +13,7 @@ import { Canvas, StepDialog, dryRun, newStep, type Finding } from './Builder';
 import { FailbackDialog, FailoverDialog, RunPanel, runCell } from './Failover';
 import { Meter, scoreTone } from './Overview';
 import { stepText } from './runner';
+import { DrillCalendar, Reconciliations } from './Drills';
 
 const short = (t: string) => t.replace(' 2026', '').replace(' IST', '');
 
@@ -39,6 +40,7 @@ function PlanList({ ctx, onOpen }: { ctx: Ctx; onOpen: (id: string) => void }) {
   const s = useStore();
   const [q, setQ] = useState('');
   const [ready, setReady] = useState('All');
+  const [view, setView] = useState<'plans' | 'calendar'>(ctx.tab === 'calendar' ? 'calendar' : 'plans');
   const create = useClosable<boolean>();
   const showCust = showCustomerCol(ctx);
   const ql = q.trim().toLowerCase();
@@ -56,6 +58,9 @@ function PlanList({ ctx, onOpen }: { ctx: Ctx; onOpen: (id: string) => void }) {
           </Btn>
         }
       />
+      <Tabs label="Recovery plans" value={view} onChange={v => { setView(v); ctx.go(`dr/recovery/${v}`); }} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'plans', label: 'Plans', count: all.length }, { v: 'calendar', label: 'Drill calendar', count: s.drillSchedule.filter(d => all.some(x => x.r.id === d.plan)).length }]} />
+      {view === 'calendar' ? <DrillCalendar ctx={ctx} /> : (
+      <>
       <Toolbar>
         <FilterInput value={q} onChange={setQ} placeholder="Filter by name, customer or site" label="Filter recovery plans" width={260} />
         <SelectFilter label="Readiness" value={ready} onChange={setReady} options={['All', 'Ready', 'Issues', 'Not read']} />
@@ -98,6 +103,8 @@ function PlanList({ ctx, onOpen }: { ctx: Ctx; onOpen: (id: string) => void }) {
           sort="name"
         />
       </TableArea>
+      </>
+      )}
       {create.value ? <CreatePlanDialog ctx={ctx} closing={create.closing} onClose={create.close} onCreated={id => { create.close(); onOpen(id); }} /> : null}
     </Page>
   );
@@ -329,12 +336,15 @@ function PlanPage({ ctx, rb, onBack }: { ctx: Ctx; rb: Runbook; onBack: () => vo
         ) : null}
         {tab === 'doc' ? <RunbookDocument ctx={ctx} rb={view} draft={!!draft} /> : null}
         {tab === 'runs' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <Reconciliations ctx={ctx} rb={rb} />
           <MiniTable
             label="Runs and drills"
             cols={[{ label: 'When', w: '176px' }, { label: 'Kind', w: '150px' }, { label: 'Result', w: '150px' }, { label: 'Took', w: '120px' }, { label: 'By', w: '190px' }, { label: 'Evidence' }]}
             rows={s.drills.filter(d => d.plan === rb.id).map(d => [d.when, d.kind, <Status key="r" icon={d.r === 'ok' ? 'circle-check' : d.r === 'warn' ? 'triangle-alert' : 'circle-x'} tone={d.r} label={d.r === 'ok' ? 'Passed' : d.r === 'warn' ? 'Passed, warnings' : 'Failed'} />, <span key="t" data-tip={d.rtoMet ? `Within the RTO target of ${rb.rtoTarget}` : `Over the RTO target of ${rb.rtoTarget}`}>{d.dur}</span>, d.by, <span key="e" data-tip={d.evidence} data-tip-overflow="" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.evidence}</span>])}
             empty="Never run. Test the plan on the isolated network to record its first drill."
           />
+          </div>
         ) : null}
       </div>
       {editStep.value ? <StepDialog key={editStep.value.step.id} rb={view} step={editStep.value.step} closing={editStep.closing} onClose={editStep.close} onSave={applyStep} /> : null}

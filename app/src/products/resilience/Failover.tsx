@@ -372,29 +372,63 @@ export function RunPanel({ ctx, rb, run, onFailback }: { ctx: Ctx; rb: Runbook; 
 }
 
 /** Return to primary after a failover: reverse sync, then move back. Armed in this dialog. */
+const PLATFORM_OF: Record<string, string> = { 'Chennai-proxmox-prod': 'Proxmox VE', Chennai_Lab_Proxmox: 'Proxmox VE', 'production-openstack': 'OpenStack', 'region-2-os': 'OpenStack' };
+
 export function FailbackDialog({ ctx, rb, closing, onClose }: { ctx: Ctx; rb: Runbook; closing: boolean; onClose: () => void }) {
   const [mfa, setMfa] = useState(false);
+  const [same, setSame] = useState(true);
+  const others = Object.keys(PLATFORM_OF).filter(x => x !== rb.to);
+  const [target, setTarget] = useState(others.find(x => x !== rb.from) || others[0]);
   const servers = rb.stages.flatMap(s => s.steps.filter(x => x.kind === 'boot').map(x => wl(x.w)!)).filter(w => w && w.dr.s === 'online');
+  const convert = !same && PLATFORM_OF[target] !== PLATFORM_OF[rb.to];
+  const changed = (gb: number, i: number) => Math.max(0.1, gb * (0.012 + (i % 3) * 0.007));
+  const total = servers.reduce((a, w, i) => a + (same ? changed(w.sizeGB, i) : w.sizeGB), 0);
+  const hours = total / 680;
+  const dest = same ? `${rb.from} (original hosts)` : `${target}${convert ? `, converted to ${PLATFORM_OF[target]}` : ''}`;
   return (
     <Dialog
       alert
-      title={`Return ${rb.name} to ${rb.from}`}
-      sub="Copies what changed at the recovery site back, shuts the copies down, then starts the servers at the primary site in reverse stage order."
+      size="lg"
+      title={`Return ${rb.name} to primary`}
+      sub="Copies what changed at the recovery site back, shuts the copies down, then starts the servers at the primary in reverse stage order. A reconciliation report is signed at the end."
       closing={closing}
       onClose={onClose}
-      footNote={`Users lose access for about ${fmtMin(dryRun(rb).estimate + 6)}.`}
+      footNote={`Users lose access for about ${fmtMin(dryRun(rb).estimate + 6)} at the switch; the copy before it runs while they keep working.`}
       footer={
         <>
           <Btn kind="ghost" onClick={onClose}>
             Cancel
           </Btn>
-          <Btn kind="primary" icon="undo-2" disabled={!mfa} why="Confirm it is you first." onClick={() => { const r = store.drRuns[rb.id]; startRun(ctx, rb, 'Failback', r ? r.stages : rb.stages.map(s => s.id)); ctx.toast(`Return of ${rb.name} to ${rb.from} started`, 'info'); onClose(); }}>
+          <Btn kind="primary" icon="undo-2" disabled={!mfa || !servers.length} why={!servers.length ? 'No server of this plan runs at the recovery site.' : 'Confirm it is you first.'} onClick={() => {
+            update(x => { x.failbackTarget[rb.id] = { target: dest, same }; });
+            const r = store.drRuns[rb.id];
+            startRun(ctx, rb, 'Failback', r ? r.stages : rb.stages.map(s => s.id));
+            audit({ who: 'priya.raman', customer: rb.customer, what: 'Started a return to primary', object: rb.name, when: ctx.now(), r: 'ok', after: [['Target', dest]] });
+            ctx.toast(`Return of ${rb.name} to ${same ? rb.from : target} started`, 'info');
+            onClose();
+          }}>
             Return to primary
           </Btn>
         </>
       }
     >
-      <MiniTable label="Servers" cols={[{ label: 'Server', w: '180px' }, { label: 'What happens' }]} rows={servers.map(w => [<strong key="n" style={{ fontWeight: 600 }}>{w.name}</strong>, `Reverse sync, shut down at ${rb.to}, start at ${rb.from}`])} empty="No server of this plan runs at the recovery site." />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <RadioCard on={same} onClick={() => setSame(true)} icon="undo-2" title={`The original servers at ${rb.from}`} note="Reverse sync of changed blocks only" />
+        <RadioCard on={!same} onClick={() => setSame(false)} icon="server" title="New hardware or another platform" note="Full copy; converted if the platform differs" />
+      </div>
+      {!same ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, alignItems: 'end' }}>
+          <Field id="fb-t" label="Return to"><SelectInput id="fb-t" value={target} onChange={setTarget} options={others.map(o => ({ v: o, label: `${o} (${PLATFORM_OF[o]})` }))} /></Field>
+          <p style={{ font: '13px/18px var(--f-ui)', color: 'var(--tx-2)', paddingBottom: 8 }}>{convert ? `From ${PLATFORM_OF[rb.to]} to ${PLATFORM_OF[target]}: VirtIO drivers, boot firmware and network names are set from Mappings.` : `Same platform as ${rb.to}; disks are copied as they are.`}</p>
+        </div>
+      ) : null}
+      <MiniTable
+        label="Servers"
+        cols={[{ label: 'Server', w: '160px' }, { label: same ? 'Changed at the recovery site' : 'To copy', w: '190px', r: true }, { label: 'What happens' }]}
+        rows={servers.map((w, i) => [<strong key="n" style={{ fontWeight: 600 }}>{w.name}</strong>, same ? `${changed(w.sizeGB, i).toFixed(1)} GB` : `${w.sizeGB} GB`, same ? `Reverse sync, shut down at ${rb.to}, start at ${rb.from}` : `Full copy to ${target}${convert ? ', convert' : ''}, then switch`])}
+        empty="No server of this plan runs at the recovery site."
+      />
+      {servers.length ? <p style={{ color: 'var(--tx-2)' }}>About {hours < 1 ? `${Math.max(1, Math.round(hours * 60))} min` : `${hours.toFixed(1)} h`} to copy {total.toFixed(1)} GB at 190 MB/s. The servers keep running at {rb.to} until the switch.</p> : null}
       <StepUp verified={mfa} onVerified={() => setMfa(true)} />
     </Dialog>
   );

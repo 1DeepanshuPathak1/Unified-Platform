@@ -334,3 +334,47 @@ export const DRILLS: Drill[] = [
   { id: 'd3', plan: 'core', when: T('04 Oct', '21:00'), kind: 'Test failover', r: 'warn', dur: '24 min 02 s', rtoMet: true, by: 'arun.kumar', evidence: 'DRL-0904' },
   { id: 'd2', plan: 'web', when: T('20 Jul', '02:10'), kind: 'Unplanned failover', r: 'ok', dur: '11 min 30 s', rtoMet: true, by: 'meera.iyer', evidence: 'INC-19877 · Chennai rack B power loss' }
 ];
+
+/** A drill booked on the calendar, with how the isolated "bubble" network is set up for it. */
+export interface ScheduledDrill {
+  id: string;
+  plan: string;
+  day: string;
+  time: string;
+  scope: string;
+  dns: 'Copy from the directory' | 'Static records' | 'None';
+  records?: string;
+  cleanup: string;
+  repeat: 'Once' | 'Monthly' | 'Quarterly' | 'Every six months';
+  by: string;
+}
+export const DRILL_SCHEDULE: ScheduledDrill[] = [
+  { id: 'sd1', plan: 'cbs', day: '2026-10-28', time: '22:00', scope: 'Whole plan', dns: 'Copy from the directory', cleanup: '4 h after the test', repeat: 'Monthly', by: 'anitha.k@meridianbank.in' },
+  { id: 'sd2', plan: 'cbr', day: '2026-10-28', time: '22:00', scope: 'Whole plan', dns: 'Copy from the directory', cleanup: '4 h after the test', repeat: 'Monthly', by: 's.iyer@meridianbank.in' },
+  { id: 'sd3', plan: 'core', day: '2026-11-18', time: '22:00', scope: 'Whole plan', dns: 'Copy from the directory', cleanup: '2 h after the test', repeat: 'Monthly', by: 'priya.raman' },
+  { id: 'sd4', plan: 'trs', day: '2026-11-14', time: '21:00', scope: 'Databases, Applications', dns: 'Static records', records: 'treasury.meridianbank.in → 10.60.4.21; ora-trs.mer.local → 10.60.4.11', cleanup: '4 h after the test', repeat: 'Quarterly', by: 'rohit.s@meridianbank.in' },
+  { id: 'sd5', plan: 'web', day: '2026-12-09', time: '21:30', scope: 'Whole plan', dns: 'Static records', records: 'shop.host360.ai → 10.50.0.80', cleanup: '2 h after the test', repeat: 'Every six months', by: 'meera.iyer' }
+];
+
+/** What a return to primary found: every server's data written at the recovery site and whether it came back intact. */
+export interface Reconciliation {
+  plan: string;
+  when: string;
+  target: string;
+  same: boolean;
+  rows: { server: string; written: string; copied: string; check: 'Matched' | 'Differs'; state: string }[];
+  notes: string[];
+  signed: string;
+}
+export const RECONCILIATIONS: Reconciliation[] = [
+  {
+    plan: 'web', when: T('21 Jul', '04:40'), target: 'Chennai-proxmox-prod (original hosts)', same: true,
+    rows: [
+      { server: 'web-frontend-01', written: '3.2 GB', copied: '3.2 GB', check: 'Matched', state: 'Running at primary' },
+      { server: 'web-frontend-02', written: '3.0 GB', copied: '3.0 GB', check: 'Matched', state: 'Running at primary' },
+      { server: 'lb-web', written: '12 MB', copied: '12 MB', check: 'Matched', state: 'Running at primary' }
+    ],
+    notes: ['Recovery-site copies kept for 7 days in case the primary fails again', 'DNS for shop.host360.ai back to 10.20.4.80 with TTL 300 s; old answers drain within 5 minutes', 'No data written at the recovery site was lost'],
+    signed: 'SHA-256 9c1e…4b07, signed by aegis-orchestrator, 21 Jul 2026, 04:42 IST'
+  }
+];
