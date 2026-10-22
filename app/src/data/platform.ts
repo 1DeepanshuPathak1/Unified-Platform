@@ -518,7 +518,7 @@ export const POLICY_VERSIONS: Record<string, { v: number; when: string; by: stri
 export type ApprovalState = 'pending' | 'approved' | 'rejected' | 'expired' | 'used' | 'cancelled';
 export interface Approval {
   id: string;
-  kind: 'Restore exception' | 'Delete recovery points' | 'Failover' | 'Cutover' | 'Policy change' | 'Unlock compliance mode' | 'Login as owner';
+  kind: 'Restore exception' | 'Sensitive restore' | 'Delete recovery points' | 'Failover' | 'Cutover' | 'Policy change' | 'Unlock compliance mode' | 'Login as owner';
   object: string;
   customer: string;
   requester: string;

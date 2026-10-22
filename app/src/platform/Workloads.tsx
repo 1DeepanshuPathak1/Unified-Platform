@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import AegisTable from '../components/AegisTable';
 import { Icon } from '../lib/Icon';
-import { Btn, FilterInput, RadioCard, Seg, SelectFilter, Tag, InfoTip } from '../ui/controls';
+import { Btn, Field, FilterInput, RadioCard, Seg, SelectFilter, SelectInput, Tabs, Tag, TextArea, TextInput, InfoTip } from '../ui/controls';
+import { DiscoveryPage } from './Discovery';
 import { Activity, Bar, BulkBar, DrawerTiles, Facts, H3, MiniTable, Page, PageHeader, Spacer, Status, TableArea, Toolbar, plural } from '../ui/layout';
-import { Dialog, Drawer, useClosable } from '../ui/overlay';
+import { Dialog, Drawer, StepUp, useClosable } from '../ui/overlay';
+import { audit, update } from './store';
+import { nextApprovalId } from '../products/resilience/Failover';
 import type { Ctx } from '../ui/ctx';
 import { APPLICATIONS, P_ALERTS, TIERS, TIER_RULES, W_ICON, W_TYPES, WORKLOADS, type Stage, type Tier, type Workload } from '../data/platform';
 import { B_ST, D_ST, Go, M_ST, TIER_RANK, TierTag, custName, inScope, showCustomerCol, stCell } from './common';
@@ -24,7 +27,7 @@ export function gapsOf(w: Workload): string[] {
   return g;
 }
 
-export default function Workloads({ ctx }: { ctx: Ctx }) {
+function WorkloadList({ ctx }: { ctx: Ctx }) {
   const [view, setView] = useState<View>('all');
   const [q, setQ] = useState('');
   const [type, setType] = useState('All');
@@ -109,6 +112,7 @@ export default function Workloads({ ctx }: { ctx: Ctx }) {
           </Btn>
         }
       />
+      <Tabs<'list' | 'discovery'> label="Workloads" value="list" onChange={v => ctx.go(v === 'list' ? 'workloads' : 'workloads/discovery')} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'list', label: 'Workloads' }, { v: 'discovery', label: 'Discovery' }]} />
       <Toolbar>
         {selIds.length ? (
           <BulkBar label={plural(selIds.length, 'workload') + ' selected'} onClear={() => setSel({})}>
@@ -195,6 +199,8 @@ function WorkloadDrawer({ ctx, w, tab, setTab, closing, onClose, onTier }: { ctx
   const deps = (w.deps || []).map(id => WORKLOADS.find(x => x.id === id)).filter(Boolean) as Workload[];
   const usedBy = WORKLOADS.filter(x => (x.deps || []).includes(w.id));
   const op = ctx.can('operate', 'Starting a backup');
+  const restore = useClosable<boolean>();
+  const mark = useClosable<boolean>();
   const tabs = [
     { v: 'Overview', label: 'Overview' },
     { v: 'Protection', label: 'Protection' },
@@ -203,6 +209,7 @@ function WorkloadDrawer({ ctx, w, tab, setTab, closing, onClose, onTier }: { ctx
     { v: 'Alerts', label: 'Alerts', count: alerts.length }
   ];
   return (
+    <>
     <Drawer
       label="Workload details"
       width={640}
@@ -226,8 +233,8 @@ function WorkloadDrawer({ ctx, w, tab, setTab, closing, onClose, onTier }: { ctx
             </Btn>
           ) : null}
           {w.backup.s !== 'na' ? (
-            <Btn kind="outline" icon="rotate-ccw" perm={ctx.can('restore', 'Restoring')} onClick={() => ctx.go('backup/restore')}>
-              Restore…
+            <Btn kind="outline" icon="rotate-ccw" perm={ctx.can('restore', 'Restoring')} onClick={() => (w.sensitive ? restore.open(true) : ctx.go('backup/restore'))}>
+              {w.sensitive ? 'Request a restore…' : 'Restore…'}
             </Btn>
           ) : null}
           {w.dr.s !== 'na' && w.dr.s !== 'none' ? (
@@ -267,7 +274,7 @@ function WorkloadDrawer({ ctx, w, tab, setTab, closing, onClose, onTier }: { ctx
               { k: 'Environment', v: w.env },
               { k: 'Application', v: app ? <Go ctx={ctx} to="applications" id={app.id}>{app.name}</Go> : 'Not in an application', muted: !app },
               { k: 'Owner', v: w.owner },
-              { k: 'Classification', v: `${w.classification}${w.sensitive ? ' · sensitive, restores need an additional approver' : ''}` },
+              { k: 'Classification', v: <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>{w.sensitive ? <Icon name="eye-off" style={{ color: 'var(--tx-2)' }} /> : null}{`${w.classification}${w.sensitive ? ' · sensitive, restores need an additional approver' : ''}`}<Btn kind="ghost" size="sm" perm={ctx.can('admin', 'Changing sensitivity')} onClick={() => mark.open(true)}>{w.sensitive ? 'Clear…' : 'Mark sensitive…'}</Btn></span> },
               { k: 'Size', v: w.sizeGB ? (w.sizeGB >= 1000 ? `${(w.sizeGB / 1024).toFixed(2)} TB` : `${w.sizeGB.toFixed(2)} GB`) : 'No data to store', muted: !w.sizeGB },
               ...(w.cpu ? [{ k: 'CPU and memory', v: `${w.cpu} · ${w.mem}` }] : []),
               ...(w.ip ? [{ k: 'Address', v: w.ip }] : []),
@@ -382,6 +389,70 @@ function WorkloadDrawer({ ctx, w, tab, setTab, closing, onClose, onTier }: { ctx
         )
       ) : null}
     </Drawer>
+    {restore.value ? <SensitiveRestoreDialog ctx={ctx} w={w} closing={restore.closing} onClose={restore.close} /> : null}
+    {mark.value ? <SensitiveDialog ctx={ctx} w={w} closing={mark.closing} onClose={mark.close} /> : null}
+    </>
+  );
+}
+
+/** A restore of a sensitive workload never runs on one person's say-so: it becomes an approval for two. */
+function SensitiveRestoreDialog({ ctx, w, closing, onClose }: { ctx: Ctx; w: Workload; closing: boolean; onClose: () => void }) {
+  const [what, setWhat] = useState<'vm' | 'files'>('files');
+  const [to, setTo] = useState('Alternate location (isolated)');
+  const [point, setPoint] = useState(w.backup.last || 'Latest');
+  const [why, setWhy] = useState('');
+  const [approver, setApprover] = useState(w.customer === 'mer' ? 'Data protection officer (dpo@meridianbank.in)' : w.customer === 'sah' ? 'Medical records officer (mro@sahyadrihospitals.in)' : 'Data owner (priya.raman)');
+  const [mfa, setMfa] = useState(false);
+  const ok = why.trim().length >= 8 && mfa;
+  return (
+    <Dialog
+      title={`Request a restore of ${w.name}`}
+      sub={`${w.name} is sensitive (${w.classification}). The restore runs once the workload owner and a sensitive-data approver have both approved.`}
+      closing={closing}
+      onClose={onClose}
+      footer={
+        <>
+          <Btn kind="ghost" onClick={onClose}>Cancel</Btn>
+          <Btn kind="primary" icon="send" disabled={!ok} why={!mfa ? 'Confirm it is you first.' : 'Give the reason or ticket.'} onClick={() => {
+            const id = nextApprovalId();
+            update(s => {
+              s.approvals.unshift({ id, kind: 'Sensitive restore', object: `${what === 'vm' ? 'Whole VM' : 'Files'} from ${w.name}`, customer: w.customer, requester: 'priya.raman', approvers: `Workload owner (${w.owner}) and ${approver}`, needed: 2, given: [], requested: ctx.now(), expires: '22 Oct 2026, 16:05 IST', state: 'pending', reason: why.trim(), evidence: [`Recovery point ${point}`, `Restore to ${to}`], rule: 'Restores of sensitive workloads need an additional approver' });
+            });
+            audit({ who: 'priya.raman', customer: w.customer, what: 'Requested a sensitive restore', object: w.name, when: ctx.now(), r: 'ok', note: `${id}: ${why.trim()}` });
+            ctx.toast(`${id}: the restore of ${w.name} waits for 2 approvals`, 'ok');
+            onClose();
+          }}>Send for approval</Btn>
+        </>
+      }
+    >
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <RadioCard on={what === 'files'} onClick={() => setWhat('files')} icon="file" title="Files and folders" note="Chosen after approval, from the recovery point" />
+        <RadioCard on={what === 'vm'} onClick={() => setWhat('vm')} icon="monitor" title="Whole VM" />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <Field id="sr-p" label="Recovery point"><SelectInput id="sr-p" value={point} onChange={setPoint} options={[point, 'One day earlier', 'One week earlier'].filter((x, i, a) => a.indexOf(x) === i)} /></Field>
+        <Field id="sr-t" label="Restore to"><SelectInput id="sr-t" value={to} onChange={setTo} options={['Alternate location (isolated)', 'Original location (overwrite)']} /></Field>
+      </div>
+      <Field id="sr-a" label="Additional approver" hint="From the approval rule for sensitive workloads"><SelectInput id="sr-a" value={approver} onChange={setApprover} options={[approver, 'Security officer (security@host360.ai)'].filter((x, i, a) => a.indexOf(x) === i)} /></Field>
+      <Field id="sr-w" label="Reason or ticket"><TextInput id="sr-w" value={why} onChange={setWhy} placeholder="INC-20431: patient record export corrupted" /></Field>
+      <StepUp verified={mfa} onVerified={() => setMfa(true)} />
+    </Dialog>
+  );
+}
+
+function SensitiveDialog({ ctx, w, closing, onClose }: { ctx: Ctx; w: Workload; closing: boolean; onClose: () => void }) {
+  const [why, setWhy] = useState('');
+  const on = !w.sensitive;
+  return (
+    <Dialog
+      title={on ? `Mark ${w.name} as sensitive` : `Clear sensitive from ${w.name}`}
+      sub={on ? 'From now on every restore of it needs an additional approver, and its recovery points are hidden from search.' : 'Restores go back to the normal approval rule. The change is recorded and the data owner is told.'}
+      closing={closing}
+      onClose={onClose}
+      footer={<><Btn kind="ghost" onClick={onClose}>Cancel</Btn><Btn kind={on ? 'primary' : 'danger'} icon={on ? 'eye-off' : 'eye'} perm={ctx.can('admin', 'Changing sensitivity')} disabled={why.trim().length < 6} why="Say why." onClick={() => { update(() => { w.sensitive = on; }); audit({ who: 'priya.raman', customer: w.customer, what: on ? 'Marked a workload sensitive' : 'Cleared sensitive from a workload', object: w.name, when: ctx.now(), r: 'ok', note: why.trim() }); ctx.toast(on ? `${w.name} is sensitive; restores need an additional approver` : `${w.name} is no longer sensitive`, on ? 'ok' : 'warn'); onClose(); }}>{on ? 'Mark sensitive' : 'Clear sensitive'}</Btn></>}
+    >
+      <Field id="sd-w" label="Why"><TextArea id="sd-w" value={why} onChange={setWhy} rows={2} placeholder={on ? 'Holds patient records (DPDP sensitive personal data)' : 'Data moved to his-db-02; this server only holds logs now'} /></Field>
+    </Dialog>
   );
 }
 
@@ -432,4 +503,9 @@ function TierDialog({ ctx, ws, closing, onClose, onSave }: { ctx: Ctx; ws: Workl
       ) : null}
     </Dialog>
   );
+}
+
+/** Workloads, with Discovery as its second view. */
+export default function Workloads({ ctx }: { ctx: Ctx }) {
+  return ctx.tab === 'discovery' ? <DiscoveryPage ctx={ctx} /> : <WorkloadList ctx={ctx} />;
 }
