@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#1b2027"></rect><path d="M50 30 L66 36 V50 C66 60 59 67 50 70 C41 67 34 60 34 50 V36 Z" fill="none" stroke="#5cc8c2" stroke-width="3" stroke-linejoin="round"></path><path d="M43 50 L48 55 L58 44" fill="none" stroke="#5cc8c2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></template>
+<style>html,body{margin:0;background:#15191f}a{color:inherit;text-decoration:none}a:hover{color:inherit}</style>
+</helmet>
+<div style="display:{{ consoleDisplay }}"><dc-import name="Aegis Console" hub="{{ true }}" hint-size="100%,100vh"></dc-import></div>
+<sc-if value="{{ isDs }}" hint-placeholder-val="{{ false }}"><dc-import name="Aegis Design System" hub="{{ true }}" hint-size="100%,100vh"></dc-import></sc-if>
+<sc-if value="{{ isHandoff }}" hint-placeholder-val="{{ false }}"><dc-import name="Aegis Handoff" hub="{{ true }}" hint-size="100%,100vh"></dc-import></sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { view: 'console' };
+  componentDidMount() { this.read(); this.h = () => this.read(); window.addEventListener('hashchange', this.h); }
+  componentWillUnmount() { window.removeEventListener('hashchange', this.h); }
+  read() {
+    const h = location.hash || '';
+    if (!h.startsWith('#/')) return;
+    const v = h.startsWith('#/design-system') ? 'ds' : h.startsWith('#/handoff') ? 'handoff' : 'console';
+    if (v !== this.state.view) { this.setState({ view: v }); window.scrollTo(0, 0); }
+  }
+  renderVals() {
+    const v = this.state.view;
+    return { consoleDisplay: v === 'console' ? 'block' : 'none', isDs: v === 'ds', isHandoff: v === 'handoff' };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="aegis-tokens.css">
+<script src="aegis-icons.js"></script>
+<script src="aegis-ui.js"></script>
+</helmet>
+<div style="height:100%;min-height:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--ln);font:13px/18px var(--f-ui);font-variant-numeric:tabular-nums;color:var(--tx);transition:background-color 150ms,border-color 150ms">
+<sc-if value="{{ isUnreach }}" hint-placeholder-val="{{ false }}">
+<div role="status" style="flex:none;display:flex;align-items:center;gap:10px;min-height:40px;padding:0 12px;background:var(--warn-s);border-bottom:1px solid var(--ln)"><ae-icon name="triangle-alert" style="color:var(--warn)"></ae-icon><span style="min-width:0">{{ unreachText }}</span></div>
+</sc-if>
+<div role="table" aria-label="{{ label }}" aria-busy="{{ isLoading }}" aria-rowcount="{{ rowCount }}" style="flex:1;min-height:0;overflow:auto">
+<div role="row" style="position:sticky;top:0;z-index:2;display:grid;grid-template-columns:{{ grid }};align-items:center;height:36px;background:var(--panel-2);border-bottom:1px solid var(--ln);color:var(--tx-2);font-size:12px">
+<sc-if value="{{ selectable }}" hint-placeholder-val="{{ false }}">
+<div role="columnheader" style="padding:0 0 0 14px;display:flex;align-items:center"><button role="checkbox" aria-checked="{{ allAria }}" aria-label="Select all" onClick="{{ toggleAll }}" style="width:16px;height:16px;display:grid;place-items:center;border:1px solid {{ allBd }};background:{{ allBg }};color:var(--acc-ink);transition:background-color 100ms,border-color 100ms"><ae-icon name="{{ allIcon }}" size="12"></ae-icon></button></div>
+</sc-if>
+<sc-for list="{{ heads }}" as="h" hint-placeholder-count="6">
+<div role="columnheader" aria-sort="{{ h.aria }}" style="min-width:0;padding:0 8px">
+<button onClick="{{ h.onClick }}" disabled="{{ h.nosort }}" style="display:flex;align-items:center;justify-content:{{ h.jc }};gap:4px;width:100%;height:34px;white-space:nowrap;overflow:hidden;cursor:{{ h.cursor }};transition:color 100ms" style-hover="color:var(--tx)"><span style="overflow:hidden;text-overflow:ellipsis">{{ h.label }}</span><ae-icon name="{{ h.arrow }}" style="color:var(--acc)"></ae-icon></button>
+</div>
+</sc-for>
+<sc-if value="{{ chev }}" hint-placeholder-val="{{ false }}"><div role="columnheader" aria-label="Open"></div></sc-if>
+</div>
+<sc-if value="{{ isLive }}" hint-placeholder-val="{{ true }}">
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="6">
+<div role="row" onClick="{{ r.onClick }}" style="display:grid;grid-template-columns:{{ grid }};align-items:center;height:{{ rowH }};border-bottom:1px solid var(--ln);cursor:{{ r.cursor }};background:{{ r.bg }};box-shadow:{{ r.ring }};transition:background-color 100ms,box-shadow 100ms" style-hover="background:{{ r.hbg }}">
+<sc-if value="{{ selectable }}" hint-placeholder-val="{{ false }}">
+<div role="cell" style="padding:0 0 0 14px;display:flex;align-items:center"><button role="checkbox" aria-checked="{{ r.sel }}" aria-label="Select {{ r.label }}" onClick="{{ r.onSel }}" style="width:16px;height:16px;display:grid;place-items:center;border:1px solid {{ r.cbBd }};background:{{ r.cbBg }};color:var(--acc-ink);transition:background-color 100ms,border-color 100ms" style-hover="border-color:var(--acc)"><ae-icon name="check" size="12" style="opacity:{{ r.cbOp }};transition:opacity 100ms"></ae-icon></button></div>
+</sc-if>
+<sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="6">
+<div role="cell" style="min-width:0;padding:0 8px;display:flex;align-items:center;justify-content:{{ c.jc }};gap:6px;overflow:hidden">
+<sc-if value="{{ c.isText }}" hint-placeholder-val="{{ true }}"><span data-tip="{{ c.tip }}" data-tip-overflow="" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:{{ c.ta }};color:{{ c.color }};font-weight:{{ c.fw }};font-style:{{ c.fs }}">{{ c.v }}</span></sc-if>
+<sc-if value="{{ c.isStatus }}" hint-placeholder-val="{{ false }}"><ae-icon name="{{ c.i }}" spin="{{ c.spin }}" style="color:{{ c.ic }}"></ae-icon><span data-tip="{{ c.tip }}" data-tip-overflow="" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.l }}</span></sc-if>
+<sc-if value="{{ c.isTags }}" hint-placeholder-val="{{ false }}"><sc-for list="{{ c.tags }}" as="tg" hint-placeholder-count="2"><span style="flex:none;height:20px;padding:0 6px;border:1px solid var(--ln-2);font-size:11px;line-height:18px;color:var(--tx-2);white-space:nowrap">{{ tg }}</span></sc-for></sc-if>
+<sc-if value="{{ c.isBar }}" hint-placeholder-val="{{ false }}"><span style="flex:1;min-width:24px;max-width:96px;height:4px;background:var(--ln)"><span style="display:block;height:4px;width:{{ c.pctW }};background:{{ c.barC }};transition:width 150ms linear"></span></span><span style="flex:none;white-space:nowrap;color:var(--tx-2)">{{ c.v }}</span></sc-if>
+<sc-if value="{{ c.isPhases }}" hint-placeholder-val="{{ false }}"><span data-tip="{{ c.tip }}" style="flex:1;display:flex;height:10px;min-width:60px;background:var(--ln);gap:1px"><sc-for list="{{ c.segs }}" as="sg"><span style="height:10px;width:{{ sg.w }};background:{{ sg.c }};transition:width 150ms var(--ease)"></span></sc-for></span><span style="flex:none;white-space:nowrap;color:var(--tx-2)">{{ c.v }}</span></sc-if>
+<sc-if value="{{ c.isBtn }}" hint-placeholder-val="{{ false }}"><button onClick="{{ c.onClick }}" aria-disabled="{{ c.disabled }}" data-tip="{{ c.why }}" style="height:26px;padding:0 10px;border:1px solid var(--ln-2);font:600 13px var(--f-body);white-space:nowrap;opacity:{{ c.op }};transition:background-color 100ms" style-hover="background:var(--hover)">{{ c.v }}</button></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{ chev }}" hint-placeholder-val="{{ false }}"><div role="cell" style="display:flex;justify-content:center;color:var(--tx-3)"><ae-icon name="chevron-right"></ae-icon></div></sc-if>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+<sc-for list="{{ skel }}" as="sk" hint-placeholder-count="8">
+<div role="row" aria-hidden="true" style="display:grid;grid-template-columns:{{ grid }};align-items:center;height:{{ rowH }};border-bottom:1px solid var(--ln);animation:ae-fade 150ms var(--ease)">
+<sc-for list="{{ sk.cells }}" as="b" hint-placeholder-count="6"><div style="padding:0 8px;display:flex;justify-content:{{ b.jc }}"><span style="display:block;height:8px;width:{{ b.w }};background:var(--skel)"></span></div></sc-for>
+</div>
+</sc-for>
+</sc-if>
+<sc-if value="{{ showBlank }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:64px 24px;text-align:center;animation:ae-fade 150ms var(--ease)">
+<span style="font:15px/22px var(--f-body);color:var(--tx-2);max-width:440px;text-wrap:pretty">{{ blankText }}</span>
+<sc-if value="{{ blankAction }}" hint-placeholder-val="{{ false }}"><button onClick="{{ onBlank }}" aria-disabled="{{ blankDisabled }}" data-tip="{{ blankWhy }}" style="height:32px;padding:0 14px;display:flex;align-items:center;gap:8px;background:{{ blankBg }};color:{{ blankFg }};border:1px solid {{ blankBd }};font:600 14px var(--f-body);transition:background-color 100ms">{{ blankAction }}</button></sc-if>
+</div>
+</sc-if>
+</div>
+<div style="flex:none;display:flex;align-items:center;gap:12px;height:36px;padding:0 12px;border-top:1px solid var(--ln);font-size:12px;color:var(--tx-3)">
+<span>{{ footL }}</span><span style="flex:1"></span><span>{{ footR }}</span>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;900px&quot;,&quot;height&quot;:&quot;360px&quot;},&quot;cols&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{k:string,label:string,w?:string,r?:boolean,dim?:boolean,nosort?:boolean}&gt;&quot;},&quot;rows&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;object&gt;&quot;},&quot;sel&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Record&lt;string,boolean&gt;&quot;},&quot;onSel&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(id:string)=&gt;void&quot;},&quot;onSelAll&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(ids:string[],on:boolean)=&gt;void&quot;},&quot;onRow&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;(id:string)=&gt;void&quot;},&quot;active&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;live&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;unreach&quot;],&quot;default&quot;:&quot;live&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;emptyText&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Nothing here yet.&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;emptyAction&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;onEmpty&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;()=&gt;void&quot;},&quot;unreachText&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Could not be read.&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Table&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;unit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;[string,string]&quot;},&quot;sort&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const COLORS = { ok: 'var(--ok)', warn: 'var(--warn)', err: 'var(--err)', run: 'var(--run)', tx: 'var(--tx-3)', acc: 'var(--acc)' };
+const SKW = ['72%', '56%', '84%', '40%', '64%', '48%', '76%', '60%'];
+const sortVal = c => {
+  if (c == null) return null;
+  if (Array.isArray(c)) return c.join(',');
+  if (typeof c === 'object') { if ('s' in c) return c.s; return c.pct != null ? c.pct : (c.v != null ? (Array.isArray(c.v) ? c.v.join(',') : c.v) : c.l); }
+  return c;
+};
+
+class Component extends DCLogic {
+  state = { sk: undefined, sd: 1 };
+
+  cell(raw, col) {
+    const obj = raw && typeof raw === 'object' && !Array.isArray(raw);
+    const c = obj ? raw : { v: raw };
+    const t = c.t || (Array.isArray(raw) ? 'tags' : 'text');
+    const v = c.v == null || Array.isArray(c.v) ? (Array.isArray(raw) ? '' : (c.v == null ? '' : '')) : String(c.v);
+    const right = !!col.r;
+    return {
+      isText: t === 'text', isStatus: t === 'status' || t === 'icon', isTags: t === 'tags', isBar: t === 'bar', isBtn: t === 'btn', isPhases: t === 'phases', segs: c.segs || [],
+      v, l: c.l != null ? c.l : v, tip: c.tip || c.l || v,
+      jc: right ? 'flex-end' : 'flex-start', ta: right ? 'right' : 'left',
+      color: c.muted ? 'var(--tx-3)' : (col.dim ? 'var(--tx-2)' : 'var(--tx)'),
+      fw: c.strong ? 700 : 400, fs: c.italic ? 'italic' : 'normal',
+      i: c.i || '', spin: c.spin ? 'true' : 'false', ic: COLORS[c.c] || 'var(--tx-2)',
+      tags: Array.isArray(raw) ? raw : (Array.isArray(c.v) ? c.v : []),
+      pctW: Math.max(0, Math.min(100, c.pct || 0)) + '%', barC: COLORS[c.c] || 'var(--tx-3)',
+      onClick: c.onClick ? (e => { e.stopPropagation(); if (!c.disabled) c.onClick(); }) : undefined,
+      disabled: c.disabled ? 'true' : undefined, why: c.disabled ? c.why : undefined, op: c.disabled ? 0.45 : 1
+    };
+  }
+
+  renderVals() {
+    const p = this.props;
+    const cols = p.cols || [];
+    const sk = this.state.sk !== undefined ? this.state.sk : (p.sort || null);
+    const sd = this.state.sk !== undefined ? this.state.sd : (p.dir || 1);
+    const selectable = !!p.onSel;
+    const sel = p.sel || {};
+    const chev = !!p.onRow && p.chev !== false;
+    const state = p.state || 'live';
+    let rows = (p.rows || []).slice();
+    if (sk) {
+      rows.sort((a, b) => {
+        const va = sortVal(a[sk]), vb = sortVal(b[sk]);
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1;
+        if (vb == null) return -1;
+        return (typeof va === 'number' && typeof vb === 'number' ? va - vb : String(va).localeCompare(String(vb), undefined, { numeric: true, sensitivity: 'base' })) * sd;
+      });
+    }
+    const grid = (selectable ? '44px ' : '') + cols.map(c => c.w || 'minmax(0,1fr)').join(' ') + (chev ? ' 36px' : '');
+    const heads = cols.map(c => {
+      const on = sk === c.k;
+      return { label: c.label, jc: c.r ? 'flex-end' : 'flex-start', nosort: !!c.nosort, cursor: c.nosort ? 'default' : 'pointer',
+        arrow: on ? (sd > 0 ? 'arrow-up' : 'arrow-down') : '', aria: on ? (sd > 0 ? 'ascending' : 'descending') : 'none',
+        onClick: () => this.setState(s => ({ sk: c.k, sd: (s.sk !== undefined ? s.sk : p.sort) === c.k ? -(s.sk !== undefined ? s.sd : (p.dir || 1)) : 1 })) };
+    });
+    const ids = rows.map(r => r.id);
+    const selN = ids.filter(id => sel[id]).length;
+    const all = ids.length > 0 && selN === ids.length;
+    const some = selN > 0 && !all;
+    const R = rows.map(r => {
+      const on = !!sel[r.id];
+      const act = p.active === r.id;
+      const first = cols[0] ? r[cols[0].k] : '';
+      return {
+        id: r.id, label: typeof first === 'object' && first ? (first.v || first.l || '') : first,
+        cells: cols.map(c => this.cell(r[c.k], c)),
+        sel: on, cbBg: on ? 'var(--acc)' : 'transparent', cbBd: on ? 'var(--acc)' : 'var(--ln-2)', cbOp: on ? 1 : 0,
+        bg: on || act ? 'var(--acc-soft)' : 'transparent', hbg: on || act ? 'var(--acc-soft)' : 'var(--hover)',
+        ring: act ? 'inset 2px 0 0 var(--acc)' : 'none', cursor: p.onRow ? 'pointer' : 'default',
+        onSel: e => { e.stopPropagation(); p.onSel(r.id); },
+        onClick: p.onRow ? () => p.onRow(r.id) : undefined
+      };
+    });
+    const isLive = state === 'live' && R.length > 0;
+    const isLoading = state === 'loading';
+    const isUnreach = state === 'unreach';
+    const isEmpty = state === 'empty' || (state === 'live' && R.length === 0 && !p.filtered);
+    const noMatch = state === 'live' && R.length === 0 && !!p.filtered;
+    const skel = Array.from({ length: 8 }, (_, i) => ({ cells: [].concat(selectable ? [{ w: '16px', jc: 'flex-start' }] : [], cols.map((c, j) => ({ w: c.r ? '40%' : SKW[(i + j) % SKW.length], jc: c.r ? 'flex-end' : 'flex-start' })), chev ? [{ w: '0', jc: 'center' }] : []) }));
+    const unit = p.unit || ['item', 'items'];
+    const blankAction = isEmpty ? (p.emptyAction || '') : (noMatch ? 'Clear filters' : '');
+    const blankDisabled = isEmpty && p.emptyDisabled;
+    return {
+      grid, heads, rows: R, selectable, chev, rowH: (p.rowH || 36) + 'px', label: p.label || 'Table',
+      allAria: all ? 'true' : (some ? 'mixed' : 'false'), allIcon: all ? 'check' : (some ? 'minus' : ''),
+      allBg: all || some ? 'var(--acc)' : 'transparent', allBd: all || some ? 'var(--acc)' : 'var(--ln-2)',
+      toggleAll: () => p.onSelAll && p.onSelAll(ids, !all),
+      isLive, isLoading, isUnreach, skel,
+      showBlank: isEmpty || noMatch || isUnreach,
+      blankText: isUnreach ? 'Nothing is shown here until it can be read. Values are not replaced with zeros or blanks.' : (noMatch ? (p.noMatchText || 'Nothing matches these filters.') : (p.emptyText || 'Nothing here yet.')),
+      blankAction: isUnreach ? '' : blankAction,
+      onBlank: noMatch ? p.onClear : (blankDisabled ? undefined : p.onEmpty),
+      blankDisabled: blankDisabled ? 'true' : undefined, blankWhy: blankDisabled ? p.emptyWhy : undefined,
+      blankBg: noMatch ? 'transparent' : 'var(--acc)', blankFg: noMatch ? 'var(--tx)' : 'var(--acc-ink)', blankBd: noMatch ? 'var(--ln-2)' : 'var(--acc)',
+      unreachText: p.unreachText || 'Could not be read.',
+      rowCount: R.length,
+      footL: isLoading ? 'Reading…' : (isUnreach ? 'Not read' : (p.foot || `${R.length} ${R.length === 1 ? unit[0] : unit[1]}${selN ? ` · ${selN} selected` : ''}`)),
+      footR: isLoading || isUnreach ? '' : (p.footR || '')
+    };
+  }
+}
+
+</script>
+</body>
+</html>

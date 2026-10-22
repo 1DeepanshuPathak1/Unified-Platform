@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&amp;family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<script src="aegis-icons.js"></script>
+<style>
+body{margin:0;background:#e6e6e4;font-family:"Source Sans 3",sans-serif;color:#1d1f20}
+a{color:#0b6b66}a:hover{color:#08514d}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}.dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+[data-dir]{--f-head:"ES Build",Jost,sans-serif;--f-body:"Source Sans 3",sans-serif;--f-ui:Tahoma,Verdana,"DejaVu Sans",sans-serif;--acc:oklch(0.76 0.115 188);--acc-h:oklch(0.82 0.105 188);--acc-p:oklch(0.70 0.115 188);--acc-ink:oklch(0.20 0.03 200);--acc-soft:oklch(0.76 0.115 188 / 0.14);--ok:oklch(0.78 0.14 152);--warn:oklch(0.82 0.14 80);--err:oklch(0.72 0.16 25);--run:oklch(0.76 0.11 245);--warn-s:oklch(0.82 0.14 80 / 0.12);--err-s:oklch(0.72 0.16 25 / 0.12);--shadow:0 0 0 1px oklch(0 0 0 / 0.35),0 16px 40px oklch(0 0 0 / 0.5);color-scheme:dark}
+[data-dir][data-theme="light"]{--acc:oklch(0.50 0.088 194);--acc-h:oklch(0.45 0.085 194);--acc-p:oklch(0.40 0.08 194);--acc-ink:#ffffff;--acc-soft:oklch(0.50 0.088 194 / 0.10);--ok:oklch(0.50 0.13 152);--warn:oklch(0.53 0.12 65);--err:oklch(0.52 0.18 27);--run:oklch(0.50 0.13 250);--warn-s:oklch(0.80 0.12 80 / 0.20);--err-s:oklch(0.60 0.18 27 / 0.10);--shadow:0 0 0 1px oklch(0.2 0.01 240 / 0.08),0 12px 32px oklch(0.2 0.01 240 / 0.16);color-scheme:light}
+[data-dir="a"]{--bg:oklch(0.185 0.005 240);--bg-2:oklch(0.16 0.005 240);--sf:oklch(0.215 0.006 240);--sf-2:oklch(0.25 0.007 240);--ln:oklch(0.29 0.007 240);--ln-2:oklch(0.37 0.009 240);--tx:oklch(0.94 0.004 240);--tx-2:oklch(0.79 0.007 240);--tx-3:oklch(0.67 0.009 240)}
+[data-dir="a"][data-theme="light"]{--bg:oklch(0.99 0.002 240);--bg-2:oklch(0.97 0.003 240);--sf:oklch(1 0 0);--sf-2:oklch(0.955 0.004 240);--ln:oklch(0.90 0.005 240);--ln-2:oklch(0.82 0.007 240);--tx:oklch(0.23 0.008 240);--tx-2:oklch(0.40 0.009 240);--tx-3:oklch(0.50 0.01 240)}
+[data-dir="b"]{--bg:oklch(0.195 0.006 70);--bg-2:oklch(0.17 0.006 70);--sf:oklch(0.225 0.007 70);--sf-2:oklch(0.26 0.008 70);--ln:oklch(0.30 0.008 70);--ln-2:oklch(0.39 0.01 70);--tx:oklch(0.94 0.006 80);--tx-2:oklch(0.79 0.008 75);--tx-3:oklch(0.68 0.01 75)}
+[data-dir="b"][data-theme="light"]{--bg:oklch(0.985 0.004 80);--bg-2:oklch(0.965 0.005 80);--sf:oklch(0.995 0.002 80);--sf-2:oklch(0.945 0.006 80);--ln:oklch(0.89 0.007 80);--ln-2:oklch(0.80 0.009 80);--tx:oklch(0.23 0.01 70);--tx-2:oklch(0.40 0.011 70);--tx-3:oklch(0.50 0.012 70)}
+[data-dir="c"]{--bg:oklch(0.18 0.013 255);--bg-2:oklch(0.155 0.013 255);--sf:oklch(0.215 0.015 255);--sf-2:oklch(0.25 0.017 255);--ln:oklch(0.29 0.017 255);--ln-2:oklch(0.37 0.02 255);--tx:oklch(0.94 0.008 255);--tx-2:oklch(0.79 0.014 255);--tx-3:oklch(0.67 0.018 255)}
+[data-dir="c"][data-theme="light"]{--bg:oklch(0.99 0.003 255);--bg-2:oklch(0.965 0.006 255);--sf:oklch(1 0 0);--sf-2:oklch(0.95 0.008 255);--ln:oklch(0.90 0.01 255);--ln-2:oklch(0.81 0.013 255);--tx:oklch(0.22 0.015 255);--tx-2:oklch(0.40 0.017 255);--tx-3:oklch(0.50 0.018 255)}
+[data-dir] *{box-sizing:border-box}
+[data-dir] button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit}
+[data-dir] :focus-visible{outline:2px solid var(--acc)!important;outline-offset:1px!important}
+[data-dir] ::selection{background:var(--acc-soft)}
+[data-dir] input::placeholder{color:var(--tx-3)}
+</style>
+</helmet>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Three shell directions on Common › Sites</span></div>
+<div style="max-width:980px;margin:0 0 28px;font:15px/1.5 'Source Sans 3',sans-serif;color:#3a3c3e;display:flex;flex-direction:column;gap:8px">
+<p style="margin:0">Shared by all three: the brief's fixed fonts, teal as the only accent, square corners, 36 px rows, Lucide icons at 1.5 stroke (taken from the attached Industry system, along with its hairline framing). Each board starts dark and has its own working theme toggle. ES Build is shown with Jost as a stand-in until the font files are supplied; the stack lists ES Build first, so the real face takes over once it is installed.</p>
+<p style="margin:0">Try on each board: switch product (Backup &amp; Recovery hides VMware sites), toggle the theme, collapse the navigation, sort columns, tick rows for the bulk toolbar, and open the running-jobs tray, project and user menus. In <a class="dv-oid" href="#1c">1c</a>, clicking a row opens the site drawer.</p>
+<p style="margin:0;color:#6a6c6e">Proposed, not product wording: the sample state of region-2-os and esxi-edge-07, version 4.2.0, the Activity drawer tab, and the status summary in <a class="dv-oid" href="#1b">1b</a>.</p>
+</div>
+<div class="dv-opts">
+
+<div class="dv-opt" id="1a">
+<div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Steady: product tabs in the header, icon navigation, open table on the page ground</div>
+<div class="dv-card" style="width:1440px">
+<div data-dir="a" data-theme="{{ a.theme }}" style="width:1440px;height:900px;display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font-family:var(--f-body);font-size:14px;line-height:20px;position:relative;overflow:hidden">
+<sc-if value="{{ a.anyMenu }}" hint-placeholder-val="{{ false }}"><div onClick="{{ a.closeMenu }}" style="position:absolute;inset:0;z-index:4"></div></sc-if>
+<header style="height:48px;flex:none;display:flex;align-items:stretch;background:var(--bg-2);border-bottom:1px solid var(--ln);position:relative;z-index:5">
+<div style="width:{{ a.navW }};flex:none;display:flex;align-items:center;gap:10px;padding:0 17px;border-right:1px solid var(--ln);overflow:hidden">
+<ae-icon name="mark" size="22"></ae-icon>
+<span style="display:{{ a.labelDisplay }};font-family:var(--f-head);font-weight:500;font-size:17px;letter-spacing:0.01em;white-space:nowrap">Host360 Aegis</span>
+</div>
+<nav aria-label="Product" style="display:flex;align-items:stretch;padding:0 8px">
+<sc-for list="{{ a.products }}" as="p" hint-placeholder-count="3">
+<button onClick="{{ p.onClick }}" aria-pressed="{{ p.active }}" style="display:flex;align-items:center;padding:0 14px;font-size:14px;font-weight:600;white-space:nowrap;color:{{ p.fg }};box-shadow:inset 0 -2px 0 {{ p.bar }};transition:color 120ms" style-hover="color:var(--tx)">{{ p.label }}</button>
+</sc-for>
+</nav>
+<div style="flex:1"></div>
+<div style="display:flex;align-items:center;gap:4px;padding:0 12px">
+<label style="display:flex;align-items:center;gap:8px;width:220px;height:32px;padding:0 6px 0 10px;background:var(--sf);border:1px solid var(--ln);color:var(--tx-3);margin-right:8px">
+<ae-icon name="search"></ae-icon>
+<input placeholder="Search" aria-label="Search sites, guests, servers, jobs, repositories and plans" style="flex:1;min-width:0;height:28px;background:none;border:0;color:var(--tx);font:14px var(--f-body)">
+<span style="font:11px/16px var(--f-ui);padding:0 5px;border:1px solid var(--ln-2);color:var(--tx-3)">/</span>
+</label>
+<div style="position:relative">
+<button onClick="{{ a.openTray }}" aria-expanded="{{ a.trayOpen }}" title="Running jobs in every product" style="height:32px;display:flex;align-items:center;gap:8px;padding:0 10px;font:13px var(--f-ui);color:var(--tx-2);white-space:nowrap;transition:background-color 120ms" style-hover="background:var(--sf-2)"><ae-icon name="loader-circle" spin="true" style="color:var(--run)"></ae-icon>3 running</button>
+<sc-if value="{{ a.trayOpen }}" hint-placeholder-val="{{ false }}">
+<div role="dialog" aria-label="Running jobs" style="position:absolute;top:40px;right:0;width:400px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30">
+<div style="display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 16px;border-bottom:1px solid var(--ln)"><span style="font-weight:600">Running jobs</span><span style="font:12px var(--f-ui);color:var(--tx-3)">All products</span></div>
+<sc-for list="{{ jobs }}" as="j" hint-placeholder-count="3">
+<button style="display:block;width:100%;padding:12px 16px;border-bottom:1px solid var(--ln)" style-hover="background:var(--sf-2)">
+<span style="display:flex;justify-content:space-between;gap:12px;font:13px/18px var(--f-ui)"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ j.title }}</span><span style="font-variant-numeric:tabular-nums">{{ j.pctL }}</span></span>
+<span style="display:block;margin:2px 0 8px;font:12px/16px var(--f-ui);color:var(--tx-3)">{{ j.sub }}</span>
+<span style="display:block;height:4px;background:var(--ln)"><span style="display:block;height:4px;width:{{ j.pctW }};background:var(--run)"></span></span>
+<span style="display:flex;justify-content:space-between;margin-top:6px;font:12px/16px var(--f-ui);color:var(--tx-3)"><span>{{ j.rate }}</span><span>{{ j.eta }}</span></span>
+</button>
+</sc-for>
+<div style="display:flex;justify-content:flex-end;padding:8px"><button style="height:32px;padding:0 10px;font-weight:600;color:var(--tx)" style-hover="background:var(--sf-2)">Open Jobs</button></div>
+</div>
+</sc-if>
+</div>
+<button aria-label="Alerts, 2 active" title="2 active alerts" style="height:32px;display:flex;align-items:center;gap:6px;padding:0 8px;font:13px var(--f-ui);color:var(--tx-2)" style-hover="background:var(--sf-2)"><ae-icon name="bell" style="color:var(--err)"></ae-icon>2</button>
+<span style="width:1px;height:20px;background:var(--ln);margin:0 6px"></span>
+<div style="position:relative">
+<button onClick="{{ a.openProject }}" aria-expanded="{{ a.projectOpen }}" style="height:32px;display:flex;align-items:center;gap:8px;padding:0 8px;white-space:nowrap" style-hover="background:var(--sf-2)"><ae-icon name="box" style="color:var(--tx-3)"></ae-icon><span style="font-weight:600">{{ a.project }}</span><ae-icon name="chevron-down" style="color:var(--tx-3)"></ae-icon></button>
+<sc-if value="{{ a.projectOpen }}" hint-placeholder-val="{{ false }}">
+<div role="menu" style="position:absolute;top:40px;right:0;width:280px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30;padding:4px 0">
+<div style="padding:8px 12px 4px;font:12px var(--f-ui);color:var(--tx-3)">Work in</div>
+<sc-for list="{{ a.projects }}" as="pj" hint-placeholder-count="2">
+<button role="menuitemradio" aria-checked="{{ pj.on }}" onClick="{{ pj.onClick }}" style="display:flex;align-items:center;gap:10px;width:100%;height:40px;padding:0 12px" style-hover="background:var(--sf-2)"><span style="width:16px;display:flex;color:var(--acc)"><ae-icon name="{{ pj.icon }}"></ae-icon></span><span style="flex:1;font-weight:600">{{ pj.name }}</span><span style="font:12px var(--f-ui);color:var(--tx-3)">{{ pj.role }}</span></button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+<span style="padding:0 8px;font:12px var(--f-ui);color:var(--tx-2);font-variant-numeric:tabular-nums;white-space:nowrap" title="Orchestrator time zone: India Standard Time">21 Oct 2026, 16:05 IST</span>
+<button onClick="{{ a.toggleTheme }}" aria-label="{{ a.themeLabel }}" title="{{ a.themeLabel }}" style="width:32px;height:32px;display:grid;place-items:center;color:var(--tx-2)" style-hover="background:var(--sf-2)"><ae-icon name="{{ a.themeIcon }}"></ae-icon></button>
+<div style="position:relative">
+<button onClick="{{ a.openUser }}" aria-label="User menu" aria-expanded="{{ a.userOpen }}" style="height:32px;display:flex;align-items:center;gap:4px;padding:0 4px" style-hover="background:var(--sf-2)"><span style="width:24px;height:24px;display:grid;place-items:center;background:var(--sf-2);border:1px solid var(--ln-2);font:700 11px var(--f-ui)">PR</span><ae-icon name="chevron-down" style="color:var(--tx-3)"></ae-icon></button>
+<sc-if value="{{ a.userOpen }}" hint-placeholder-val="{{ false }}">
+<div role="menu" style="position:absolute;top:40px;right:0;width:260px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30">
+<div style="padding:12px;border-bottom:1px solid var(--ln)"><div style="font-weight:600">Priya Raman</div><div style="font:12px/18px var(--f-ui);color:var(--tx-3)">priya.raman@host360.ai</div><div style="font:12px/18px var(--f-ui);color:var(--tx-2)">Owner in Base-Project</div></div>
+<div style="padding:4px 0">
+<button style="display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 12px" style-hover="background:var(--sf-2)"><ae-icon name="user" style="color:var(--tx-3)"></ae-icon>Profile</button>
+<button style="display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 12px" style-hover="background:var(--sf-2)"><ae-icon name="log-out" style="color:var(--tx-3)"></ae-icon>Sign out</button>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+</header>
+<div style="flex:1;min-height:0;display:flex">
+<aside style="width:{{ a.navW }};flex:none;display:flex;flex-direction:column;background:var(--bg-2);border-right:1px solid var(--ln);transition:width 150ms">
+<nav aria-label="Sections" style="flex:1;overflow:auto;padding:12px 8px;display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{ a.nav }}" as="n" hint-placeholder-count="5">
+<a href="#1a" title="{{ n.label }}" aria-current="{{ n.current }}" style="display:flex;align-items:center;gap:12px;height:32px;padding:0 12px;color:{{ n.fg }};background:{{ n.bg }};text-decoration:none;font-weight:{{ n.fw }};white-space:nowrap;overflow:hidden" style-hover="color:var(--tx)"><ae-icon name="{{ n.icon }}" style="color:{{ n.ic }}"></ae-icon><span style="display:{{ a.labelDisplay }};overflow:hidden;text-overflow:ellipsis">{{ n.label }}</span></a>
+</sc-for>
+<div style="display:flex;align-items:center;gap:8px;height:32px;padding:8px 12px 0;margin-top:8px"><span style="display:{{ a.labelDisplay }};font:700 11px var(--f-ui);letter-spacing:0.06em;text-transform:uppercase;color:var(--tx-3)">Common</span><span style="flex:1;height:1px;background:var(--ln)"></span></div>
+<sc-for list="{{ a.common }}" as="n" hint-placeholder-count="10">
+<a href="#1a" title="{{ n.label }}" aria-current="{{ n.current }}" style="display:flex;align-items:center;gap:12px;height:32px;padding:0 12px;color:{{ n.fg }};background:{{ n.bg }};text-decoration:none;font-weight:{{ n.fw }};white-space:nowrap;overflow:hidden" style-hover="color:var(--tx)"><ae-icon name="{{ n.icon }}" style="color:{{ n.ic }}"></ae-icon><span style="display:{{ a.labelDisplay }};overflow:hidden;text-overflow:ellipsis">{{ n.label }}</span></a>
+</sc-for>
+</nav>
+<div style="border-top:1px solid var(--ln);min-height:56px;padding:0 8px 0 20px;display:flex;align-items:center;gap:8px">
+<div style="display:{{ a.labelDisplay }};flex:1;min-width:0"><div style="font:12px/16px var(--f-ui);color:var(--tx-2);white-space:nowrap">aegis-orchestrator</div><div style="font:11px/16px var(--f-ui);color:var(--tx-3)">Version 4.2.0</div></div>
+<button onClick="{{ a.toggleNav }}" aria-label="{{ a.collapseLabel }}" title="{{ a.collapseLabel }}" style="width:32px;height:32px;display:grid;place-items:center;color:var(--tx-3)" style-hover="background:var(--sf-2);color:var(--tx)"><ae-icon name="panel-left"></ae-icon></button>
+</div>
+</aside>
+<main style="flex:1;min-width:0;display:flex;flex-direction:column">
+<div style="padding:24px 32px 16px;display:flex;align-items:flex-end;gap:16px">
+<div style="flex:1;min-width:0">
+<div style="font:12px/16px var(--f-ui);color:var(--tx-3);margin-bottom:4px">Common</div>
+<h1 style="margin:0;font:500 24px/32px var(--f-head)">Sites</h1>
+<p style="margin:4px 0 0;color:var(--tx-2)">Platforms Aegis connects to in {{ a.project }}, and what each one is used for.</p>
+</div>
+<div style="display:flex;gap:8px">
+<button style="height:32px;padding:0 12px;display:flex;align-items:center;gap:8px;border:1px solid var(--ln-2);font-weight:600;white-space:nowrap" style-hover="background:var(--sf-2)"><ae-icon name="refresh-cw"></ae-icon>Refresh all</button>
+<button style="height:32px;padding:0 14px;display:flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);font-weight:600;white-space:nowrap" style-hover="background:var(--acc-h)" style-active="background:var(--acc-p)"><ae-icon name="plus"></ae-icon>Add a platform</button>
+</div>
+</div>
+<div role="status" style="margin:0 32px 16px;display:flex;align-items:center;gap:12px;min-height:40px;padding:0 8px 0 12px;background:var(--warn-s);border:1px solid var(--warn)">
+<ae-icon name="triangle-alert" style="color:var(--warn)"></ae-icon>
+<span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong style="font-weight:700">region-2-os</strong> Could not be read: Keystone at 10.40.0.5:5000 did not answer within 30 s. Last read 21 Oct 2026, 14:52 IST.</span>
+<button style="height:28px;padding:0 10px;font-weight:600" style-hover="background:var(--sf-2)">Retry</button>
+</div>
+<div style="padding:0 32px 12px;display:flex;align-items:center;gap:8px;min-height:44px">
+<sc-if value="{{ a.noSel }}" hint-placeholder-val="{{ true }}">
+<label style="display:flex;align-items:center;gap:8px;width:240px;height:32px;padding:0 10px;border:1px solid var(--ln-2);color:var(--tx-3)"><ae-icon name="filter"></ae-icon><input placeholder="Filter by name" style="flex:1;min-width:0;background:none;border:0;color:var(--tx);font:13px var(--f-ui)"></label>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;border:1px solid var(--ln-2);font:13px var(--f-ui);color:var(--tx-2);white-space:nowrap" style-hover="background:var(--sf-2)">Platform <span style="color:var(--tx)">All</span><ae-icon name="chevron-down"></ae-icon></button>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;border:1px solid var(--ln-2);font:13px var(--f-ui);color:var(--tx-2);white-space:nowrap" style-hover="background:var(--sf-2)">Status <span style="color:var(--tx)">All</span><ae-icon name="chevron-down"></ae-icon></button>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;border:1px solid var(--ln-2);font:13px var(--f-ui);color:var(--tx-2);white-space:nowrap" style-hover="background:var(--sf-2)">Used by <span style="color:var(--tx)">All</span><ae-icon name="chevron-down"></ae-icon></button>
+<span style="flex:1"></span>
+<span style="font:13px var(--f-ui);color:var(--tx-3);font-variant-numeric:tabular-nums">{{ a.countLabel }}</span>
+</sc-if>
+<sc-if value="{{ a.hasSel }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;align-items:center;gap:8px;height:44px;padding:0 8px 0 12px;background:var(--acc-soft);border:1px solid var(--acc)">
+<span style="font:700 13px var(--f-ui);margin-right:8px;font-variant-numeric:tabular-nums">{{ a.selLabel }}</span>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:8px;font-weight:600" style-hover="background:var(--sf-2)"><ae-icon name="refresh-cw"></ae-icon>Refresh inventory</button>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:8px;font-weight:600" style-hover="background:var(--sf-2)"><ae-icon name="key"></ae-icon>Edit access</button>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:8px;font-weight:600;color:var(--err)" style-hover="background:var(--err-s)"><ae-icon name="trash-2"></ae-icon>Remove…</button>
+<span style="flex:1"></span>
+<button onClick="{{ a.clearSel }}" style="height:32px;padding:0 10px;font-weight:600" style-hover="background:var(--sf-2)">Clear selection</button>
+</div>
+</sc-if>
+</div>
+<div role="table" aria-label="Sites" style="flex:1;min-height:0;overflow:auto;margin:0 32px;font:13px/18px var(--f-ui);font-variant-numeric:tabular-nums">
+<div role="row" style="position:sticky;top:0;z-index:1;display:grid;grid-template-columns:40px minmax(0,1.5fr) minmax(0,1fr) 72px minmax(0,1.2fr) 64px 64px minmax(0,1.7fr) 124px 168px 40px;align-items:center;height:36px;background:var(--bg);border-top:1px solid var(--ln);border-bottom:1px solid var(--ln-2);font:700 12px var(--f-ui);color:var(--tx-2)">
+<div role="columnheader" style="padding:0 12px"><input type="checkbox" aria-label="Select all sites" checked="{{ a.allSel }}" onChange="{{ a.toggleAll }}" style="display:block;margin:0;width:14px;height:14px;accent-color:var(--acc)"></div>
+<sc-for list="{{ a.cols }}" as="col" hint-placeholder-count="9">
+<div role="columnheader" aria-sort="{{ col.aria }}" style="padding:0 8px;min-width:0"><button onClick="{{ col.onClick }}" style="display:flex;align-items:center;justify-content:{{ col.jc }};gap:4px;width:100%;height:34px;white-space:nowrap;overflow:hidden" style-hover="color:var(--tx)">{{ col.label }}<ae-icon name="{{ col.arrow }}"></ae-icon></button></div>
+</sc-for>
+<div role="columnheader" aria-label="Actions"></div>
+</div>
+<sc-for list="{{ a.rows }}" as="r" hint-placeholder-count="6">
+<div role="row" style="display:grid;grid-template-columns:40px minmax(0,1.5fr) minmax(0,1fr) 72px minmax(0,1.2fr) 64px 64px minmax(0,1.7fr) 124px 168px 40px;align-items:center;height:36px;border-bottom:1px solid var(--ln);background:{{ r.bg }}" style-hover="background:var(--sf)">
+<div role="cell" style="padding:0 12px"><input type="checkbox" aria-label="Select {{ r.name }}" checked="{{ r.sel }}" onChange="{{ r.onSel }}" style="display:block;margin:0;width:14px;height:14px;accent-color:var(--acc)"></div>
+<div role="cell" title="{{ r.name }}" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+<div role="cell" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx-2)">{{ r.platform }}</div>
+<div role="cell" style="padding:0 8px;color:var(--tx-2)">{{ r.version }}</div>
+<div role="cell" title="{{ r.access }}" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx-2)">{{ r.access }}</div>
+<div role="cell" style="padding:0 8px;text-align:right;white-space:nowrap;font-style:{{ r.nfs }};color:{{ r.nc }}">{{ r.nodesT }}</div>
+<div role="cell" style="padding:0 8px;text-align:right;white-space:nowrap;font-style:{{ r.nfs }};color:{{ r.nc }}">{{ r.guestsT }}</div>
+<div role="cell" style="padding:0 8px;display:flex;gap:4px;overflow:hidden">
+<sc-for list="{{ r.usedBy }}" as="u" hint-placeholder-count="2"><span style="flex:none;height:20px;padding:0 5px;border:1px solid var(--ln-2);font:11px/18px var(--f-ui);color:var(--tx-2);white-space:nowrap">{{ u }}</span></sc-for>
+</div>
+<div role="cell" title="{{ r.reason }}" style="padding:0 8px;display:flex;align-items:center;gap:6px;white-space:nowrap;color:{{ r.sc }}"><ae-icon name="{{ r.si }}"></ae-icon><span style="color:var(--tx)">{{ r.sl }}</span></div>
+<div role="cell" style="padding:0 8px;white-space:nowrap;color:var(--tx-2)">{{ r.seen }}</div>
+<div role="cell" style="display:flex;justify-content:center"><button aria-label="Actions for {{ r.name }}" style="width:28px;height:28px;display:grid;place-items:center;color:var(--tx-3)" style-hover="background:var(--sf-2);color:var(--tx)"><ae-icon name="ellipsis"></ae-icon></button></div>
+</div>
+</sc-for>
+<sc-if value="{{ a.hiddenNote }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 8px;color:var(--tx-3)">{{ a.hiddenNote }}</div></sc-if>
+</div>
+</main>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1b">
+<div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Framed grid: products as header cells, visible structure and registration marks from Industry, status summary that filters</div>
+<div class="dv-card" style="width:1440px">
+<div data-dir="b" data-theme="{{ b.theme }}" style="width:1440px;height:900px;display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font-family:var(--f-body);font-size:14px;line-height:20px;position:relative;overflow:hidden">
+<sc-if value="{{ b.anyMenu }}" hint-placeholder-val="{{ false }}"><div onClick="{{ b.closeMenu }}" style="position:absolute;inset:0;z-index:4"></div></sc-if>
+<header style="height:48px;flex:none;display:flex;align-items:stretch;background:var(--bg-2);border-bottom:1px solid var(--ln-2);position:relative;z-index:5">
+<div style="width:{{ b.navW }};flex:none;display:flex;align-items:center;gap:10px;padding:0 17px;border-right:1px solid var(--ln-2);overflow:hidden">
+<ae-icon name="mark" size="22"></ae-icon>
+<span style="display:{{ b.labelDisplay }};font-family:var(--f-head);font-weight:600;font-size:17px;white-space:nowrap">Host360 Aegis</span>
+</div>
+<nav aria-label="Product" style="display:flex;align-items:stretch">
+<sc-for list="{{ b.products }}" as="p" hint-placeholder-count="3">
+<button onClick="{{ p.onClick }}" aria-pressed="{{ p.active }}" style="display:flex;align-items:center;gap:8px;padding:0 18px;border-right:1px solid var(--ln-2);font:13px var(--f-ui);white-space:nowrap;color:{{ p.fg }};background:{{ p.bg }};box-shadow:inset 0 2px 0 {{ p.bar }};transition:color 120ms" style-hover="color:var(--tx)"><ae-icon name="{{ p.icon }}"></ae-icon>{{ p.label }}</button>
+</sc-for>
+</nav>
+<div style="flex:1"></div>
+<label style="display:flex;align-items:center;gap:8px;width:220px;padding:0 14px;border-left:1px solid var(--ln-2);color:var(--tx-3)"><ae-icon name="search"></ae-icon><input placeholder="Search everything" aria-label="Search sites, guests, servers, jobs, repositories and plans" style="flex:1;min-width:0;height:32px;background:none;border:0;color:var(--tx);font:13px var(--f-ui)"></label>
+<div style="position:relative;display:flex;border-left:1px solid var(--ln-2)">
+<button onClick="{{ b.openTray }}" aria-expanded="{{ b.trayOpen }}" style="display:flex;align-items:center;gap:8px;padding:0 14px;font:13px var(--f-ui);color:var(--tx-2);white-space:nowrap" style-hover="background:var(--sf)"><ae-icon name="loader-circle" spin="true" style="color:var(--run)"></ae-icon>3 running</button>
+<sc-if value="{{ b.trayOpen }}" hint-placeholder-val="{{ false }}">
+<div role="dialog" aria-label="Running jobs" style="position:absolute;top:48px;right:0;width:400px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30">
+<div style="display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 16px;border-bottom:1px solid var(--ln)"><span style="font:700 11px var(--f-ui);letter-spacing:0.06em;text-transform:uppercase;color:var(--tx-2)">Running jobs</span><span style="font:12px var(--f-ui);color:var(--tx-3)">All products</span></div>
+<sc-for list="{{ jobs }}" as="j" hint-placeholder-count="3">
+<button style="display:block;width:100%;padding:12px 16px;border-bottom:1px solid var(--ln)" style-hover="background:var(--sf-2)">
+<span style="display:flex;justify-content:space-between;gap:12px;font:13px/18px var(--f-ui)"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ j.title }}</span><span style="font-variant-numeric:tabular-nums">{{ j.pctL }}</span></span>
+<span style="display:block;margin:2px 0 8px;font:12px/16px var(--f-ui);color:var(--tx-3)">{{ j.sub }}</span>
+<span style="display:block;height:4px;background:var(--ln)"><span style="display:block;height:4px;width:{{ j.pctW }};background:var(--run)"></span></span>
+<span style="display:flex;justify-content:space-between;margin-top:6px;font:12px/16px var(--f-ui);color:var(--tx-3)"><span>{{ j.rate }}</span><span>{{ j.eta }}</span></span>
+</button>
+</sc-for>
+<div style="display:flex;justify-content:flex-end;padding:8px"><button style="height:32px;padding:0 10px;font-weight:600" style-hover="background:var(--sf-2)">Open Jobs</button></div>
+</div>
+</sc-if>
+</div>
+<button aria-label="Alerts, 2 active" style="display:flex;align-items:center;gap:6px;padding:0 14px;border-left:1px solid var(--ln-2);font:13px var(--f-ui);color:var(--tx-2)" style-hover="background:var(--sf)"><ae-icon name="bell" style="color:var(--err)"></ae-icon>2</button>
+<div style="position:relative;display:flex;border-left:1px solid var(--ln-2)">
+<button onClick="{{ b.openProject }}" aria-expanded="{{ b.projectOpen }}" style="display:flex;align-items:center;gap:10px;padding:0 14px;white-space:nowrap" style-hover="background:var(--sf)"><span style="display:flex;flex-direction:column;line-height:16px"><span style="font:700 10px var(--f-ui);letter-spacing:0.06em;text-transform:uppercase;color:var(--tx-3)">Project</span><span style="font:13px var(--f-ui)">{{ b.project }}</span></span><ae-icon name="chevron-down" style="color:var(--tx-3)"></ae-icon></button>
+<sc-if value="{{ b.projectOpen }}" hint-placeholder-val="{{ false }}">
+<div role="menu" style="position:absolute;top:48px;right:0;width:280px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30;padding:4px 0">
+<sc-for list="{{ b.projects }}" as="pj" hint-placeholder-count="2">
+<button role="menuitemradio" aria-checked="{{ pj.on }}" onClick="{{ pj.onClick }}" style="display:flex;align-items:center;gap:10px;width:100%;height:40px;padding:0 12px;font:13px var(--f-ui)" style-hover="background:var(--sf-2)"><span style="width:16px;display:flex;color:var(--acc)"><ae-icon name="{{ pj.icon }}"></ae-icon></span><span style="flex:1">{{ pj.name }}</span><span style="font-size:12px;color:var(--tx-3)">{{ pj.role }}</span></button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+<div title="Orchestrator time zone: India Standard Time" style="display:flex;flex-direction:column;justify-content:center;padding:0 14px;border-left:1px solid var(--ln-2);font:13px/16px var(--f-ui);font-variant-numeric:tabular-nums;white-space:nowrap"><span style="color:var(--tx-3);font-size:11px">21 Oct 2026</span><span>16:05 IST</span></div>
+<button onClick="{{ b.toggleTheme }}" aria-label="{{ b.themeLabel }}" title="{{ b.themeLabel }}" style="width:48px;display:grid;place-items:center;border-left:1px solid var(--ln-2);color:var(--tx-2)" style-hover="background:var(--sf)"><ae-icon name="{{ b.themeIcon }}"></ae-icon></button>
+<div style="position:relative;display:flex;border-left:1px solid var(--ln-2)">
+<button onClick="{{ b.openUser }}" aria-label="User menu" aria-expanded="{{ b.userOpen }}" style="display:flex;align-items:center;gap:6px;padding:0 12px" style-hover="background:var(--sf)"><span style="width:24px;height:24px;display:grid;place-items:center;border:1px solid var(--ln-2);font:700 11px var(--f-ui)">PR</span><ae-icon name="chevron-down" style="color:var(--tx-3)"></ae-icon></button>
+<sc-if value="{{ b.userOpen }}" hint-placeholder-val="{{ false }}">
+<div role="menu" style="position:absolute;top:48px;right:0;width:260px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30">
+<div style="padding:12px;border-bottom:1px solid var(--ln)"><div style="font-weight:600">Priya Raman</div><div style="font:12px/18px var(--f-ui);color:var(--tx-3)">priya.raman@host360.ai</div><div style="font:12px/18px var(--f-ui);color:var(--tx-2)">Owner in Base-Project</div></div>
+<div style="padding:4px 0">
+<button style="display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 12px" style-hover="background:var(--sf-2)"><ae-icon name="user" style="color:var(--tx-3)"></ae-icon>Profile</button>
+<button style="display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 12px" style-hover="background:var(--sf-2)"><ae-icon name="log-out" style="color:var(--tx-3)"></ae-icon>Sign out</button>
+</div>
+</div>
+</sc-if>
+</div>
+</header>
+<div style="flex:1;min-height:0;display:flex">
+<aside style="width:{{ b.navW }};flex:none;display:flex;flex-direction:column;background:var(--bg-2);border-right:1px solid var(--ln-2);transition:width 150ms">
+<nav aria-label="Sections" style="flex:1;overflow:auto;padding:8px 0;display:flex;flex-direction:column;font:13px var(--f-ui)">
+<div style="display:{{ b.labelDisplay }};padding:12px 20px 8px;font:700 10px/16px var(--f-ui);letter-spacing:0.08em;text-transform:uppercase;color:var(--tx-3);white-space:nowrap">{{ b.productLabel }}</div>
+<sc-for list="{{ b.nav }}" as="n" hint-placeholder-count="5">
+<a href="#1b" title="{{ n.label }}" aria-current="{{ n.current }}" style="display:flex;align-items:center;gap:12px;height:32px;padding:0 20px;color:{{ n.fg }};background:{{ n.bg }};text-decoration:none;white-space:nowrap;overflow:hidden" style-hover="color:var(--tx)"><ae-icon name="{{ n.icon }}" style="color:{{ n.ic }}"></ae-icon><span style="display:{{ b.labelDisplay }};overflow:hidden;text-overflow:ellipsis">{{ n.label }}</span></a>
+</sc-for>
+<div style="margin:12px 0 0;border-top:1px solid var(--ln-2)"></div>
+<div style="display:{{ b.labelDisplay }};padding:12px 20px 8px;font:700 10px/16px var(--f-ui);letter-spacing:0.08em;text-transform:uppercase;color:var(--tx-3)">Common</div>
+<sc-for list="{{ b.common }}" as="n" hint-placeholder-count="10">
+<a href="#1b" title="{{ n.label }}" aria-current="{{ n.current }}" style="display:flex;align-items:center;gap:12px;height:32px;padding:0 20px;color:{{ n.fg }};background:{{ n.bg }};text-decoration:none;white-space:nowrap;overflow:hidden" style-hover="color:var(--tx)"><ae-icon name="{{ n.icon }}" style="color:{{ n.ic }}"></ae-icon><span style="display:{{ b.labelDisplay }};overflow:hidden;text-overflow:ellipsis">{{ n.label }}</span></a>
+</sc-for>
+</nav>
+<div style="border-top:1px solid var(--ln-2);min-height:56px;padding:0 8px 0 20px;display:flex;align-items:center;gap:8px">
+<div style="display:{{ b.labelDisplay }};flex:1;min-width:0;font:11px/16px var(--f-ui)"><div style="color:var(--tx-2)">aegis-orchestrator</div><div style="color:var(--tx-3)">4.2.0</div></div>
+<button onClick="{{ b.toggleNav }}" aria-label="{{ b.collapseLabel }}" title="{{ b.collapseLabel }}" style="width:32px;height:32px;display:grid;place-items:center;color:var(--tx-3)" style-hover="background:var(--sf);color:var(--tx)"><ae-icon name="panel-left"></ae-icon></button>
+</div>
+</aside>
+<main style="flex:1;min-width:0;display:flex;flex-direction:column">
+<div style="padding:24px 24px 20px;display:flex;align-items:flex-end;gap:16px">
+<div style="flex:1;min-width:0">
+<div style="font:700 10px/16px var(--f-ui);letter-spacing:0.08em;text-transform:uppercase;color:var(--tx-3);margin-bottom:4px">Common</div>
+<h1 style="margin:0;font:600 28px/36px var(--f-head)">Sites</h1>
+<p style="margin:2px 0 0;color:var(--tx-2)">Platforms Aegis connects to in {{ b.project }}, and what each one is used for.</p>
+</div>
+<div style="display:flex;gap:8px">
+<button style="height:32px;padding:0 12px;display:flex;align-items:center;gap:8px;border:1px solid var(--ln-2);font:13px var(--f-ui);white-space:nowrap" style-hover="background:var(--sf)"><ae-icon name="refresh-cw"></ae-icon>Refresh all</button>
+<button style="height:32px;padding:0 14px;display:flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);font:700 13px var(--f-ui);white-space:nowrap" style-hover="background:var(--acc-h)" style-active="background:var(--acc-p)"><ae-icon name="plus"></ae-icon>Add a platform</button>
+</div>
+</div>
+<div style="position:relative;margin:0 24px 20px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ln-2);border-right:1px solid var(--ln-2);border-bottom:1px solid var(--ln-2)">
+<span aria-hidden="true" style="position:absolute;top:-6px;left:-6px;width:11px;height:11px"><span style="position:absolute;left:5px;top:0;width:1px;height:11px;background:var(--tx-3)"></span><span style="position:absolute;top:5px;left:0;width:11px;height:1px;background:var(--tx-3)"></span></span>
+<span aria-hidden="true" style="position:absolute;top:-6px;right:-6px;width:11px;height:11px"><span style="position:absolute;left:5px;top:0;width:1px;height:11px;background:var(--tx-3)"></span><span style="position:absolute;top:5px;left:0;width:11px;height:1px;background:var(--tx-3)"></span></span>
+<span aria-hidden="true" style="position:absolute;bottom:-6px;left:-6px;width:11px;height:11px"><span style="position:absolute;left:5px;top:0;width:1px;height:11px;background:var(--tx-3)"></span><span style="position:absolute;top:5px;left:0;width:11px;height:1px;background:var(--tx-3)"></span></span>
+<span aria-hidden="true" style="position:absolute;bottom:-6px;right:-6px;width:11px;height:11px"><span style="position:absolute;left:5px;top:0;width:1px;height:11px;background:var(--tx-3)"></span><span style="position:absolute;top:5px;left:0;width:11px;height:1px;background:var(--tx-3)"></span></span>
+<sc-for list="{{ b.sum }}" as="sm" hint-placeholder-count="4">
+<button onClick="{{ sm.onClick }}" aria-pressed="{{ sm.active }}" style="display:flex;flex-direction:column;gap:2px;padding:12px 16px;border-left:1px solid var(--ln-2);background:{{ sm.bg }};box-shadow:inset 0 2px 0 {{ sm.bar }}" style-hover="background:var(--sf)">
+<span style="display:flex;align-items:center;gap:6px;font:700 10px/16px var(--f-ui);letter-spacing:0.08em;text-transform:uppercase;color:var(--tx-2)"><ae-icon name="{{ sm.icon }}" style="color:{{ sm.ic }}"></ae-icon>{{ sm.label }}</span>
+<span style="font:500 28px/36px var(--f-head);font-variant-numeric:tabular-nums">{{ sm.value }}</span>
+<span style="font:12px/16px var(--f-ui);color:var(--tx-3)">{{ sm.note }}</span>
+</button>
+</sc-for>
+</div>
+<div role="status" style="margin:0 24px 12px;display:flex;align-items:center;gap:12px;min-height:40px;padding:0 8px 0 12px;background:var(--warn-s);border:1px solid var(--warn);font:13px var(--f-ui)">
+<ae-icon name="triangle-alert" style="color:var(--warn)"></ae-icon>
+<span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong>region-2-os</strong> Could not be read: Keystone at 10.40.0.5:5000 did not answer within 30 s. Last read 21 Oct 2026, 14:52 IST.</span>
+<button style="height:28px;padding:0 10px;font-weight:700" style-hover="background:var(--sf-2)">Retry</button>
+</div>
+<div style="padding:0 24px 12px;display:flex;align-items:center;gap:8px;min-height:44px">
+<sc-if value="{{ b.noSel }}" hint-placeholder-val="{{ true }}">
+<label style="display:flex;align-items:center;gap:8px;width:260px;height:32px;padding:0 10px;border:1px solid var(--ln-2);color:var(--tx-3)"><ae-icon name="filter"></ae-icon><input placeholder="Filter by name, address or version" style="flex:1;min-width:0;background:none;border:0;color:var(--tx);font:13px var(--f-ui)"></label>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;border:1px solid var(--ln-2);font:13px var(--f-ui);color:var(--tx-2);white-space:nowrap" style-hover="background:var(--sf)">Platform <span style="color:var(--tx)">All</span><ae-icon name="chevron-down"></ae-icon></button>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:6px;border:1px solid var(--ln-2);font:13px var(--f-ui);color:var(--tx-2);white-space:nowrap" style-hover="background:var(--sf)">Used by <span style="color:var(--tx)">All</span><ae-icon name="chevron-down"></ae-icon></button>
+<span style="flex:1"></span>
+<span style="font:13px var(--f-ui);color:var(--tx-3)">{{ b.countLabel }}</span>
+</sc-if>
+<sc-if value="{{ b.hasSel }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;align-items:center;gap:4px;height:44px;padding:0 8px 0 16px;background:var(--acc-soft);border:1px solid var(--acc);font:13px var(--f-ui)">
+<span style="font-weight:700;margin-right:12px">{{ b.selLabel }}</span>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:8px" style-hover="background:var(--sf-2)"><ae-icon name="refresh-cw"></ae-icon>Refresh inventory</button>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:8px" style-hover="background:var(--sf-2)"><ae-icon name="key"></ae-icon>Edit access</button>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:8px;color:var(--err)" style-hover="background:var(--err-s)"><ae-icon name="trash-2"></ae-icon>Remove…</button>
+<span style="flex:1"></span>
+<button onClick="{{ b.clearSel }}" style="height:32px;padding:0 10px" style-hover="background:var(--sf-2)">Clear selection</button>
+</div>
+</sc-if>
+</div>
+<div role="table" aria-label="Sites" style="flex:1;min-height:0;overflow:auto;margin:0 24px 24px;border:1px solid var(--ln-2);font:13px/18px var(--f-ui);font-variant-numeric:tabular-nums">
+<div role="row" style="position:sticky;top:0;z-index:1;display:grid;grid-template-columns:40px minmax(0,1.5fr) minmax(0,1fr) 72px minmax(0,1.2fr) 64px 64px minmax(0,1.7fr) 128px 168px 40px;align-items:center;height:36px;background:var(--bg-2);border-bottom:1px solid var(--ln-2);font:700 10px var(--f-ui);letter-spacing:0.08em;text-transform:uppercase;color:var(--tx-2)">
+<div role="columnheader" style="padding:0 12px"><input type="checkbox" aria-label="Select all sites" checked="{{ b.allSel }}" onChange="{{ b.toggleAll }}" style="display:block;margin:0;width:14px;height:14px;accent-color:var(--acc)"></div>
+<sc-for list="{{ b.cols }}" as="col" hint-placeholder-count="9">
+<div role="columnheader" aria-sort="{{ col.aria }}" style="padding:0 8px;min-width:0;border-left:1px solid var(--ln)"><button onClick="{{ col.onClick }}" style="display:flex;align-items:center;justify-content:{{ col.jc }};gap:4px;width:100%;height:34px;white-space:nowrap;overflow:hidden" style-hover="color:var(--tx)">{{ col.label }}<ae-icon name="{{ col.arrow }}"></ae-icon></button></div>
+</sc-for>
+<div role="columnheader" aria-label="Actions" style="height:36px;border-left:1px solid var(--ln)"></div>
+</div>
+<sc-for list="{{ b.rows }}" as="r" hint-placeholder-count="6">
+<div role="row" style="display:grid;grid-template-columns:40px minmax(0,1.5fr) minmax(0,1fr) 72px minmax(0,1.2fr) 64px 64px minmax(0,1.7fr) 128px 168px 40px;align-items:center;height:36px;border-bottom:1px solid var(--ln);background:{{ r.bg }}" style-hover="background:var(--sf)">
+<div role="cell" style="padding:0 12px"><input type="checkbox" aria-label="Select {{ r.name }}" checked="{{ r.sel }}" onChange="{{ r.onSel }}" style="display:block;margin:0;width:14px;height:14px;accent-color:var(--acc)"></div>
+<div role="cell" title="{{ r.name }}" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700">{{ r.name }}</div>
+<div role="cell" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx-2)">{{ r.platform }}</div>
+<div role="cell" style="padding:0 8px;color:var(--tx-2)">{{ r.version }}</div>
+<div role="cell" title="{{ r.access }}" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx-2)">{{ r.access }}</div>
+<div role="cell" style="padding:0 8px;text-align:right;white-space:nowrap;font-style:{{ r.nfs }};color:{{ r.nc }}">{{ r.nodesT }}</div>
+<div role="cell" style="padding:0 8px;text-align:right;white-space:nowrap;font-style:{{ r.nfs }};color:{{ r.nc }}">{{ r.guestsT }}</div>
+<div role="cell" style="padding:0 8px;display:flex;gap:4px;overflow:hidden">
+<sc-for list="{{ r.usedBy }}" as="u" hint-placeholder-count="2"><span style="flex:none;height:20px;padding:0 6px;background:var(--sf-2);font:11px/20px var(--f-ui);color:var(--tx-2);white-space:nowrap">{{ u }}</span></sc-for>
+</div>
+<div role="cell" title="{{ r.reason }}" style="padding:0 8px;display:flex;align-items:center;gap:6px;white-space:nowrap;color:{{ r.sc }}"><ae-icon name="{{ r.si }}"></ae-icon><span style="color:var(--tx)">{{ r.sl }}</span></div>
+<div role="cell" style="padding:0 8px;white-space:nowrap;color:var(--tx-2)">{{ r.seen }}</div>
+<div role="cell" style="display:flex;justify-content:center"><button aria-label="Actions for {{ r.name }}" style="width:28px;height:28px;display:grid;place-items:center;color:var(--tx-3)" style-hover="background:var(--sf-2);color:var(--tx)"><ae-icon name="ellipsis"></ae-icon></button></div>
+</div>
+</sc-for>
+<sc-if value="{{ b.hiddenNote }}" hint-placeholder-val="{{ false }}"><div style="padding:12px;color:var(--tx-3)">{{ b.hiddenNote }}</div></sc-if>
+</div>
+</main>
+</div>
+</div>
+</div>
+</div>
+
+<div class="dv-opt" id="1c">
+<div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Workspace: product menu beside the brand, wide central search, platform quick filter, site drawer from the right</div>
+<div class="dv-card" style="width:1440px">
+<div data-dir="c" data-theme="{{ c.theme }}" style="width:1440px;height:900px;display:flex;flex-direction:column;background:var(--bg);color:var(--tx);font-family:var(--f-body);font-size:14px;line-height:20px;position:relative;overflow:hidden">
+<sc-if value="{{ c.anyMenu }}" hint-placeholder-val="{{ false }}"><div onClick="{{ c.closeMenu }}" style="position:absolute;inset:0;z-index:4"></div></sc-if>
+<header style="height:52px;flex:none;display:flex;align-items:center;gap:16px;padding:0 12px 0 16px;background:var(--bg);border-bottom:1px solid var(--ln);position:relative;z-index:5">
+<div style="display:flex;align-items:center;gap:10px;flex:none">
+<ae-icon name="mark" size="24"></ae-icon>
+<span style="font-family:var(--f-head);font-weight:500;font-size:17px;white-space:nowrap">Host360 Aegis</span>
+</div>
+<span style="width:1px;height:24px;background:var(--ln-2)"></span>
+<div style="position:relative">
+<button onClick="{{ c.openProduct }}" aria-expanded="{{ c.productOpen }}" aria-label="Product: {{ c.productLabel }}" style="height:36px;display:flex;align-items:center;gap:10px;padding:0 10px;white-space:nowrap" style-hover="background:var(--sf-2)"><ae-icon name="{{ c.productIcon }}" size="20" style="color:var(--tx-2)"></ae-icon><span style="font:500 16px var(--f-head)">{{ c.productLabel }}</span><ae-icon name="chevron-down" style="color:var(--tx-3)"></ae-icon></button>
+<sc-if value="{{ c.productOpen }}" hint-placeholder-val="{{ false }}">
+<div role="menu" style="position:absolute;top:44px;left:0;width:340px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30;padding:4px 0">
+<sc-for list="{{ c.products }}" as="p" hint-placeholder-count="3">
+<button role="menuitemradio" aria-checked="{{ p.active }}" onClick="{{ p.onClick }}" style="display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px" style-hover="background:var(--sf-2)"><ae-icon name="{{ p.icon }}" size="20" style="color:var(--tx-2)"></ae-icon><span style="flex:1;min-width:0"><span style="display:block;font-weight:600">{{ p.label }}</span><span style="display:block;font:12px/16px var(--f-ui);color:var(--tx-3)">{{ p.desc }}</span></span><span style="width:16px;display:flex;color:var(--acc)"><ae-icon name="{{ p.check }}"></ae-icon></span></button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+<div style="flex:1;display:flex;justify-content:center;min-width:0">
+<label style="display:flex;align-items:center;gap:10px;width:100%;max-width:460px;height:36px;padding:0 8px 0 12px;background:var(--sf);border:1px solid var(--ln);color:var(--tx-3)"><ae-icon name="search"></ae-icon><input placeholder="Search sites, guests, servers, jobs, repositories, plans" style="flex:1;min-width:0;background:none;border:0;color:var(--tx);font:14px var(--f-body)"><span style="font:11px/16px var(--f-ui);padding:0 5px;border:1px solid var(--ln-2);white-space:nowrap">Ctrl K</span></label>
+</div>
+<div style="display:flex;align-items:center;gap:4px;flex:none">
+<div style="position:relative">
+<button onClick="{{ c.openTray }}" aria-expanded="{{ c.trayOpen }}" style="height:36px;display:flex;align-items:center;gap:8px;padding:0 10px;border:1px solid var(--ln);font:13px var(--f-ui);white-space:nowrap" style-hover="background:var(--sf-2)"><ae-icon name="loader-circle" spin="true" style="color:var(--run)"></ae-icon>3 running</button>
+<sc-if value="{{ c.trayOpen }}" hint-placeholder-val="{{ false }}">
+<div role="dialog" aria-label="Running jobs" style="position:absolute;top:44px;right:0;width:400px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30">
+<div style="display:flex;align-items:center;justify-content:space-between;height:40px;padding:0 16px;border-bottom:1px solid var(--ln)"><span style="font-weight:600">Running jobs</span><span style="font:12px var(--f-ui);color:var(--tx-3)">All products</span></div>
+<sc-for list="{{ jobs }}" as="j" hint-placeholder-count="3">
+<button style="display:block;width:100%;padding:12px 16px;border-bottom:1px solid var(--ln)" style-hover="background:var(--sf-2)">
+<span style="display:flex;justify-content:space-between;gap:12px;font:13px/18px var(--f-ui)"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ j.title }}</span><span style="font-variant-numeric:tabular-nums">{{ j.pctL }}</span></span>
+<span style="display:block;margin:2px 0 8px;font:12px/16px var(--f-ui);color:var(--tx-3)">{{ j.sub }}</span>
+<span style="display:block;height:4px;background:var(--ln)"><span style="display:block;height:4px;width:{{ j.pctW }};background:var(--run)"></span></span>
+<span style="display:flex;justify-content:space-between;margin-top:6px;font:12px/16px var(--f-ui);color:var(--tx-3)"><span>{{ j.rate }}</span><span>{{ j.eta }}</span></span>
+</button>
+</sc-for>
+<div style="display:flex;justify-content:flex-end;padding:8px"><button style="height:32px;padding:0 10px;font-weight:600" style-hover="background:var(--sf-2)">Open Jobs</button></div>
+</div>
+</sc-if>
+</div>
+<button aria-label="Alerts, 2 active" style="height:36px;display:flex;align-items:center;gap:6px;padding:0 10px;font:13px var(--f-ui);color:var(--tx-2)" style-hover="background:var(--sf-2)"><ae-icon name="bell" style="color:var(--err)"></ae-icon>2</button>
+<span style="width:1px;height:24px;background:var(--ln);margin:0 4px"></span>
+<div style="position:relative">
+<button onClick="{{ c.openProject }}" aria-expanded="{{ c.projectOpen }}" style="height:36px;display:flex;align-items:center;gap:8px;padding:0 10px;white-space:nowrap" style-hover="background:var(--sf-2)"><ae-icon name="box" style="color:var(--tx-3)"></ae-icon><span style="font-weight:600">{{ c.project }}</span><ae-icon name="chevron-down" style="color:var(--tx-3)"></ae-icon></button>
+<sc-if value="{{ c.projectOpen }}" hint-placeholder-val="{{ false }}">
+<div role="menu" style="position:absolute;top:44px;right:0;width:280px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30;padding:4px 0">
+<div style="padding:8px 12px 4px;font:12px var(--f-ui);color:var(--tx-3)">Work in</div>
+<sc-for list="{{ c.projects }}" as="pj" hint-placeholder-count="2">
+<button role="menuitemradio" aria-checked="{{ pj.on }}" onClick="{{ pj.onClick }}" style="display:flex;align-items:center;gap:10px;width:100%;height:40px;padding:0 12px" style-hover="background:var(--sf-2)"><span style="width:16px;display:flex;color:var(--acc)"><ae-icon name="{{ pj.icon }}"></ae-icon></span><span style="flex:1;font-weight:600">{{ pj.name }}</span><span style="font:12px var(--f-ui);color:var(--tx-3)">{{ pj.role }}</span></button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+<span title="Orchestrator time zone: India Standard Time" style="padding:0 8px;font:12px var(--f-ui);color:var(--tx-2);font-variant-numeric:tabular-nums;white-space:nowrap">21 Oct 2026, 16:05 IST</span>
+<button onClick="{{ c.toggleTheme }}" aria-label="{{ c.themeLabel }}" title="{{ c.themeLabel }}" style="width:36px;height:36px;display:grid;place-items:center;color:var(--tx-2)" style-hover="background:var(--sf-2)"><ae-icon name="{{ c.themeIcon }}"></ae-icon></button>
+<div style="position:relative">
+<button onClick="{{ c.openUser }}" aria-label="User menu" aria-expanded="{{ c.userOpen }}" style="height:36px;display:flex;align-items:center;gap:8px;padding:0 6px" style-hover="background:var(--sf-2)"><span style="width:28px;height:28px;display:grid;place-items:center;background:var(--sf-2);font:700 11px var(--f-ui)">PR</span></button>
+<sc-if value="{{ c.userOpen }}" hint-placeholder-val="{{ false }}">
+<div role="menu" style="position:absolute;top:44px;right:0;width:260px;background:var(--sf);border:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:30">
+<div style="padding:12px;border-bottom:1px solid var(--ln)"><div style="font-weight:600">Priya Raman</div><div style="font:12px/18px var(--f-ui);color:var(--tx-3)">priya.raman@host360.ai</div><div style="font:12px/18px var(--f-ui);color:var(--tx-2)">Owner in Base-Project</div></div>
+<div style="padding:4px 0">
+<button style="display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 12px" style-hover="background:var(--sf-2)"><ae-icon name="user" style="color:var(--tx-3)"></ae-icon>Profile</button>
+<button style="display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 12px" style-hover="background:var(--sf-2)"><ae-icon name="log-out" style="color:var(--tx-3)"></ae-icon>Sign out</button>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+</header>
+<div style="flex:1;min-height:0;display:flex">
+<aside style="width:{{ c.navW }};flex:none;display:flex;flex-direction:column;background:var(--bg-2);border-right:1px solid var(--ln);transition:width 150ms">
+<nav aria-label="Sections" style="flex:1;overflow:auto;padding:16px 12px;display:flex;flex-direction:column;gap:2px">
+<sc-for list="{{ c.nav }}" as="n" hint-placeholder-count="5">
+<a href="#1c" title="{{ n.label }}" aria-current="{{ n.current }}" style="display:flex;align-items:center;gap:12px;height:32px;padding:0 8px;color:{{ n.fg }};background:{{ n.bg }};text-decoration:none;font-weight:{{ n.fw }};white-space:nowrap;overflow:hidden" style-hover="background:var(--sf)"><ae-icon name="{{ n.icon }}" style="color:{{ n.ic }}"></ae-icon><span style="display:{{ c.labelDisplay }};overflow:hidden;text-overflow:ellipsis">{{ n.label }}</span></a>
+</sc-for>
+<div style="display:{{ c.labelDisplay }};padding:20px 8px 6px;font:600 12px/16px var(--f-body);color:var(--tx-3)">Common</div>
+<div style="display:{{ c.dividerDisplay }};height:1px;margin:12px 4px;background:var(--ln)"></div>
+<sc-for list="{{ c.common }}" as="n" hint-placeholder-count="10">
+<a href="#1c" title="{{ n.label }}" aria-current="{{ n.current }}" style="display:flex;align-items:center;gap:12px;height:32px;padding:0 8px;color:{{ n.fg }};background:{{ n.bg }};text-decoration:none;font-weight:{{ n.fw }};white-space:nowrap;overflow:hidden" style-hover="background:var(--sf)"><ae-icon name="{{ n.icon }}" style="color:{{ n.ic }}"></ae-icon><span style="display:{{ c.labelDisplay }};overflow:hidden;text-overflow:ellipsis">{{ n.label }}</span></a>
+</sc-for>
+</nav>
+<div style="border-top:1px solid var(--ln);min-height:56px;padding:0 12px 0 20px;display:flex;align-items:center;gap:8px">
+<div style="display:{{ c.labelDisplay }};flex:1;min-width:0"><div style="font:12px/16px var(--f-ui);color:var(--tx-2)">aegis-orchestrator</div><div style="font:11px/16px var(--f-ui);color:var(--tx-3)">Version 4.2.0</div></div>
+<button onClick="{{ c.toggleNav }}" aria-label="{{ c.collapseLabel }}" title="{{ c.collapseLabel }}" style="width:32px;height:32px;display:grid;place-items:center;color:var(--tx-3)" style-hover="background:var(--sf);color:var(--tx)"><ae-icon name="panel-left"></ae-icon></button>
+</div>
+</aside>
+<main style="flex:1;min-width:0;display:flex;flex-direction:column;position:relative">
+<div style="padding:24px 24px 16px;display:flex;align-items:flex-end;gap:16px">
+<div style="flex:1;min-width:0">
+<h1 style="margin:0;font:500 24px/32px var(--f-head)">Sites</h1>
+<p style="margin:4px 0 0;color:var(--tx-2)">Platforms Aegis connects to in {{ c.project }}, and what each one is used for.</p>
+</div>
+<div style="display:flex;gap:8px">
+<button style="height:36px;padding:0 12px;display:flex;align-items:center;gap:8px;border:1px solid var(--ln-2);font-weight:600;white-space:nowrap" style-hover="background:var(--sf-2)"><ae-icon name="refresh-cw"></ae-icon>Refresh all</button>
+<button style="height:36px;padding:0 16px;display:flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);font-weight:600;white-space:nowrap" style-hover="background:var(--acc-h)" style-active="background:var(--acc-p)"><ae-icon name="plus"></ae-icon>Add a platform</button>
+</div>
+</div>
+<div role="status" style="margin:0 24px 16px;display:flex;align-items:center;gap:12px;min-height:40px;padding:0 8px 0 12px;background:var(--warn-s);border:1px solid var(--warn)">
+<ae-icon name="triangle-alert" style="color:var(--warn)"></ae-icon>
+<span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><strong>region-2-os</strong> Could not be read: Keystone at 10.40.0.5:5000 did not answer within 30 s. Last read 21 Oct 2026, 14:52 IST.</span>
+<button style="height:28px;padding:0 10px;font-weight:600" style-hover="background:var(--sf-2)">Retry</button>
+</div>
+<div style="padding:0 24px 12px;display:flex;align-items:center;gap:12px;min-height:44px">
+<sc-if value="{{ c.noSel }}" hint-placeholder-val="{{ true }}">
+<div role="radiogroup" aria-label="Platform" style="display:flex;border:1px solid var(--ln-2)">
+<sc-for list="{{ c.plats }}" as="pl" hint-placeholder-count="4">
+<button role="radio" aria-checked="{{ pl.on }}" onClick="{{ pl.onClick }}" style="height:30px;padding:0 12px;font:13px var(--f-ui);white-space:nowrap;color:{{ pl.fg }};background:{{ pl.bg }};box-shadow:inset 0 0 0 1px {{ pl.ring }}" style-hover="color:var(--tx)">{{ pl.label }}</button>
+</sc-for>
+</div>
+<label style="display:flex;align-items:center;gap:8px;width:240px;height:32px;padding:0 10px;border:1px solid var(--ln-2);color:var(--tx-3)"><ae-icon name="filter"></ae-icon><input placeholder="Filter by name" style="flex:1;min-width:0;background:none;border:0;color:var(--tx);font:13px var(--f-ui)"></label>
+<span style="flex:1"></span>
+<span style="font:13px var(--f-ui);color:var(--tx-3)">{{ c.countLabel }}</span>
+</sc-if>
+<sc-if value="{{ c.hasSel }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;align-items:center;gap:8px;height:44px;padding:0 8px 0 12px;background:var(--acc-soft);border:1px solid var(--acc)">
+<span style="font:700 13px var(--f-ui);margin-right:8px">{{ c.selLabel }}</span>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:8px;font-weight:600" style-hover="background:var(--sf-2)"><ae-icon name="refresh-cw"></ae-icon>Refresh inventory</button>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:8px;font-weight:600" style-hover="background:var(--sf-2)"><ae-icon name="key"></ae-icon>Edit access</button>
+<button style="height:32px;padding:0 10px;display:flex;align-items:center;gap:8px;font-weight:600;color:var(--err)" style-hover="background:var(--err-s)"><ae-icon name="trash-2"></ae-icon>Remove…</button>
+<span style="flex:1"></span>
+<button onClick="{{ c.clearSel }}" style="height:32px;padding:0 10px;font-weight:600" style-hover="background:var(--sf-2)">Clear selection</button>
+</div>
+</sc-if>
+</div>
+<div role="table" aria-label="Sites" style="flex:1;min-height:0;overflow:auto;margin:0 24px;font:13px/18px var(--f-ui);font-variant-numeric:tabular-nums">
+<div role="row" style="position:sticky;top:0;z-index:1;display:grid;grid-template-columns:40px minmax(0,1.5fr) minmax(0,1fr) 72px minmax(0,1.2fr) 64px 64px minmax(0,1.7fr) 124px 168px 40px;align-items:center;height:36px;background:var(--bg-2);border-bottom:1px solid var(--ln-2);font:12px var(--f-ui);color:var(--tx-2)">
+<div role="columnheader" style="padding:0 12px"><input type="checkbox" aria-label="Select all sites" checked="{{ c.allSel }}" onChange="{{ c.toggleAll }}" style="display:block;margin:0;width:14px;height:14px;accent-color:var(--acc)"></div>
+<sc-for list="{{ c.cols }}" as="col" hint-placeholder-count="9">
+<div role="columnheader" aria-sort="{{ col.aria }}" style="padding:0 8px;min-width:0"><button onClick="{{ col.onClick }}" style="display:flex;align-items:center;justify-content:{{ col.jc }};gap:4px;width:100%;height:34px;white-space:nowrap;overflow:hidden" style-hover="color:var(--tx)">{{ col.label }}<ae-icon name="{{ col.arrow }}"></ae-icon></button></div>
+</sc-for>
+<div role="columnheader" aria-label="Actions"></div>
+</div>
+<sc-for list="{{ c.rows }}" as="r" hint-placeholder-count="6">
+<div role="row" onClick="{{ r.onOpen }}" style="display:grid;grid-template-columns:40px minmax(0,1.5fr) minmax(0,1fr) 72px minmax(0,1.2fr) 64px 64px minmax(0,1.7fr) 124px 168px 40px;align-items:center;height:36px;border-bottom:1px solid var(--ln);cursor:pointer;background:{{ r.bg }};box-shadow:{{ r.ring }}" style-hover="background:var(--sf)">
+<div role="cell" onClick="{{ r.stop }}" style="padding:0 12px"><input type="checkbox" aria-label="Select {{ r.name }}" checked="{{ r.sel }}" onChange="{{ r.onSel }}" style="display:block;margin:0;width:14px;height:14px;accent-color:var(--acc)"></div>
+<div role="cell" title="{{ r.name }}" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.name }}</div>
+<div role="cell" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx-2)">{{ r.platform }}</div>
+<div role="cell" style="padding:0 8px;color:var(--tx-2)">{{ r.version }}</div>
+<div role="cell" title="{{ r.access }}" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx-2)">{{ r.access }}</div>
+<div role="cell" style="padding:0 8px;text-align:right;white-space:nowrap;font-style:{{ r.nfs }};color:{{ r.nc }}">{{ r.nodesT }}</div>
+<div role="cell" style="padding:0 8px;text-align:right;white-space:nowrap;font-style:{{ r.nfs }};color:{{ r.nc }}">{{ r.guestsT }}</div>
+<div role="cell" style="padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--tx-2)">{{ r.usedByT }}</div>
+<div role="cell" title="{{ r.reason }}" style="padding:0 8px;display:flex;align-items:center;gap:6px;white-space:nowrap;color:{{ r.sc }}"><ae-icon name="{{ r.si }}"></ae-icon><span style="color:var(--tx)">{{ r.sl }}</span></div>
+<div role="cell" style="padding:0 8px;white-space:nowrap;color:var(--tx-2)">{{ r.seen }}</div>
+<div role="cell" style="display:flex;justify-content:center"><ae-icon name="chevron-right" style="color:var(--tx-3)"></ae-icon></div>
+</div>
+</sc-for>
+<sc-if value="{{ c.hiddenNote }}" hint-placeholder-val="{{ false }}"><div style="padding:12px 8px;color:var(--tx-3)">{{ c.hiddenNote }}</div></sc-if>
+</div>
+<sc-if value="{{ c.dOpen }}" hint-placeholder-val="{{ true }}">
+<aside role="dialog" aria-label="Site details" style="position:absolute;top:0;right:0;bottom:0;width:560px;display:flex;flex-direction:column;background:var(--sf);border-left:1px solid var(--ln-2);box-shadow:var(--shadow);z-index:3">
+<div style="padding:20px 16px 0 24px;display:flex;align-items:flex-start;gap:12px">
+<div style="flex:1;min-width:0">
+<div style="font:12px/16px var(--f-ui);color:var(--tx-3)">Site</div>
+<h2 style="margin:2px 0 0;font:500 20px/28px var(--f-head);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.d.name }}</h2>
+<div style="margin-top:6px;display:flex;align-items:center;gap:16px;font:13px/18px var(--f-ui);color:var(--tx-2);white-space:nowrap"><span style="display:inline-flex;align-items:center;gap:6px;color:{{ c.d.sc }}"><ae-icon name="{{ c.d.si }}"></ae-icon><span style="color:var(--tx)">{{ c.d.sl }}</span></span><span>{{ c.d.platLine }}</span><span>{{ c.d.seenLine }}</span></div>
+</div>
+<button aria-label="Close site details" onClick="{{ c.closeDrawer }}" style="width:32px;height:32px;display:grid;place-items:center;color:var(--tx-2)" style-hover="background:var(--sf-2);color:var(--tx)"><ae-icon name="x" size="20"></ae-icon></button>
+</div>
+<div style="padding:16px 24px;display:flex;gap:8px">
+<button style="height:32px;padding:0 12px;display:flex;align-items:center;gap:8px;border:1px solid var(--ln-2);font-weight:600;white-space:nowrap" style-hover="background:var(--sf-2)"><ae-icon name="refresh-cw"></ae-icon>Refresh inventory</button>
+<button style="height:32px;padding:0 12px;display:flex;align-items:center;gap:8px;border:1px solid var(--ln-2);font-weight:600;white-space:nowrap" style-hover="background:var(--sf-2)"><ae-icon name="key"></ae-icon>Edit access</button>
+<span style="flex:1"></span>
+<button aria-label="More actions" style="width:32px;height:32px;display:grid;place-items:center;border:1px solid var(--ln-2)" style-hover="background:var(--sf-2)"><ae-icon name="ellipsis"></ae-icon></button>
+</div>
+<div role="tablist" style="display:flex;padding:0 16px;border-bottom:1px solid var(--ln)">
+<sc-for list="{{ c.dtabs }}" as="t" hint-placeholder-count="6">
+<button role="tab" aria-selected="{{ t.active }}" onClick="{{ t.onClick }}" title="{{ t.hint }}" style="height:40px;padding:0 10px;font-weight:600;white-space:nowrap;color:{{ t.fg }};box-shadow:inset 0 -2px 0 {{ t.bar }}" style-hover="color:var(--tx)">{{ t.label }}</button>
+</sc-for>
+</div>
+<div style="flex:1;min-height:0;overflow:auto;padding:16px 24px 24px">
+<sc-if value="{{ c.d.hasReason }}" hint-placeholder-val="{{ false }}">
+<div role="status" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;margin-bottom:16px;background:var(--warn-s);border:1px solid var(--warn)"><ae-icon name="triangle-alert" style="color:var(--warn);margin-top:2px"></ae-icon><span>{{ c.d.reason }}</span></div>
+</sc-if>
+<sc-if value="{{ c.isOv }}" hint-placeholder-val="{{ true }}">
+<dl style="margin:0;display:grid;grid-template-columns:152px minmax(0,1fr);font:13px/18px var(--f-ui)">
+<sc-for list="{{ c.d.facts }}" as="f" hint-placeholder-count="9">
+<dt style="padding:9px 0;border-bottom:1px solid var(--ln);color:var(--tx-3)">{{ f.k }}</dt>
+<dd style="margin:0;padding:9px 0;border-bottom:1px solid var(--ln);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ f.v }}">{{ f.v }}</dd>
+</sc-for>
+</dl>
+</sc-if>
+<sc-if value="{{ c.isNodes }}" hint-placeholder-val="{{ false }}">
+<div role="table" aria-label="Nodes" style="font:13px/18px var(--f-ui);font-variant-numeric:tabular-nums">
+<div role="row" style="display:grid;grid-template-columns:minmax(0,1.4fr) 112px 64px 88px 80px;align-items:center;height:36px;border-bottom:1px solid var(--ln-2);font-size:12px;color:var(--tx-2)"><div role="columnheader">Node</div><div role="columnheader">Status</div><div role="columnheader" style="text-align:right">Guests</div><div role="columnheader" style="text-align:right">CPU</div><div role="columnheader" style="text-align:right">Memory</div></div>
+<sc-for list="{{ c.d.nodes }}" as="nd" hint-placeholder-count="6">
+<div role="row" style="display:grid;grid-template-columns:minmax(0,1.4fr) 112px 64px 88px 80px;align-items:center;height:36px;border-bottom:1px solid var(--ln)"><div role="cell" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ nd.name }}</div><div role="cell" style="display:flex;align-items:center;gap:6px;color:var(--ok)"><ae-icon name="circle-check"></ae-icon><span style="color:var(--tx)">Online</span></div><div role="cell" style="text-align:right">{{ nd.guests }}</div><div role="cell" style="text-align:right;color:var(--tx-2)">{{ nd.cpu }}</div><div role="cell" style="text-align:right;color:var(--tx-2)">{{ nd.mem }}</div></div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ c.isOther }}" hint-placeholder-val="{{ false }}">
+<p style="margin:0;color:var(--tx-3)">{{ c.otherNote }}</p>
+</sc-if>
+</div>
+</aside>
+</sc-if>
+</main>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<p class="dv-next">Try next: "go with <a class="dv-oid" href="#1a">1a</a> but use the drawer and quick filter from <a class="dv-oid" href="#1c">1c</a>" · "<a class="dv-oid" href="#1b">1b</a> without the registration marks" · "build the design system page from <a class="dv-oid" href="#1c">1c</a>"</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const PRODUCTS = [
+  { id: 'backup', label: 'Backup & Recovery', icon: 'archive', desc: 'Back up and restore Proxmox VE and OpenStack guests' },
+  { id: 'dr', label: 'Disaster Recovery', icon: 'life-buoy', desc: 'Replicate servers and bring them online at a recovery site' },
+  { id: 'mig', label: 'Migration', icon: 'forward', desc: 'Move VMs from VMware to Proxmox VE or OpenStack' }
+];
+const NAV = {
+  backup: [['Overview', 'layout-dashboard'], ['Protected guests', 'monitor'], ['Policies', 'clipboard-list'], ['Restore', 'rotate-ccw'], ['Backup copies', 'copy']],
+  dr: [['Overview', 'layout-dashboard'], ['Protected servers', 'server'], ['Protection plans', 'calendar-clock'], ['Recovery plans', 'list-ordered'], ['History', 'history']],
+  mig: [['Overview', 'layout-dashboard'], ['Servers', 'server'], ['Migration plans', 'route']]
+};
+const COMMON = [['Sites', 'map-pin'], ['Nodes and proxies', 'network'], ['Repositories', 'database'], ['Mappings', 'arrow-left-right'], ['Jobs', 'activity'], ['Alerts', 'bell'], ['Reports', 'file-text'], ['Audit', 'scroll-text'], ['Access', 'users'], ['Settings', 'settings-2']];
+const STATUS = {
+  ok: { i: 'circle-check', l: 'Online', c: 'var(--ok)' },
+  unreach: { i: 'triangle-alert', l: 'Unreachable', c: 'var(--warn)' },
+  degraded: { i: 'circle-alert', l: 'Degraded', c: 'var(--warn)' }
+};
+const COLS = [{ k: 'name', label: 'Name' }, { k: 'platform', label: 'Platform' }, { k: 'version', label: 'Version' }, { k: 'access', label: 'Access method' }, { k: 'nodes', label: 'Nodes', r: 1 }, { k: 'guests', label: 'Guests', r: 1 }, { k: 'usedBy', label: 'Used by' }, { k: 'status', label: 'Status' }, { k: 'seen', label: 'Last seen' }];
+const ROWS = [
+  { id: 'cpp', name: 'Chennai-proxmox-prod', platform: 'Proxmox VE', fam: 'Proxmox VE', version: '9.2.2', access: 'Proxmox API and SSH', nodes: 6, guests: 109, usedBy: ['Backup', 'DR'], status: 'ok', seen: '21 Oct 2026, 16:04 IST', addr: '10.20.4.11:8006', added: '12 Mar 2026, 10:41 IST by priya.raman', proxies: 'aegis-proxy-cmp4, aegis-proxy-cmp5, aegis-proxy-cmp6' },
+  { id: 'clp', name: 'Chennai_Lab_Proxmox', platform: 'Proxmox VE', fam: 'Proxmox VE', version: '9.2.2', access: 'SSH only', nodes: 1, guests: 9, usedBy: ['Backup'], status: 'ok', seen: '21 Oct 2026, 16:03 IST', addr: '10.20.9.40:22', added: '02 Apr 2026, 15:12 IST by priya.raman', proxies: 'aegis-proxy-director-lab' },
+  { id: 'pos', name: 'production-openstack', platform: 'OpenStack', fam: 'OpenStack', version: '2025.1', access: 'Keystone v3, password', nodes: 4, guests: 62, usedBy: ['Backup', 'DR', 'Migration'], status: 'ok', seen: '21 Oct 2026, 16:04 IST', addr: 'keystone.prod.host360.local:5000', added: '18 Jan 2026, 09:20 IST by arun.k', proxies: 'aegis-appliance-os1' },
+  { id: 'r2', name: 'region-2-os', platform: 'OpenStack', fam: 'OpenStack', version: '2025.1', access: 'Keystone v3, password', nodes: null, guests: null, usedBy: ['DR'], status: 'unreach', seen: '21 Oct 2026, 14:52 IST', addr: '10.40.0.5:5000', added: '30 Jun 2026, 11:05 IST by arun.k', proxies: 'aegis-proxy-nova-248d', reason: 'Could not be read: Keystone at 10.40.0.5:5000 did not answer within 30 s.' },
+  { id: 'vc', name: 'Chennai vCenter', platform: 'VMware vCenter', fam: 'VMware', version: '8.0.3', access: 'vSphere API', nodes: 3, guests: 41, usedBy: ['DR', 'Migration'], status: 'ok', seen: '21 Oct 2026, 16:04 IST', addr: 'vcenter.chennai.host360.local:443', added: '04 Aug 2026, 14:30 IST by priya.raman', proxies: 'aegis-orchestrator', vmw: true },
+  { id: 'esx', name: 'esxi-edge-07', platform: 'ESXi', fam: 'VMware', version: '8.0.2', access: 'vSphere API', nodes: 1, guests: 7, usedBy: ['Migration'], status: 'degraded', seen: '21 Oct 2026, 16:01 IST', addr: '10.20.12.7:443', added: '09 Sep 2026, 17:48 IST by arun.k', proxies: 'aegis-orchestrator', vmw: true, reason: 'Datastore ds-edge-01 is 93 % full.' }
+];
+const mk = (names, g, cpu, mem) => names.map((n, i) => ({ name: n, guests: g[i], cpu, mem }));
+const NODES = {
+  cpp: mk(['cmp1', 'cmp2', 'cmp3', 'cmp4', 'cmp5', 'cmp6'], [22, 19, 18, 17, 16, 17], '64 cores', '512 GB'),
+  clp: mk(['director-lab'], [9], '16 cores', '128 GB'),
+  pos: mk(['compute-01', 'compute-02', 'compute-03', 'compute-04'], [18, 16, 15, 13], '48 cores', '384 GB'),
+  vc: mk(['esx-01', 'esx-02', 'esx-03'], [15, 14, 12], '32 cores', '256 GB'),
+  esx: mk(['esxi-edge-07'], [7], '16 cores', '128 GB'),
+  r2: []
+};
+const JOBS = [
+  { name: 'web-frontend-01', kind: 'Nightly incremental', product: 'Backup & Recovery', phase: 'Incremental copy', pct: 62, rate: '148 MB/s', eta: '4 min left' },
+  { name: 'sql-prod-02', kind: 'Replication', product: 'Disaster Recovery', phase: 'Hashing source', pct: 34, rate: '212 MB/s', eta: '9 min left' },
+  { name: 'erp-app-01', kind: 'Sync pass 3', product: 'Migration', phase: 'Incremental copy', pct: 81, rate: '96 MB/s', eta: '2 min left' }
+].map(j => ({ ...j, title: `${j.name} · ${j.kind}`, sub: `${j.product} · ${j.phase}`, pctL: `${j.pct} %`, pctW: `${j.pct}%` }));
+const PROJECTS = [{ name: 'Base-Project', role: 'Owner' }, { name: 'All projects', role: 'System owner' }];
+const TABS = ['Overview', 'Nodes', 'Storage', 'Networks', 'Access', 'Activity'];
+const NAVW = { a: 232, b: 208, c: 240 };
+
+class Component extends DCLogic {
+  state = { a: this.init(), b: this.init(), c: { ...this.init(), drawer: 'cpp' } };
+
+  init() {
+    return { theme: 'dark', product: 'dr', collapsed: false, sel: {}, menu: null, sort: 'name', dir: 1, status: 'all', plat: 'All', drawer: null, dtab: 'Overview', project: 'Base-Project' };
+  }
+
+  up(k, p) {
+    this.setState(s => ({ [k]: { ...s[k], ...(typeof p === 'function' ? p(s[k]) : p) } }));
+  }
+
+  vals(k) {
+    const s = this.state[k];
+    const up = p => this.up(k, p);
+    const menu = m => () => up(p => ({ menu: p.menu === m ? null : m }));
+    const products = PRODUCTS.map(p => {
+      const on = s.product === p.id;
+      return { ...p, active: on, fg: on ? 'var(--tx)' : 'var(--tx-2)', bar: on ? 'var(--acc)' : 'transparent', bg: on ? 'var(--bg)' : 'transparent', check: on ? 'check' : '',
+        onClick: () => up(q => ({ product: p.id, sel: {}, menu: null, plat: p.id === 'backup' && q.plat === 'VMware' ? 'All' : q.plat })) };
+    });
+    const cur = PRODUCTS.find(p => p.id === s.product);
+    const item = ([label, icon], on) => ({ label, icon, current: on ? 'page' : undefined, fg: on ? 'var(--tx)' : 'var(--tx-2)', bg: on ? 'var(--acc-soft)' : 'transparent', ic: on ? 'var(--acc)' : 'var(--tx-3)', fw: on ? 600 : 400 });
+
+    const base = ROWS.filter(r => s.product !== 'backup' || !r.vmw);
+    let rows = base;
+    if (s.plat !== 'All') rows = rows.filter(r => r.fam === s.plat);
+    if (s.status === 'ok') rows = rows.filter(r => r.status === 'ok');
+    if (s.status === 'attn') rows = rows.filter(r => r.status !== 'ok');
+    rows = [...rows].sort((x, y) => {
+      let a = x[s.sort], b = y[s.sort];
+      if (Array.isArray(a)) { a = a.join(); b = b.join(); }
+      if (a == null) return 1;
+      if (b == null) return -1;
+      return (typeof a === 'number' ? a - b : String(a).localeCompare(String(b), undefined, { sensitivity: 'base' })) * s.dir;
+    });
+    const visible = rows.map(r => r.id);
+    const selN = visible.filter(id => s.sel[id]).length;
+    const allSel = visible.length > 0 && selN === visible.length;
+    const dVisible = s.drawer && visible.includes(s.drawer);
+
+    const R = rows.map(r => {
+      const st = STATUS[r.status];
+      const on = !!s.sel[r.id];
+      const open = dVisible && s.drawer === r.id;
+      const unread = r.nodes == null;
+      return { ...r, sel: on, bg: on || open ? 'var(--acc-soft)' : 'transparent', ring: open ? 'inset 2px 0 0 var(--acc)' : 'none',
+        si: st.i, sl: st.l, sc: st.c, reason: r.reason || st.l,
+        nodesT: unread ? 'Not read' : String(r.nodes), guestsT: unread ? 'Not read' : String(r.guests), nfs: unread ? 'italic' : 'normal', nc: unread ? 'var(--tx-3)' : 'var(--tx)',
+        usedByT: r.usedBy.join(', '),
+        onSel: () => up(p => ({ sel: { ...p.sel, [r.id]: !p.sel[r.id] } })),
+        stop: e => e.stopPropagation(),
+        onOpen: k === 'c' ? () => up({ drawer: r.id, dtab: 'Overview', menu: null }) : undefined };
+    });
+
+    const cols = COLS.map(c => {
+      const on = s.sort === c.k;
+      return { ...c, jc: c.r ? 'flex-end' : 'flex-start', arrow: on ? (s.dir > 0 ? 'chevron-up' : 'chevron-down') : '', aria: on ? (s.dir > 0 ? 'ascending' : 'descending') : 'none',
+        onClick: () => up(p => ({ sort: c.k, dir: p.sort === c.k ? -p.dir : 1 })) };
+    });
+
+    const okN = base.filter(r => r.status === 'ok').length;
+    const unreadN = base.filter(r => r.guests == null).length;
+    const guests = base.reduce((t, r) => t + (r.guests || 0), 0);
+    const sum = [
+      { id: 'all', label: 'All sites', value: base.length, icon: 'map-pin', ic: 'var(--tx-3)', note: `In ${s.project}` },
+      { id: 'ok', label: 'Online', value: okN, icon: 'circle-check', ic: 'var(--ok)', note: 'Read in the last 5 min' },
+      { id: 'attn', label: 'Needs attention', value: base.length - okN, icon: 'triangle-alert', ic: 'var(--warn)', note: 'Unreachable or degraded' },
+      { id: 'g', label: 'Guests', value: guests, icon: 'monitor', ic: 'var(--tx-3)', note: unreadN ? `${unreadN} site not read` : 'All sites read' }
+    ].map(c => {
+      const on = c.id === s.status;
+      return { ...c, active: on, bg: on ? 'var(--acc-soft)' : 'transparent', bar: on ? 'var(--acc)' : 'transparent', onClick: () => up({ status: c.id === 'g' ? 'all' : c.id, sel: {} }) };
+    });
+
+    const plats = ['All', 'Proxmox VE', 'OpenStack', 'VMware'].filter(p => s.product !== 'backup' || p !== 'VMware').map(p => {
+      const on = s.plat === p;
+      return { label: p, on, fg: on ? 'var(--tx)' : 'var(--tx-2)', bg: on ? 'var(--acc-soft)' : 'transparent', ring: on ? 'var(--acc)' : 'transparent', onClick: () => up({ plat: p, sel: {} }) };
+    });
+
+    const dr = dVisible ? ROWS.find(r => r.id === s.drawer) : null;
+    let d = { facts: [], nodes: [] };
+    if (dr) {
+      const st = STATUS[dr.status];
+      const unread = dr.nodes == null;
+      d = { name: dr.name, si: st.i, sl: st.l, sc: st.c, platLine: `${dr.platform} ${dr.version}`, seenLine: `Last seen ${dr.seen}`,
+        hasReason: !!dr.reason, reason: dr.reason, nodes: NODES[dr.id] || [],
+        facts: [
+          ['Platform', `${dr.platform} ${dr.version}`], ['Access method', dr.access], ['Address', dr.addr],
+          ['Nodes', unread ? 'Not read' : `${dr.nodes} (${dr.status === 'ok' ? dr.nodes : dr.nodes} online)`],
+          ['Guests', unread ? 'Not read' : String(dr.guests)], ['Used by', dr.usedBy.join(', ')],
+          ['Proxies', dr.proxies], ['Added', dr.added], ['Last seen', dr.seen]
+        ].map(([k2, v]) => ({ k: k2, v })) };
+    }
+    const dtabs = TABS.map(t => {
+      const on = s.dtab === t;
+      return { label: t, active: on, hint: t === 'Activity' ? 'Proposed: inventory reads, access changes and refreshes for this site' : t, fg: on ? 'var(--tx)' : 'var(--tx-2)', bar: on ? 'var(--acc)' : 'transparent', onClick: () => up({ dtab: t }) };
+    });
+
+    const collapsed = s.collapsed;
+    const hidden = ROWS.length - base.length;
+    return {
+      theme: s.theme,
+      themeIcon: s.theme === 'dark' ? 'sun' : 'moon',
+      themeLabel: s.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
+      toggleTheme: () => up(p => ({ theme: p.theme === 'dark' ? 'light' : 'dark' })),
+      navW: (collapsed ? 56 : NAVW[k]) + 'px',
+      labelDisplay: collapsed ? 'none' : 'block',
+      dividerDisplay: collapsed ? 'block' : 'none',
+      collapseLabel: collapsed ? 'Expand navigation' : 'Collapse navigation',
+      toggleNav: () => up(p => ({ collapsed: !p.collapsed })),
+      products, productLabel: cur.label, productIcon: cur.icon,
+      nav: NAV[s.product].map(n => item(n, false)),
+      common: COMMON.map(n => item(n, n[0] === 'Sites')),
+      trayOpen: s.menu === 'tray', projectOpen: s.menu === 'project', userOpen: s.menu === 'user', productOpen: s.menu === 'product', anyMenu: !!s.menu,
+      openTray: menu('tray'), openProject: menu('project'), openUser: menu('user'), openProduct: menu('product'),
+      closeMenu: () => up({ menu: null }),
+      project: s.project,
+      projects: PROJECTS.map(p => ({ ...p, on: p.name === s.project, icon: p.name === s.project ? 'check' : '', onClick: () => up({ project: p.name, menu: null }) })),
+      rows: R, cols, sum, plats,
+      countLabel: `${rows.length} ${rows.length === 1 ? 'site' : 'sites'}`,
+      hasSel: selN > 0, noSel: selN === 0, selLabel: `${selN} selected`, allSel,
+      toggleAll: () => up(p => { const sel = { ...p.sel }; visible.forEach(id => { sel[id] = !allSel; }); return { sel }; }),
+      clearSel: () => up({ sel: {} }),
+      hiddenNote: hidden ? `${hidden} VMware sites are not shown: Backup & Recovery does not use VMware. They appear in Disaster Recovery and Migration.` : '',
+      dOpen: !!dr, d,
+      dtabs,
+      isOv: s.dtab === 'Overview', isNodes: s.dtab === 'Nodes', isOther: !['Overview', 'Nodes'].includes(s.dtab),
+      otherNote: `${s.dtab} is designed in the Sites round, once a direction is chosen.`,
+      closeDrawer: () => up({ drawer: null })
+    };
+  }
+
+  renderVals() {
+    return { a: this.vals('a'), b: this.vals('b'), c: this.vals('c'), jobs: JOBS };
+  }
+}
+
+</script>
+</body>
+</html>
