@@ -4,18 +4,19 @@ import { Icon } from '../lib/Icon';
 import { Btn, CheckBox, Field, FilterInput, RadioCard, SelectInput, TextArea, TextInput } from '../ui/controls';
 import { Activity, Bar, Facts, MiniTable, Panel, Section, Spacer, Status, TableArea, Toolbar, plural } from '../ui/layout';
 import { Dialog, Drawer, StepUp, Wizard, useClosable } from '../ui/overlay';
+import { CalculatorsTab, CompatibilityTab } from './Calculators';
 import type { Ctx } from '../ui/ctx';
 import { KB, NOTICES, STATUS, TICKETS, type Ticket } from '../data/ops';
 import { custName, inScope, showCustomerCol } from './common';
 import { audit } from './store';
 
-type Tab = 'requests' | 'diagnostics' | 'assist' | 'kb' | 'status';
+type Tab = 'requests' | 'diagnostics' | 'assist' | 'kb' | 'calculators' | 'compatibility' | 'status';
 const short = (t: string) => t.replace(' 2026', '').replace(' IST', '');
 const SEV_NOTE = { S1: 'Down: production stopped, no workaround', S2: 'Degraded: a product works partly', S3: 'A question or a fault with a workaround', S4: 'Billing, a request or feedback' };
 
 /** Support: requests, diagnostic bundles with redaction, remote assist with approval, knowledge base and status. */
 export default function SupportSection({ ctx }: { ctx: Ctx }) {
-  const allowed = ctx.audience === 'self' ? ['requests', 'kb', 'status'] : ['requests', 'diagnostics', 'assist', 'kb', 'status'];
+  const allowed = ctx.audience === 'self' ? ['requests', 'kb', 'status'] : ['requests', 'diagnostics', 'assist', 'kb', 'calculators', 'compatibility', 'status'];
   const tab = (allowed.includes(ctx.tab) ? ctx.tab : 'requests') as Tab;
   const [tickets, setTickets] = useState<Ticket[]>(TICKETS);
   return (
@@ -30,6 +31,8 @@ export default function SupportSection({ ctx }: { ctx: Ctx }) {
         { v: 'diagnostics' as Tab, label: 'Diagnostic bundles' },
         { v: 'assist' as Tab, label: 'Remote assist' },
         { v: 'kb' as Tab, label: 'Knowledge base' },
+        { v: 'calculators' as Tab, label: 'Calculators' },
+        { v: 'compatibility' as Tab, label: 'Compatibility' },
         { v: 'status' as Tab, label: 'Service status' }
       ].filter(t => ctx.audience !== 'self' || ['requests', 'kb', 'status'].includes(t.v))}
     >
@@ -37,6 +40,8 @@ export default function SupportSection({ ctx }: { ctx: Ctx }) {
       {tab === 'diagnostics' ? <Diagnostics ctx={ctx} /> : null}
       {tab === 'assist' ? <Assist ctx={ctx} /> : null}
       {tab === 'kb' ? <Knowledge ctx={ctx} /> : null}
+      {tab === 'calculators' ? <CalculatorsTab ctx={ctx} /> : null}
+      {tab === 'compatibility' ? <CompatibilityTab ctx={ctx} /> : null}
       {tab === 'status' ? <ServiceStatus /> : null}
     </Section>
   );
