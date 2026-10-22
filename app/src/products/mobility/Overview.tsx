@@ -7,6 +7,7 @@ import { custName, Go, inScope, scopeCustomers, showCustomerCol } from '../../pl
 import { useStore } from '../../platform/store';
 /** Downtime reads best in hours and minutes, never in days. */
 const fmtMin = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
+import { UnprotectedBar, UnprotectedPanel } from './Protect';
 import { BURN, BURN_WEEKS, INVENTORY, IN_PROGRESS, STAGE_LABEL, WAVES, verdict } from './data';
 
 /** Mobility › Overview: the migration programme at a glance, for the customers in scope. */
@@ -62,6 +63,7 @@ export default function MobilityOverview({ ctx }: { ctx: Ctx }) {
       />
       <div style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Tiles items={tiles} />
+        {ui === 'live' ? <UnprotectedBar ctx={ctx} /> : null}
         {ui === 'unreach' ? <Bar tone="warn">Could not be read: Chennai vCenter did not answer within 30 s. Progress is not shown until it can be read.</Bar> : null}
         {ui === 'empty' ? (
           <Panel title="Migration">
@@ -183,6 +185,7 @@ export default function MobilityOverview({ ctx }: { ctx: Ctx }) {
                 </StateBlock>
               </Panel>
             </div>
+            <UnprotectedPanel ctx={ctx} />
           </>
         ) : null}
       </div>

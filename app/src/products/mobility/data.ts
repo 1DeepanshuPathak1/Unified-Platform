@@ -183,3 +183,25 @@ export const BURN: Record<string, { planned: number[]; actual: number[] }> = {
   h360: { planned: [29, 29, 29, 28, 27, 26, 21, 18, 15, 12, 9, 6, 3, 1, 0], actual: [29, 29, 29, 29, 29, 29, 20] },
   mer: { planned: [14, 14, 13, 12, 9, 9, 8, 6, 6, 5, 4, 3, 2, 1, 0], actual: [14, 14, 14, 14, 9, 9, 9] }
 };
+
+/** Protection set up after cutover, by server name. Servers committed without an entry are "migrated, not yet protected". */
+export interface AfterCutover {
+  tier: import('../../data/platform').Tier;
+  backup?: string;
+  dr?: string;
+  by: string;
+  when: string;
+}
+export const PROTECTED_AFTER: Record<string, AfterCutover> = {
+  'mer-branch-app-01': { tier: 'Business Critical', backup: 'Production daily · immutable 14 d · offsite copy', dr: 'RPO 1 h · RTO 4 h to region-2-os', by: 'anitha.k', when: T('05 Oct', '03:20') },
+  'mer-branch-app-02': { tier: 'Business Critical', backup: 'Production daily · immutable 14 d · offsite copy', dr: 'RPO 1 h · RTO 4 h to region-2-os', by: 'anitha.k', when: T('05 Oct', '03:20') },
+  'mer-ivr-01': { tier: 'Business Critical', backup: 'Production daily · immutable 14 d · offsite copy', dr: 'RPO 1 h · RTO 4 h to region-2-os', by: 'anitha.k', when: T('05 Oct', '03:22') },
+  'mer-intranet': { tier: 'Standard', backup: 'Lab weekly · 4 weekly points', by: 'anitha.k', when: T('05 Oct', '03:25') },
+  'dev-k8s-01': { tier: 'Standard', backup: 'Lab weekly · 4 weekly points', by: 'arun.kumar', when: T('19 Oct', '02:40') },
+  'dev-k8s-02': { tier: 'Standard', backup: 'Lab weekly · 4 weekly points', by: 'arun.kumar', when: T('19 Oct', '02:40') },
+  'dev-k8s-03': { tier: 'Standard', backup: 'Lab weekly · 4 weekly points', by: 'arun.kumar', when: T('19 Oct', '02:40') }
+};
+/** When each committed server was committed (for "migrated N days ago, not protected"). */
+export const COMMITTED_AT: Record<string, string> = {
+  'ubuntu-build-03': '18 Oct', 'wiki-01': '18 Oct', 'jira-01': '18 Oct', 'grafana-01': '18 Oct', 'proxy-squid-01': '18 Oct', 'ntp-01': '18 Oct', 'mer-hrms-01': '04 Oct'
+};

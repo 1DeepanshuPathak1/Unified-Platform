@@ -9,6 +9,7 @@ import AegisTable from '../components/AegisTable';
 import { CutoverDialog } from '../products/mobility/Cutover';
 import { INVENTORY } from '../products/mobility/data';
 import { DangerDialog } from '../ui/overlay';
+import { ProtectDialog } from '../products/mobility/Protect';
 
 const SC = { ok: 'var(--ok)', warn: 'var(--warn)', err: 'var(--err)', run: 'var(--run)', tx: 'var(--tx-3)' };
 const NETS = {
@@ -47,7 +48,9 @@ export default class AegisMigServers extends DC {
     cut: null,
     cutClosing: false,
     danger: null,
-    dangerClosing: false
+    dangerClosing: false,
+    protect: null,
+    protectClosing: false
   };
   logRef = React.createRef<any>();
 
@@ -186,6 +189,8 @@ export default class AegisMigServers extends DC {
     if (key === 'commit') {
       this.patch(srv.id, { stage: 'committed', next: '—' });
       ctx.toast(`Migration of ${srv.name} committed`, 'ok');
+      // Protection follows the workload: offer backup and DR from its tier straight away.
+      setTimeout(() => this.setState({ protect: srv.name, protectClosing: false }), 200);
     } else {
       this.patch(srv.id, {
         stage: 'rolledback',
@@ -1555,6 +1560,7 @@ export default class AegisMigServers extends DC {
               );
             })()
           : null}
+        {this.state.protect ? <ProtectDialog ctx={this.props.ctx} names={[this.state.protect]} closing={this.state.protectClosing} onClose={() => this.closeLayer('protect')} /> : null}
       </div>
     );
   }

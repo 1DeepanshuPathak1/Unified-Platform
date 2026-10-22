@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RUNBOOKS, DRILLS, type Runbook, type Drill } from '../products/resilience/data';
+import { PROTECTED_AFTER, type AfterCutover } from '../products/mobility/data';
 import type { DrRun } from '../products/resilience/runner';
 import { APPROVALS, CUSTOMERS, ENTITLEMENTS, P_ALERTS, POLICIES, ROLES, USERS, APPLICATIONS, type Approval, type Customer, type Entitlement, type PAlert, type Policy, type Role, type User, type Application, type AuditRec, AUDIT } from '../data/platform';
 
@@ -21,7 +22,9 @@ export const store = {
   runbooks: RUNBOOKS.map(r => JSON.parse(JSON.stringify(r))) as Runbook[],
   drills: [...DRILLS] as Drill[],
   /** Failover, test and failback runs by recovery plan id; they keep going when the screen closes. */
-  drRuns: {} as Record<string, DrRun>
+  drRuns: {} as Record<string, DrRun>,
+  /** Backup and DR set up for a server after its migration was committed, by server name. */
+  migProtect: { ...PROTECTED_AFTER } as Record<string, AfterCutover>
 };
 
 const listeners = new Set<() => void>();

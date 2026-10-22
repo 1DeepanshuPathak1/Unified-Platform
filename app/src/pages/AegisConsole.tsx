@@ -33,6 +33,7 @@ import ResilienceOverview from '../products/resilience/Overview';
 import RecoveryPlans from '../products/resilience/RecoveryPlans';
 import MobilityOverview from '../products/mobility/Overview';
 import Sources from '../products/mobility/Sources';
+import Assessment from '../products/mobility/Assessment';
 import Home from '../platform/Home';
 import Agents from '../platform/Agents';
 import SecuritySection from '../platform/Security';
@@ -78,6 +79,7 @@ const PLATFORM = {
   'dr/plans': 1,
   'mig/overview': 1,
   'mig/sources': 1,
+  'mig/assessment': 1,
   home: 1,
   agents: 1,
   security: 1,
@@ -1315,6 +1317,7 @@ export default class AegisConsole extends DC {
                 {v.key === 'dr/plans' ? <Policies ctx={v.ctx} fixedType="DR" /> : null}
                 {v.key === 'mig/overview' ? <MobilityOverview ctx={v.ctx} /> : null}
                 {v.key === 'mig/sources' ? <Sources key={v.ctx.tab} ctx={v.ctx} /> : null}
+                {v.key === 'mig/assessment' ? <Assessment key={v.ctx.tab} ctx={v.ctx} /> : null}
                 {v.key === 'home' ? <Home ctx={v.ctx} /> : null}
                 {v.key === 'agents' ? <Agents ctx={v.ctx} /> : null}
                 {v.key === 'security' ? <SecuritySection ctx={v.ctx} /> : null}

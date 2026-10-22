@@ -13,7 +13,7 @@ export const AEGIS: any = (function () {
   const nav = {
     backup: [['overview', 'Overview', 'layout-dashboard'], ['guests', 'Protected guests', 'monitor'], ['policies', 'Policies', 'clipboard-list'], ['restore', 'Restore', 'rotate-ccw'], ['copies', 'Backup copies', 'copy']],
     dr: [['overview', 'Overview', 'layout-dashboard'], ['servers', 'Protected servers', 'server'], ['plans', 'Protection plans', 'calendar-clock'], ['recovery', 'Recovery plans', 'list-ordered'], ['history', 'History', 'history']],
-    mig: [['overview', 'Overview', 'layout-dashboard'], ['sources', 'Sources', 'radar'], ['servers', 'Servers', 'server'], ['plans', 'Migration plans', 'route']]
+    mig: [['overview', 'Overview', 'layout-dashboard'], ['sources', 'Sources', 'radar'], ['assessment', 'Assessment', 'target'], ['servers', 'Servers', 'server'], ['plans', 'Migration plans', 'route']]
   };
   const shared = [
     { group: 'Infrastructure', items: [['sites', 'Sites', 'map-pin'], ['nodes', 'Nodes and proxies', 'network'], ['repos', 'Repositories', 'database'], ['mappings', 'Mappings', 'arrow-left-right']] },
@@ -33,6 +33,7 @@ export const AEGIS: any = (function () {
     'dr/history': ['History', 'Every replication cycle and the time spent in each phase.'],
     'mig/overview': ['Overview', 'Progress of the servers moving off VMware.'],
     'mig/sources': ['Sources', 'VMware sources and every server found on them.'],
+    'mig/assessment': ['Assessment', 'Compatibility, readiness and risk for every server found, with estimates, sizing and findings.'],
     'mig/servers': ['Servers', 'Virtual machines on VMware sources, and where each one is in its migration.'],
     'mig/plans': ['Migration plans', 'Servers grouped into waves, with a cutover window and the mappings they use.'],
     sites: ['Sites', 'Platforms Aegis connects to in {p}, and what each one is used for.'],
