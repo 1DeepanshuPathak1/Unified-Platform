@@ -135,6 +135,9 @@ export default class AegisConsole extends DC {
       if (e.key === 'Escape' && this.state.menu) this.setState({ menu: null });
     };
     window.addEventListener('keydown', this.onKey);
+    // The internal admin portal asks the console to open a customer session as its owner.
+    this.onActAs = e => this.startActing(e.detail.id, e.detail.reason);
+    window.addEventListener('aegis:act-as', this.onActAs);
     this.waitData = setInterval(() => {
       if (AEGIS) {
         clearInterval(this.waitData);
@@ -156,6 +159,7 @@ export default class AegisConsole extends DC {
   componentWillUnmount() {
     window.removeEventListener('hashchange', this.onHash);
     window.removeEventListener('keydown', this.onKey);
+    window.removeEventListener('aegis:act-as', this.onActAs);
     window.removeEventListener('resize', this.onResize);
     clearInterval(this.timer);
     clearInterval(this.waitData);
