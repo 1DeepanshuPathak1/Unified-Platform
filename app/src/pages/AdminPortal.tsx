@@ -9,10 +9,11 @@ import { ManagedSection, HardwareSection } from '../admin/Estate';
 import { TemplatesSection } from '../admin/Templates';
 import { MaintenanceSection } from '../admin/Maintenance';
 import { OnPremSection } from '../admin/OnPrem';
+import { SignupsSection } from '../admin/Signups';
 
-type Sec = 'tenants' | 'managed' | 'hardware' | 'templates' | 'maintenance' | 'onprem';
+type Sec = 'tenants' | 'signups' | 'managed' | 'hardware' | 'templates' | 'maintenance' | 'onprem';
 const NAV: { group: string; items: { id: Sec; label: string; icon: string }[] }[] = [
-  { group: 'Customers', items: [{ id: 'tenants', label: 'Tenants', icon: 'building-2' }, { id: 'managed', label: 'Managed accounts', icon: 'headset' }] },
+  { group: 'Customers', items: [{ id: 'tenants', label: 'Tenants', icon: 'building-2' }, { id: 'signups', label: 'Sign-ups', icon: 'user-check' }, { id: 'managed', label: 'Managed accounts', icon: 'headset' }] },
   { group: 'Estate', items: [{ id: 'hardware', label: 'Hardware and sites', icon: 'server' }, { id: 'onprem', label: 'On-premises deployments', icon: 'house' }] },
   { group: 'Service', items: [{ id: 'templates', label: 'Templates', icon: 'layers' }, { id: 'maintenance', label: 'Maintenance', icon: 'calendar-clock' }] }
 ];
@@ -173,6 +174,7 @@ export default function AdminPortal() {
         </aside>
         <main key={sec} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {sec === 'tenants' ? <TenantsSection ctx={ctx} /> : null}
+          {sec === 'signups' ? <SignupsSection ctx={ctx} /> : null}
           {sec === 'managed' ? <ManagedSection ctx={ctx} /> : null}
           {sec === 'hardware' ? <HardwareSection ctx={ctx} /> : null}
           {sec === 'templates' ? <TemplatesSection ctx={ctx} /> : null}

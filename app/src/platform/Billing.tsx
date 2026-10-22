@@ -10,6 +10,8 @@ import type { Ctx } from '../ui/ctx';
 import { custName, inScope, showCustomerCol } from './common';
 import { audit, update, useStore } from './store';
 import { InvoicesTab, MeteringTab, QuotaTab } from './Commercial';
+import { PlanCatalogue } from './PlanCatalogue';
+import { ChargebackTab } from './Chargeback';
 
 const ST: Record<Entitlement['state'], [string, string, string]> = {
   active: ['circle-check', 'Active', 'ok'],
@@ -20,10 +22,12 @@ const ST: Record<Entitlement['state'], [string, string, string]> = {
   expired: ['circle-x', 'Expired', 'err']
 };
 
-type Tab = 'entitlements' | 'usage' | 'invoices' | 'quotas';
+type Tab = 'entitlements' | 'plans' | 'usage' | 'chargeback' | 'invoices' | 'quotas';
 const TABS: { v: Tab; label: string }[] = [
   { v: 'entitlements', label: 'Entitlements' },
+  { v: 'plans', label: 'Plans and editions' },
   { v: 'usage', label: 'Usage and rating' },
+  { v: 'chargeback', label: 'Chargeback' },
   { v: 'invoices', label: 'Invoices' },
   { v: 'quotas', label: 'Quotas' }
 ];
@@ -40,7 +44,9 @@ export default function BillingSection({ ctx }: { ctx: Ctx }) {
       tabs={TABS}
     >
       {tab === 'entitlements' ? <Entitlements ctx={ctx} /> : null}
+      {tab === 'plans' ? <PlanCatalogue ctx={ctx} /> : null}
       {tab === 'usage' ? <MeteringTab ctx={ctx} /> : null}
+      {tab === 'chargeback' ? <ChargebackTab ctx={ctx} /> : null}
       {tab === 'invoices' ? <InvoicesTab ctx={ctx} /> : null}
       {tab === 'quotas' ? <QuotaTab ctx={ctx} /> : null}
     </Section>
