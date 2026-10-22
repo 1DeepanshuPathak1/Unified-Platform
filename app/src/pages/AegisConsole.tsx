@@ -31,6 +31,8 @@ import { audit } from '../platform/store';
 import { CUSTOMERS } from '../data/platform';
 import ResilienceOverview from '../products/resilience/Overview';
 import RecoveryPlans from '../products/resilience/RecoveryPlans';
+import MobilityOverview from '../products/mobility/Overview';
+import Sources from '../products/mobility/Sources';
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = n => String(n).padStart(2, '0');
@@ -69,7 +71,9 @@ const PLATFORM = {
   'backup/policies': 1,
   'dr/overview': 1,
   'dr/recovery': 1,
-  'dr/plans': 1
+  'dr/plans': 1,
+  'mig/overview': 1,
+  'mig/sources': 1
 };
 
 export default class AegisConsole extends DC {
@@ -1289,6 +1293,8 @@ export default class AegisConsole extends DC {
                 {v.key === 'dr/overview' ? <ResilienceOverview ctx={v.ctx} /> : null}
                 {v.key === 'dr/recovery' ? <RecoveryPlans ctx={v.ctx} /> : null}
                 {v.key === 'dr/plans' ? <Policies ctx={v.ctx} fixedType="DR" /> : null}
+                {v.key === 'mig/overview' ? <MobilityOverview ctx={v.ctx} /> : null}
+                {v.key === 'mig/sources' ? <Sources key={v.ctx.tab} ctx={v.ctx} /> : null}
               </div>
             ) : null}
 

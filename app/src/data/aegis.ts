@@ -13,7 +13,7 @@ export const AEGIS: any = (function () {
   const nav = {
     backup: [['overview', 'Overview', 'layout-dashboard'], ['guests', 'Protected guests', 'monitor'], ['policies', 'Policies', 'clipboard-list'], ['restore', 'Restore', 'rotate-ccw'], ['copies', 'Backup copies', 'copy']],
     dr: [['overview', 'Overview', 'layout-dashboard'], ['servers', 'Protected servers', 'server'], ['plans', 'Protection plans', 'calendar-clock'], ['recovery', 'Recovery plans', 'list-ordered'], ['history', 'History', 'history']],
-    mig: [['overview', 'Overview', 'layout-dashboard'], ['servers', 'Servers', 'server'], ['plans', 'Migration plans', 'route']]
+    mig: [['overview', 'Overview', 'layout-dashboard'], ['sources', 'Sources', 'radar'], ['servers', 'Servers', 'server'], ['plans', 'Migration plans', 'route']]
   };
   const shared = [
     { group: 'Infrastructure', items: [['sites', 'Sites', 'map-pin'], ['nodes', 'Nodes and proxies', 'network'], ['repos', 'Repositories', 'database'], ['mappings', 'Mappings', 'arrow-left-right']] },
@@ -32,6 +32,7 @@ export const AEGIS: any = (function () {
     'dr/recovery': ['Recovery plans', 'Ordered, testable runbooks that bring services online at the recovery site.'],
     'dr/history': ['History', 'Every replication cycle and the time spent in each phase.'],
     'mig/overview': ['Overview', 'Progress of the servers moving off VMware.'],
+    'mig/sources': ['Sources', 'VMware sources and every server found on them.'],
     'mig/servers': ['Servers', 'Virtual machines on VMware sources, and where each one is in its migration.'],
     'mig/plans': ['Migration plans', 'Servers grouped into waves, with a cutover window and the mappings they use.'],
     sites: ['Sites', 'Platforms Aegis connects to in {p}, and what each one is used for.'],
@@ -202,6 +203,8 @@ export const AEGIS: any = (function () {
     M('print-srv-02', 'esxi-edge-07', 'esxi-edge-07', 'ds-edge-01', 'Windows Server 2016', 2, 4, 1, 60.0, 'On', 'cutover', 'Commit or roll back', T('21 Oct', '11:20'), 'Chennai-proxmox-prod', { passes: 6, win: true, cores: 2, memMb: 4096, net: 'vmbr0', test: 'vmbr99', vt: 'ceph-vm', cutAt: T('21 Oct', '11:20') }),
     M('legacy-erp', 'esxi-edge-07', 'esxi-edge-07', 'ds-edge-01', 'CentOS 7', 4, 16, 2, 700.0, 'Off', 'synced', 'Test boot', T('20 Oct', '22:05'), 'production-openstack', { passes: 2, flavor: 'm1.large', net: 'prod-net', test: 'mig-test-isolated', vt: 'standard' }),
     M('ubuntu-build-03', 'Chennai vCenter', 'esx-01', 'ds-nfs-03', 'Ubuntu 24.04', 8, 16, 1, 200.0, 'On', 'committed', '—', T('18 Oct', '23:45'), 'Chennai-proxmox-prod', { passes: 4, cores: 8, memMb: 16384, net: 'vmbr0', test: 'vmbr99', vt: 'ceph-vm' }),
+    M('SQL01', 'Chennai vCenter', 'esx-04', 'ds-ssd-01', 'Windows Server 2019', 8, 64, 4, 960.0, 'On', 'synced', 'Test boot on 23 Oct', T('21 Oct', '13:40'), 'Chennai-proxmox-prod', { passes: 6, win: true, cores: 8, memMb: 65536, net: 'vmbr0', test: 'vmbr99', vt: 'ceph-vm' }),
+    M('rpt-app-01', 'Chennai vCenter', 'esx-04', 'ds-sas-02', 'Windows Server 2022', 4, 16, 1, 120.0, 'On', 'testing', 'End test', T('21 Oct', '15:05'), 'Chennai-proxmox-prod', { passes: 4, win: true, cores: 4, memMb: 16384, net: 'vmbr0', test: 'vmbr99', vt: 'ceph-vm' }),
     M('rhel-oracle-01', 'Chennai vCenter', 'esx-02', 'ds-ssd-01', 'Red Hat Enterprise Linux 8', 16, 128, 4, 2400.0, 'On', 'rolledback', 'Start first pass', T('17 Oct', '02:10'), 'production-openstack', { passes: 3, flavor: 'm1.4xlarge', net: 'prod-net', test: 'mig-test-isolated', vt: 'ceph-ssd', rbReason: 'Rolled back by priya.raman: listener failed to start on the new network.' })
   ];
   const migStage = {
@@ -211,6 +214,7 @@ export const AEGIS: any = (function () {
   const migPlans = [
     { id: 'w1', name: 'Wave 1 · CRM', servers: ['crm-app-01', 'crm-db-01', 'hr-portal'], window: 'Sat 25 Oct 2026, 22:00 to 02:00 IST', mapping: 'Chennai vCenter → production-openstack', ready: [1, 3], owner: 'priya.raman' },
     { id: 'w2', name: 'Wave 2 · Terminal servers', servers: ['win-ts-01', 'win-ts-02', 'citrix-sf-01'], window: 'Sat 01 Nov 2026, 22:00 to 04:00 IST', mapping: 'Chennai vCenter → Chennai-proxmox-prod', ready: [0, 3], owner: 'meera.iyer' },
+    { id: 'm2', name: 'Wave 2 · Core banking reporting', servers: ['SQL01', 'rpt-app-01'], window: 'Sat 25 Oct 2026, 22:00 to 04:00 IST', mapping: 'Chennai vCenter → Chennai-proxmox-prod', ready: [0, 2], owner: 's.iyer@meridianbank.in' },
     { id: 'w3', name: 'Wave 3 · Legacy', servers: ['legacy-erp', 'print-srv-02', 'rhel-oracle-01'], window: null, mapping: 'esxi-edge-07 → production-openstack', ready: [0, 3], owner: 'arun.kumar' }
   ];
 

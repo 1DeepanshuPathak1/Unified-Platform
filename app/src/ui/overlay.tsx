@@ -169,6 +169,7 @@ export function Wizard({ title, sub, steps, step, closing, onClose, children, ca
 export function StepUp({ verified, onVerified, who = 'priya.raman@host360.ai' }: { verified: boolean; onVerified: () => void; who?: string }) {
   const [code, setCode] = useState('');
   const [state, setState] = useState<'idle' | 'checking' | 'bad'>('idle');
+  const id = useRef('stepup-' + Math.random().toString(36).slice(2, 8)).current;
   const check = () => {
     if (!/^\d{6}$/.test(code)) {
       setState('bad');
@@ -196,10 +197,10 @@ export function StepUp({ verified, onVerified, who = 'priya.raman@host360.ai' }:
       </div>
       <div style={{ padding: 12, display: 'flex', alignItems: 'flex-end', gap: 8 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: 200 }}>
-          <label htmlFor="stepup-code" style={fieldLabel}>
+          <label htmlFor={id} style={fieldLabel}>
             6-digit code from your authenticator app
           </label>
-          <TextInput id="stepup-code" value={code} onChange={v => { setCode(v.replace(/\D/g, '').slice(0, 6)); setState('idle'); }} placeholder="000 000" mono inputMode="numeric" invalid={state === 'bad'} />
+          <TextInput id={id} value={code} onChange={v => { setCode(v.replace(/\D/g, '').slice(0, 6)); setState('idle'); }} placeholder="000 000" mono inputMode="numeric" invalid={state === 'bad'} />
         </div>
         <Btn kind="outline" icon={state === 'checking' ? 'loader-circle' : 'check'} spin={state === 'checking'} onClick={check}>
           Verify

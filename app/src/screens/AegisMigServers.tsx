@@ -6,6 +6,9 @@ import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
 import { AEGIS } from '../data/aegis';
 import AegisTable from '../components/AegisTable';
+import { CutoverDialog } from '../products/mobility/Cutover';
+import { INVENTORY } from '../products/mobility/data';
+import { DangerDialog } from '../ui/overlay';
 
 const SC = { ok: 'var(--ok)', warn: 'var(--warn)', err: 'var(--err)', run: 'var(--run)', tx: 'var(--tx-3)' };
 const NETS = {
@@ -40,7 +43,11 @@ export default class AegisMigServers extends DC {
     dlgClosing: false,
     over: {},
     jobs: {},
-    armed: null
+    armed: null,
+    cut: null,
+    cutClosing: false,
+    danger: null,
+    dangerClosing: false
   };
   logRef = React.createRef<any>();
 
@@ -67,6 +74,9 @@ export default class AegisMigServers extends DC {
   }
   patch(id, p) {
     this.setState(s => ({ over: { ...s.over, [id]: { ...(s.over[id] || {}), ...p } } }));
+    // Keep Mobility › Overview and Sources in step with what happens here.
+    const inv = INVENTORY.find(v => v.name === id);
+    if (inv && p.stage) inv.stage = p.stage === 'notstarted' ? 'planned' : p.stage;
   }
 
   applyDone() {
@@ -155,24 +165,7 @@ export default class AegisMigServers extends DC {
   act(key, srv) {
     const ctx = this.props.ctx;
     if (key === 'commit' || key === 'rollback') {
-      if (this.state.armed !== key) {
-        this.setState({ armed: key });
-        clearTimeout(this.armT);
-        this.armT = setTimeout(() => this.setState({ armed: null }), 6000);
-        return;
-      }
-      this.setState({ armed: null });
-      if (key === 'commit') {
-        this.patch(srv.id, { stage: 'committed', next: '—' });
-        ctx.toast(`Migration of ${srv.name} committed`, 'ok');
-      } else {
-        this.patch(srv.id, {
-          stage: 'rolledback',
-          next: 'Start first pass',
-          rbReason: `Rolled back by priya.raman at ${ctx.now()}. The source was powered back on.`
-        });
-        ctx.toast(`${srv.name} rolled back. The source is running again.`, 'ok');
-      }
+      this.setState({ danger: { kind: key, id: srv.id }, dangerClosing: false });
       return;
     }
     if (key === 'end') {
@@ -181,10 +174,31 @@ export default class AegisMigServers extends DC {
       return;
     }
     if (key === 'cut') {
-      this.openDlg('cut', srv);
+      this.setState({ cut: srv.id, cutClosing: false });
       return;
     }
     this.run(key, srv);
+  }
+
+  /** Commit or roll back once the danger dialog is confirmed. */
+  finishDanger(key, srv) {
+    const ctx = this.props.ctx;
+    if (key === 'commit') {
+      this.patch(srv.id, { stage: 'committed', next: '—' });
+      ctx.toast(`Migration of ${srv.name} committed`, 'ok');
+    } else {
+      this.patch(srv.id, {
+        stage: 'rolledback',
+        next: 'Start first pass',
+        rbReason: `Rolled back by priya.raman at ${ctx.now()}. The source was powered back on.`
+      });
+      ctx.toast(`${srv.name} rolled back. The source is running again.`, 'ok');
+    }
+  }
+
+  closeLayer(key) {
+    this.setState({ [key + 'Closing']: true });
+    setTimeout(() => this.setState({ [key]: null, [key + 'Closing']: false }), 150);
   }
 
   openDlg(kind, srv) {
@@ -457,10 +471,14 @@ export default class AegisMigServers extends DC {
           { k: 'Volume type', v: dsrv.vt },
           dsrv.flavor ? { k: 'Flavor', v: dsrv.flavor } : { k: 'Cores and memory', v: `${dsrv.cores} cores, ${dsrv.memMb} MB` },
           { k: 'Network', v: dsrv.net },
-          { k: 'Test network', v: dsrv.test }
+          { k: 'Test network', v: dsrv.test },
+          { k: 'Firmware', v: /2019|2022|24\.04|RHEL|Red Hat Enterprise Linux 8/.test(dsrv.os) ? 'UEFI (OVMF), Secure Boot off' : 'BIOS (SeaBIOS)' },
+          { k: 'Boot disk', v: 'Disk 1, VirtIO SCSI single' },
+          { k: 'Machine type', v: dsrv.dest === 'production-openstack' ? 'q35 (image property hw_machine_type)' : 'q35' }
         ],
         passes,
         noPasses: passN === 0,
+        verified: passN ? `Verified after pass ${passN}: byte-for-byte checksums of ${dsrv.disks} ${dsrv.disks === 1 ? 'disk match' : 'disks match'} the source.` : '',
         tests: testsRun
           ? [
               {
@@ -1203,6 +1221,12 @@ export default class AegisMigServers extends DC {
                       </div>
                     </div>
                   ))}
+                  {v.d?.verified ? (
+                    <p style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 0 0', fontFamily: 'var(--f-body)' }}>
+                      <Icon name="copy-check" style={{ color: 'var(--ok)' }} />
+                      {v.d.verified}
+                    </p>
+                  ) : null}
                   {v.d?.noPasses ? (
                     <p style={{ padding: '16px 0', color: 'var(--tx-2)', fontFamily: 'var(--f-body)' }}>
                       No passes yet. The first pass copies the whole server while it keeps running.
@@ -1491,6 +1515,46 @@ export default class AegisMigServers extends DC {
             </div>
           </div>
         ) : null}
+        {this.state.cut ? (
+          <CutoverDialog
+            ctx={this.props.ctx}
+            srv={this.servers().find(x => x.id === this.state.cut)}
+            closing={this.state.cutClosing}
+            onClose={() => this.closeLayer('cut')}
+            onGo={note => {
+              const srv = this.servers().find(x => x.id === this.state.cut);
+              this.run('cut', srv);
+              this.props.ctx.toast(`Cutover of ${srv.name} started. ${note}`, 'warn');
+            }}
+          />
+        ) : null}
+        {this.state.danger
+          ? (() => {
+              const srv = this.servers().find(x => x.id === this.state.danger.id);
+              const commit = this.state.danger.kind === 'commit';
+              return (
+                <DangerDialog
+                  title={commit ? `Commit the migration of ${srv.name}` : `Roll back ${srv.name}`}
+                  intro={commit ? `Keeps ${srv.name} at ${srv.dest} for good and releases the source. This cannot be undone.` : `Deletes the copy at ${srv.dest} and starts ${srv.name} again on ${srv.src}.`}
+                  removed={
+                    commit
+                      ? [`The snapshot of ${srv.name} on ${srv.src} that a roll back needs`, `Roll back for ${srv.name}`, 'Change tracking on the source VM']
+                      : [`${srv.name} at ${srv.dest}, and everything written to it since the cutover${srv.cutAt ? ` at ${srv.cutAt}` : ''}`, 'The cutover itself; the wave shows this server as rolled back']
+                  }
+                  kept={commit ? `${srv.name} keeps running at ${srv.dest}. The source stays powered off; delete it in vCenter when you are ready. Backup and DR start from its criticality tier.` : `Copied data is kept, so the next attempt starts with a sync pass instead of a full copy.`}
+                  name={srv.name}
+                  action={commit ? 'Commit' : 'Roll back'}
+                  icon={commit ? 'git-commit' : 'undo-2'}
+                  closing={this.state.dangerClosing}
+                  onClose={() => this.closeLayer('danger')}
+                  onConfirm={() => {
+                    this.finishDanger(this.state.danger.kind, srv);
+                    this.closeLayer('danger');
+                  }}
+                />
+              );
+            })()
+          : null}
       </div>
     );
   }
