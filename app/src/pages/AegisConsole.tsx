@@ -709,8 +709,8 @@ export default class AegisConsole extends DC {
                 role="combobox"
                 aria-expanded={v.searchOpen}
                 aria-controls="ae-search-results"
-                aria-label="Search sites, guests, servers, jobs, repositories and plans"
-                placeholder="Search sites, guests, servers, jobs, repositories, plans"
+                aria-label="Search workloads, customers, people, plans, jobs and alerts"
+                placeholder="Search workloads, customers, people, plans, alerts"
                 style={{
                   width: '100%',
                   height: '36px',

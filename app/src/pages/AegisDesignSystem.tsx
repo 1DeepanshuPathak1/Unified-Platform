@@ -970,7 +970,7 @@ export default class AegisDesignSystem extends DC {
                   <div style={{ position: 'relative' }}>
                     <Icon name="search" style={{ position: 'absolute', left: '12px', top: '10px', color: 'var(--tx-3)' }} />
                     <input
-                      placeholder="Search sites, guests, servers, jobs, repositories, plans"
+                      placeholder="Search workloads, customers, people, plans, alerts"
                       style={{
                         width: '100%',
                         height: '36px',
