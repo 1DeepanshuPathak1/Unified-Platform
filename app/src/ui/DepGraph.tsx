@@ -45,7 +45,7 @@ export function DepGraph({ nodes, edges, label, onOpen, columnLabel }: { nodes: 
       });
       maxY = Math.max(maxY, y);
     });
-    return { es, pos, cols, width: cols.length * (W + GX) - GX, height: maxY };
+    return { es, pos, cols, width: Math.max(0, cols.length * (W + GX) - GX), height: Math.max(0, maxY) };
   }, [nodes, edges]);
   const near = (id: string) => !hi || id === hi || layout.es.some(([a, b]) => (a === hi && b === id) || (b === hi && a === id));
   const desc = nodes.map(n => `${n.label}${layout.es.filter(e => e[1] === n.id).length ? ` needs ${layout.es.filter(e => e[1] === n.id).map(e => nodes.find(x => x.id === e[0])?.label).join(', ')}` : ''}`).join('; ');

@@ -102,7 +102,7 @@ export function RolesTab({ ctx }: { ctx: Ctx }) {
       ) : null}
       {editor.value ? <RoleEditor ctx={ctx} role={editor.value === 'new' ? null : editor.value} closing={editor.closing} onClose={editor.close} onSaved={id => { editor.close(); drawer.open(id); }} /> : null}
       {sim.value ? <Simulator ctx={ctx} closing={sim.closing} onClose={sim.close} /> : null}
-      {del.value ? (
+      {del.value && s.roles.some(r => r.id === del.value) ? (
         <DangerDialog
           title={`Delete role ${s.roles.find(r => r.id === del.value)!.name}`}
           intro="Exactly this is removed:"

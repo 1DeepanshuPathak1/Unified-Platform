@@ -158,7 +158,9 @@ export default function Agents({ ctx }: { ctx: Ctx }) {
       ) : null}
       {remove.value
         ? (() => {
-            const a = agents.find(x => x.id === remove.value)!;
+            // Gone from the list once confirmed; the dialog closes without it.
+            const a = agents.find(x => x.id === remove.value);
+            if (!a) return null;
             return (
               <DangerDialog
                 title={`Remove the agent from ${a.machine}`}

@@ -558,7 +558,8 @@ function EmergencyDialog({ ctx, closing, onClose, onUsed }: { ctx: Ctx; closing:
 export function DelegationTab({ ctx }: { ctx: Ctx }) {
   const [list, setList] = useState<Delegation[]>(DELEGATIONS);
   const create = useClosable<boolean>();
-  const revoke = useClosable<string>();
+  // Holds the delegation itself, so the dialog can still render while it closes after the revoke.
+  const revoke = useClosable<Delegation>();
   const rows = list.filter(d => inScope(ctx, d.customer));
   const adm = ctx.can('admin', 'Delegating administration');
   return (
@@ -581,7 +582,7 @@ export function DelegationTab({ ctx }: { ctx: Ctx }) {
             can: { v: d.can.join(', '), tip: `Cannot: ${d.cannot.join(', ')}` },
             by: d.by,
             exp: d.expires === 'No end date' ? { v: 'No end date', muted: true } : short(d.expires).split(',')[0],
-            x: { t: 'btn', v: 'Revoke', onClick: () => revoke.open(d.id), disabled: !adm.ok, why: adm.why }
+            x: { t: 'btn', v: 'Revoke', onClick: () => revoke.open(d), disabled: !adm.ok, why: adm.why }
           }))}
           state={ctx.ui}
           unit={['delegation', 'delegations']}
@@ -595,7 +596,7 @@ export function DelegationTab({ ctx }: { ctx: Ctx }) {
       {create.value ? <DelegateDialog ctx={ctx} closing={create.closing} onClose={create.close} onCreate={d => { setList(x => [...x, d]); create.close(); }} /> : null}
       {revoke.value
         ? (() => {
-            const d = list.find(x => x.id === revoke.value)!;
+            const d = revoke.value;
             return (
               <Dialog
                 alert
