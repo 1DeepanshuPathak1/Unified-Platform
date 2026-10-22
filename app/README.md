@@ -3,7 +3,8 @@
 React + TypeScript app for the Host360 Aegis Unified Platform. One console holds three products and the platform they share:
 
 - **Protection** (Backup & Recovery), **Resilience** (Disaster Recovery) and **Mobility** (Migration). Switch between them from the header. The product block in the left navigation changes; the platform sections stay where they are.
-- **Platform sections**: Inbox, Customers (provider only), Workloads, Applications, Sites, Nodes and proxies, Repositories, Mappings, Alerts & Activity, Reports, Automation, Billing & Licensing and Settings.
+- **Platform sections**: Home, Inbox, Customers (provider only), Workloads, Applications, Sites, Nodes and proxies, Repositories, Mappings, Agents, Alerts & Activity, Security & Compliance, Reports, Automation, Billing & Licensing, Settings and Support.
+- **Audiences**: the provider sees every customer. A provider can log in as a customer's owner, or preview what the customer's self-service users see (Customers › Preview self-service): a reduced navigation and a read-only view of status, usage, invoices, reports and support.
 - **Shell**: product switcher, search (Ctrl K) with a full results page, the running-jobs tray, alerts, the tenant and project picker, the clock with its time zone named, the theme toggle and the user menu (profile, sign-in and MFA, API tokens). A provider can log in as a customer's owner. A banner then stays on screen, and every action is audited under the provider user.
 
 The app also has three reference pages, opened from the user menu:
@@ -32,7 +33,7 @@ The build uses relative URLs, so `dist/` can be opened from a static host or a s
 
 Example: `http://localhost:5173/?role=Viewer&state=empty#/backup/workloads`.
 
-Routes are `#/{product}/{page}/{tab}?open={id}`. For example, `#/backup/activity/jobs` shows the Jobs tab and `#/backup/workloads?open=sql01` opens SQL01's drawer. The old addresses `jobs`, `alerts`, `audit` and `access` redirect to their new tabs.
+Routes are `#/{product}/{page}/{tab}?open={id}`. For example, `#/backup/activity/jobs` shows the Jobs tab, `#/backup/workloads?open=sql01` opens SQL01's drawer and `#/dr/recovery?open=core` opens the Core services failover runbook. The console opens on Home. The old addresses `jobs`, `alerts`, `audit` and `access` redirect to their new tabs.
 
 ## How it's built
 
@@ -41,11 +42,13 @@ Routes are `#/{product}/{page}/{tab}?open={id}`. For example, `#/backup/activity
 | `src/App.tsx` | Switches between the console, Coverage, Design system and Handoff pages on the URL hash. |
 | `src/pages/AegisConsole.tsx` | The console: header, navigation, search, running jobs, alerts, toasts, acting-as-owner and the screen switch. |
 | `src/shell/` | Navigation (`Nav`, `routes.ts` with the sections and redirects), the tenant and project picker, and the account menu and dialogs. |
-| `src/platform/` | Platform screens (Workloads, Applications, Customers, Inbox, Search, Alerts & Activity, Automation, Settings, Billing). `store.ts` holds the state these screens share, so an approval made in Automation also clears its Inbox item. Each change writes an audit record. |
+| `src/platform/` | Platform screens (Home, Inbox, Search, Workloads, Applications, Customers, Agents, Alerts & Activity, Security & Compliance, Automation, Settings, Billing, Support). `store.ts` holds the state these screens share (approvals, policies, runbooks, failover runs…), so an approval made in Automation also clears its Inbox item. Each change writes an audit record. |
 | `src/ui/` | Building blocks for the platform screens. `controls.tsx` has buttons, segments, tabs and form fields. `layout.tsx` has page, section, toolbar, bars, panels, facts, status and steps. `overlay.tsx` has the drawer, dialog, wizard, step-up MFA and `DangerDialog`. `ctx.ts` defines the screen context type. |
-| `src/screens/` | The product screens (Overview, Protected guests, Restore, Sites, DR servers, Recovery plans, Migration servers…). `AegisList` covers the simpler list screens. |
+| `src/products/resilience/` | Resilience: `data.ts` (replication per workload, recovery plans as runbooks, readiness scoring, drills), `runner.ts` (runs plans step by step; runs live in the store and drive the jobs tray), `Overview.tsx`, `RecoveryPlans.tsx`, `Builder.tsx` (visual runbook and dry run) and `Failover.tsx` (failover wizard, run panel, return to primary). |
+| `src/products/mobility/` | Mobility: `data.ts` (VMware sources, inventory with migratability checks, waves, burn-down), `Overview.tsx`, `Sources.tsx` and `Cutover.tsx` (go/no-go cutover dialog). |
+| `src/screens/` | The product screens kept from the design export (Protection overview, Protected guests, Restore, Sites, Protected servers, Migration servers…). `AegisList` covers the simpler list screens. |
 | `src/components/AegisTable.tsx` | The shared table used by every list: sorting, selection, the loading, empty, no-match and unreachable states, and the footer. |
-| `src/data/` | Sample data. `platform.ts` holds the platform model (customers, partners, workloads, applications, users, roles, policies, approvals, audit and alerts), and `aegis.ts` holds the product data. `coverage.ts` holds the Coverage rows, and `screens.ts` the screen catalogue and Part 7 rules. `spec.ts` holds the design-system specification. |
+| `src/data/` | Sample data. `platform.ts` holds the platform model (customers, partners, workloads, applications, users, roles, policies, approvals, audit and alerts), `ops.ts` holds agents, security findings, compliance mode, reviews and support, and `aegis.ts` holds the product data. `coverage.ts` holds the Coverage rows, and `screens.ts` the screen catalogue and Part 7 rules. `spec.ts` holds the design-system specification. |
 | `src/lib/` | `Icon` (Lucide geometry, stroke 1.5), `Ind` (the sliding tab and segment indicator), tooltips (`data-tip`), the `pc()` pseudo-class helper and the `DC` base class used by the product screens. |
 | `src/styles/tokens.css` | Colour, font and motion tokens for both themes, resets, focus ring and keyframes. |
 

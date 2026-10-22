@@ -69,4 +69,6 @@ export interface Ctx {
   now: () => string;
   hms: () => string;
   loginAsOwner: (customerId: string) => void;
+  /** Provider only: show what a customer's self-service users see. */
+  previewSelf: (customerId: string) => void;
 }

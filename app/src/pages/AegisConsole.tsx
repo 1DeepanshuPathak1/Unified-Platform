@@ -33,6 +33,10 @@ import ResilienceOverview from '../products/resilience/Overview';
 import RecoveryPlans from '../products/resilience/RecoveryPlans';
 import MobilityOverview from '../products/mobility/Overview';
 import Sources from '../products/mobility/Sources';
+import Home from '../platform/Home';
+import Agents from '../platform/Agents';
+import SecuritySection from '../platform/Security';
+import SupportSection from '../platform/Support';
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = n => String(n).padStart(2, '0');
@@ -73,14 +77,18 @@ const PLATFORM = {
   'dr/recovery': 1,
   'dr/plans': 1,
   'mig/overview': 1,
-  'mig/sources': 1
+  'mig/sources': 1,
+  home: 1,
+  agents: 1,
+  security: 1,
+  support: 1
 };
 
 export default class AegisConsole extends DC {
   state: any = {
     ready: !!AEGIS,
     theme: 'dark',
-    route: 'backup/overview',
+    route: 'backup/home',
     collapsed: false,
     menu: null,
     q: '',
@@ -89,6 +97,7 @@ export default class AegisConsole extends DC {
     tab: '',
     actingAs: null,
     actingUntil: '',
+    selfView: false,
     account: null,
     accountClosing: false,
     loginAs: null,
@@ -305,10 +314,17 @@ export default class AegisConsole extends DC {
     location.hash = `/${this.state.route.split('/')[0]}/workloads`;
     this.toast(`Acting as ${o.owner}. Every action is recorded under priya.raman.`, 'warn');
   }
+  startSelf(customerId) {
+    const o = ownerOf(customerId);
+    this.setState({ actingAs: o, selfView: true, actingUntil: 'when you return', project: 'All projects', menu: null });
+    audit({ who: 'priya.raman', customer: customerId, what: 'Previewed the self-service view', object: o.owner, when: fmtD(nowD()), r: 'ok' });
+    location.hash = `/${this.state.route.split('/')[0]}/home`;
+    this.toast(`Previewing what ${customerName(customerId)}'s self-service users see`, 'info');
+  }
   stopActing() {
     const o = this.state.actingAs;
     if (o) audit({ who: 'priya.raman', as: o.ownerEmail, customer: o.customer, what: 'Returned to the Host360 console', object: o.owner, when: fmtD(nowD()), r: 'ok' });
-    this.setState({ actingAs: null, project: 'All projects' });
+    this.setState({ actingAs: null, selfView: false, project: 'All projects' });
     location.hash = `/${this.state.route.split('/')[0]}/customers`;
     this.toast('Back in the Host360 console', 'info');
   }
@@ -318,6 +334,7 @@ export default class AegisConsole extends DC {
   }
 
   can(action, verb) {
+    if (this.state.selfView) return { ok: false, dis: 'true', why: `Self-service users can look but not change anything. ${verb || 'This'} needs an administrator; ask in Support.`, op: 0.45 };
     const role = this.props.role || 'Owner';
     const ok = (ROLE_CAN[action] || []).includes(role);
     const need = (ROLE_CAN[action] || []).join(' or ').replace(/, (?=[^,]*$)/, ' or ');
@@ -415,7 +432,8 @@ export default class AegisConsole extends DC {
       sub: meta[1].replace('{p}', project),
       section: isCommon ? sectionOf(page) : cur.label,
       tab: s.tab,
-      audience: s.actingAs ? 'customer' : 'provider',
+      audience: s.actingAs ? (s.selfView ? 'self' : 'customer') : 'provider',
+      previewSelf: id => this.startSelf(id),
       actingAs: s.actingAs,
       loginAsOwner: id => this.setState({ loginAs: id, loginAsClosing: false }),
       project,
@@ -553,10 +571,12 @@ export default class AegisConsole extends DC {
         productItems: A.nav[prod],
         collapsed,
         provider: !s.actingAs,
+        self: !!s.actingAs && s.selfView,
         counts: { inbox: inboxItems(ctx).length }
       },
       actingAs: s.actingAs,
       actingUntil: s.actingUntil,
+      selfView: s.selfView,
       stopActing: () => this.stopActing(),
       account: s.account,
       accountClosing: s.accountClosing,
@@ -616,7 +636,7 @@ export default class AegisConsole extends DC {
         }}
       >
         {v.anyMenu ? <div onClick={v.closeMenu} style={{ position: 'absolute', inset: 0, zIndex: 40 }} /> : null}
-        {v.actingAs ? <ActingBanner customer={customerName(v.actingAs.customer)} owner={v.actingAs.owner} until={v.actingUntil} onReturn={v.stopActing} /> : null}
+        {v.actingAs ? <ActingBanner customer={customerName(v.actingAs.customer)} owner={v.actingAs.owner} until={v.actingUntil} onReturn={v.stopActing} self={v.selfView} /> : null}
         <header
           style={{
             height: '52px',
@@ -633,15 +653,15 @@ export default class AegisConsole extends DC {
           }}
         >
           <a
-            href="#/backup/overview"
+            href="#/backup/home"
             aria-label="Host360 Aegis home"
             style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 'none', height: '36px', paddingRight: '4px' }}
           >
             <Icon name="mark" size="24" />
             <span style={{ font: '500 17px/24px var(--f-head)', whiteSpace: 'nowrap', letterSpacing: '0.005em' }}>Host360 Aegis</span>
           </a>
-          <span style={{ width: '1px', height: '24px', background: 'var(--ln-2)', flex: 'none' }} />
-          <div style={{ position: 'relative', flex: 'none' }}>
+          <span style={{ width: '1px', height: '24px', background: 'var(--ln-2)', flex: 'none', display: v.selfView ? 'none' : undefined }} />
+          <div style={{ position: 'relative', flex: 'none', display: v.selfView ? 'none' : undefined }}>
             <button
               onClick={v.openProduct}
               aria-haspopup="menu"
@@ -845,7 +865,7 @@ export default class AegisConsole extends DC {
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 'none' }}>
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', display: v.selfView ? 'none' : undefined }}>
               <button
                 onClick={v.openTray}
                 aria-haspopup="dialog"
@@ -966,7 +986,7 @@ export default class AegisConsole extends DC {
                 </div>
               ) : null}
             </div>
-            <div style={{ position: 'relative' }}>
+            <div style={{ position: 'relative', display: v.selfView ? 'none' : undefined }}>
               <button
                 onClick={v.openAlerts}
                 aria-haspopup="dialog"
@@ -1295,6 +1315,10 @@ export default class AegisConsole extends DC {
                 {v.key === 'dr/plans' ? <Policies ctx={v.ctx} fixedType="DR" /> : null}
                 {v.key === 'mig/overview' ? <MobilityOverview ctx={v.ctx} /> : null}
                 {v.key === 'mig/sources' ? <Sources key={v.ctx.tab} ctx={v.ctx} /> : null}
+                {v.key === 'home' ? <Home ctx={v.ctx} /> : null}
+                {v.key === 'agents' ? <Agents ctx={v.ctx} /> : null}
+                {v.key === 'security' ? <SecuritySection ctx={v.ctx} /> : null}
+                {v.key === 'support' ? <SupportSection ctx={v.ctx} /> : null}
               </div>
             ) : null}
 

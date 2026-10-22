@@ -192,12 +192,20 @@ export function AccountDialog({ ctx, tab: initial, closing, onClose }: { ctx: Ct
 }
 
 /** Persistent while a provider user works inside a customer's console. */
-export function ActingBanner({ customer, owner, until, onReturn }: { customer: string; owner: string; until: string; onReturn: () => void }) {
+export function ActingBanner({ customer, owner, until, onReturn, self }: { customer: string; owner: string; until: string; onReturn: () => void; self?: boolean }) {
   return (
     <div role="status" style={{ height: 36, flex: 'none', display: 'flex', alignItems: 'center', gap: 12, padding: '0 8px 0 16px', background: 'var(--warn-s)', borderBottom: '1px solid var(--warn)', position: 'relative', zIndex: 46 }}>
       <Icon name="user-check" style={{ color: 'var(--warn)' }} />
       <span style={{ flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-        <strong style={{ fontWeight: 600 }}>Priya Raman (Host360)</strong> is acting as <strong style={{ fontWeight: 600 }}>{owner}</strong>, owner of {customer}. Every action is recorded under priya.raman. Ends {until}.
+        {self ? (
+          <>
+            <strong style={{ fontWeight: 600 }}>Preview</strong>: what self-service users of <strong style={{ fontWeight: 600 }}>{customer}</strong> see. Read-only; recorded under priya.raman.
+          </>
+        ) : (
+          <>
+            <strong style={{ fontWeight: 600 }}>Priya Raman (Host360)</strong> is acting as <strong style={{ fontWeight: 600 }}>{owner}</strong>, owner of {customer}. Every action is recorded under priya.raman. Ends {until}.
+          </>
+        )}
       </span>
       <Btn kind="ghost" size="sm" icon="log-out" onClick={onReturn}>
         Return to Host360 console

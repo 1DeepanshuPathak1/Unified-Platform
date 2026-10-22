@@ -13,6 +13,7 @@ export const PLATFORM_TOP: NavGroup = {
   id: 'platform',
   label: 'Platform',
   items: [
+    { id: 'home', label: 'Home', icon: 'house' },
     { id: 'inbox', label: 'Inbox', icon: 'mail' },
     { id: 'customers', label: 'Customers', icon: 'users', providerOnly: true },
     { id: 'workloads', label: 'Workloads', icon: 'layers' },
@@ -29,7 +30,8 @@ export const PLATFORM_GROUPS: NavGroup[] = [
       { id: 'sites', label: 'Sites', icon: 'map-pin' },
       { id: 'nodes', label: 'Nodes and proxies', icon: 'network' },
       { id: 'repos', label: 'Repositories', icon: 'database' },
-      { id: 'mappings', label: 'Mappings', icon: 'arrow-left-right' }
+      { id: 'mappings', label: 'Mappings', icon: 'arrow-left-right' },
+      { id: 'agents', label: 'Agents', icon: 'bot' }
     ]
   },
   {
@@ -37,6 +39,7 @@ export const PLATFORM_GROUPS: NavGroup[] = [
     label: 'Operations',
     items: [
       { id: 'activity', label: 'Alerts & Activity', icon: 'activity' },
+      { id: 'security', label: 'Security & Compliance', icon: 'scale' },
       { id: 'reports', label: 'Reports', icon: 'file-text' },
       { id: 'automation', label: 'Automation', icon: 'zap' }
     ]
@@ -46,7 +49,8 @@ export const PLATFORM_GROUPS: NavGroup[] = [
     label: 'Administration',
     items: [
       { id: 'billing', label: 'Billing & Licensing', icon: 'key' },
-      { id: 'settings', label: 'Settings', icon: 'settings-2' }
+      { id: 'settings', label: 'Settings', icon: 'settings-2' },
+      { id: 'support', label: 'Support', icon: 'headset' }
     ]
   }
 ];

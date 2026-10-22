@@ -7,6 +7,8 @@ import { Btn, FilterInput, Seg } from '../ui/controls';
 import { Bar, Facts, Page, PageHeader, Panel, Status, Toolbar, plural } from '../ui/layout';
 import type { Ctx } from '../ui/ctx';
 import { B_ST, D_ST, M_ST, TierTag, custName } from './common';
+import { store } from './store';
+import { INVENTORY, STAGE_LABEL } from '../products/mobility/data';
 
 export type Hit = { type: string; label: string; sub: string; route: string; id?: string };
 
@@ -22,6 +24,8 @@ export function searchAll(q: string): Hit[] {
   USERS.filter(u => u.status !== 'deleted' && (m(u.name) || m(u.email))).forEach(u => hits.push({ type: 'Person', label: u.name, sub: `${u.email} · ${custName(u.customer)}`, route: 'settings/users', id: u.id }));
   P_ALERTS.filter(a => m(a.object) || m(a.title)).forEach(a => hits.push({ type: 'Alert', label: `${a.title} · ${a.object}`, sub: `${a.product} · ${a.raised}`, route: 'activity/alerts', id: a.id }));
   POLICIES.filter(p => m(p.name)).forEach(p => hits.push({ type: 'Policy', label: p.name, sub: `${p.type} policy · ${p.level}`, route: 'automation/policies', id: p.id }));
+  store.runbooks.filter(r => m(r.name) || m(r.to)).forEach(r => hits.push({ type: 'Plan', label: r.name, sub: `Recovery plan · ${custName(r.customer)} · ${r.from} → ${r.to}`, route: 'dr/recovery', id: r.id }));
+  INVENTORY.filter(v => (m(v.name) || m(v.os)) && !hits.some(h => h.label === v.name)).forEach(v => hits.push({ type: 'Server', label: v.name, sub: `VMware source ${v.source} · ${STAGE_LABEL[v.stage]}`, route: 'mig/sources', id: v.id }));
   (AEGIS.search as Hit[]).filter(x => m(x.label) || m(x.sub)).forEach(x => {
     if (!hits.some(h => h.label === x.label && (h.type === 'Workload' || h.type === x.type))) hits.push(x);
   });

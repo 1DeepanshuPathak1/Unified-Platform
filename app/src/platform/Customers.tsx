@@ -148,6 +148,9 @@ function CustomerList({ ctx }: { ctx: Ctx }) {
               <Btn kind="outline" icon="user-check" disabled={d.status === 'suspended' || d.status === 'archived' || d.kind === 'Internal'} why={d.kind === 'Internal' ? 'This is Host360’s own tenant.' : `${d.name} is ${d.status}.`} onClick={() => ctx.loginAsOwner(d.id)}>
                 Log in as owner…
               </Btn>
+              <Btn kind="outline" icon="eye" disabled={d.kind === 'Internal' || d.status === 'archived'} why={d.kind === 'Internal' ? 'This is Host360’s own tenant.' : `${d.name} is archived.`} onClick={() => ctx.previewSelf(d.id)}>
+                Preview self-service
+              </Btn>
               {d.status === 'suspended' ? (
                 <Btn kind="outline" icon="play" perm={adm} onClick={() => { setStatus(d.id, 'active'); audit({ who: 'priya.raman', customer: d.id, what: 'Reactivated a customer', object: d.name, when: ctx.now(), r: 'ok' }); ctx.toast(`${d.name} reactivated; restores and sign-ins work again`, 'ok'); }}>
                   Reactivate

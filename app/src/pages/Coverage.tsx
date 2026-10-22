@@ -39,7 +39,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
   const rows = COVERAGE.filter(c => (status === 'All' || c.now === status) && (prio === 'All' || c.prio === prio) && (part === 'All' || c.part === part) && (!changed || c.turn === CURRENT_TURN) && (!ql || `${c.id} ${c.item} ${c.object} ${c.group}`.toLowerCase().includes(ql)));
   const count = (st: CovStatus, list = COVERAGE) => list.filter(c => c.now === st).length;
   const p0 = COVERAGE.filter(c => c.prio === 'P0');
-  const changedRows = COVERAGE.filter(c => c.turn === CURRENT_TURN && c.was !== c.now);
+  const changedRows = COVERAGE.filter(c => c.turn === CURRENT_TURN && (c.prev ?? c.was) !== c.now);
   const tile = (label: string, value: string, sub: string, color?: string): ReactElement => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px', borderLeft: '1px solid var(--ln)', minWidth: 0 }}>
       <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>{label}</span>
@@ -95,7 +95,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
                   <span style={{ font: '700 12px var(--f-ui)', color: 'var(--tx-3)' }}>{c.id}</span>
                   <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={c.item} data-tip-overflow="">{c.item}</span>
                   <span style={{ display: 'flex', alignItems: 'center', gap: 8, font: '13px var(--f-ui)', whiteSpace: 'nowrap' }}>
-                    <StatusL s={c.was} muted />
+                    <StatusL s={c.prev ?? c.was} muted />
                     <Icon name="arrow-right" style={{ color: 'var(--tx-3)' }} />
                     <StatusL s={c.now} />
                   </span>
@@ -153,7 +153,7 @@ function StatusL({ s, muted }: { s: CovStatus; muted?: boolean }) {
 
 function Row({ c }: { c: CovItem }) {
   return (
-    <div role="row" style={{ ...grid, borderBottom: '1px solid var(--ln)', background: c.turn === CURRENT_TURN && c.was !== c.now ? 'var(--acc-soft)' : undefined }}>
+    <div role="row" style={{ ...grid, borderBottom: '1px solid var(--ln)', background: c.turn === CURRENT_TURN && (c.prev ?? c.was) !== c.now ? 'var(--acc-soft)' : undefined }}>
       <div role="cell" style={{ fontWeight: 700, color: 'var(--tx-2)' }}>{c.id}</div>
       <div role="cell" style={{ fontFamily: 'var(--f-body)', fontSize: 14, lineHeight: '20px' }}>
         <div>{c.item}</div>
@@ -176,7 +176,7 @@ function Row({ c }: { c: CovItem }) {
       </div>
       <div role="cell">
         <StatusL s={c.now} />
-        {c.turn === CURRENT_TURN && c.was !== c.now ? <div style={{ marginTop: 2, fontSize: 12, color: 'var(--tx-3)' }}>was {c.was.toLowerCase()}</div> : null}
+        {c.turn === CURRENT_TURN && (c.prev ?? c.was) !== c.now ? <div style={{ marginTop: 2, fontSize: 12, color: 'var(--tx-3)' }}>was {(c.prev ?? c.was).toLowerCase()}</div> : null}
       </div>
       <div role="cell" style={{ fontWeight: 700, color: c.prio === 'P0' ? 'var(--tx)' : 'var(--tx-2)' }}>{c.prio}</div>
       <div role="cell" style={{ color: 'var(--tx-2)' }}>{c.object}</div>

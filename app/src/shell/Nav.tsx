@@ -13,9 +13,13 @@ type Props = {
   collapsed: boolean;
   provider: boolean;
   counts: Record<string, number>;
+  /** Customer self-service users see one combined view without product sections. */
+  self?: boolean;
 };
 
-export function Nav({ product, page, productItems, collapsed, provider, counts }: Props) {
+const SELF_ITEMS = ['home', 'workloads', 'reports', 'billing', 'support'];
+
+export function Nav({ product, page, productItems, collapsed, provider, counts, self }: Props) {
   const item = (n: NavItem, key: number) => {
     const on = page === n.id;
     const count = counts[n.id];
@@ -42,11 +46,21 @@ export function Nav({ product, page, productItems, collapsed, provider, counts }
     );
   };
   const label = (text: string, line: boolean) => (
-    <div role="presentation" style={{ height: 36, flex: 'none', display: 'flex', alignItems: 'flex-end', padding: '0 10px 6px', marginTop: 8, borderTop: `1px solid ${line || collapsed ? 'var(--ln)' : 'transparent'}`, transition: 'border-color 150ms' }}>
+    <div role="presentation" style={{ height: 30, flex: 'none', display: 'flex', alignItems: 'flex-end', padding: '0 10px 6px', marginTop: 4, borderTop: `1px solid ${line || collapsed ? 'var(--ln)' : 'transparent'}`, transition: 'border-color 150ms' }}>
       <span style={{ font: '600 12px/16px var(--f-body)', color: 'var(--tx-3)', whiteSpace: 'nowrap', opacity: collapsed ? 0 : 1, transition: 'opacity 100ms' }}>{text}</span>
     </div>
   );
-  const top = PLATFORM_TOP.items.filter(i => provider || !i.providerOnly);
+  const top = PLATFORM_TOP.items.filter(i => (provider || !i.providerOnly) && (!self || SELF_ITEMS.includes(i.id)));
+  if (self) {
+    const rest = PLATFORM_GROUPS.flatMap(g => g.items).filter(i => SELF_ITEMS.includes(i.id));
+    return (
+      <nav aria-label="Main" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', padding: '12px 8px' }}>
+        <Ind mode="fill" style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {[...top, ...rest].map(item)}
+        </Ind>
+      </nav>
+    );
+  }
   return (
     <nav aria-label="Main" style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden', padding: '12px 8px' }}>
       <Ind mode="fill" style={{ display: 'flex', flexDirection: 'column' }}>
