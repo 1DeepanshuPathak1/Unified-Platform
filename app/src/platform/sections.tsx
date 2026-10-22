@@ -2,6 +2,7 @@ import type { Ctx, LiveJob } from '../ui/ctx';
 import { Section } from '../ui/layout';
 import { AlertRulesTab, AlertsTab, MaintenanceTab } from './Alerts';
 import { ApprovalRulesTab, ApprovalsTab } from './Approvals';
+import { WorkflowsTab } from './Workflows';
 import { AuditTab } from './Audit';
 import { JobsTab } from './Jobs';
 import { HealthTab } from './Health';
@@ -43,27 +44,29 @@ export function ActivitySection({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string
   );
 }
 
-type AutoTab = 'policies' | 'approvals' | 'rules';
+type AutoTab = 'policies' | 'workflows' | 'approvals' | 'rules';
 
 /** Automation: policies for every product, and the approvals that guard actions. */
 export function AutomationSection({ ctx }: { ctx: Ctx }) {
   const s = useStore();
-  const tab = (['policies', 'approvals', 'rules'].includes(ctx.tab) ? ctx.tab : 'policies') as AutoTab;
+  const tab = (['policies', 'workflows', 'approvals', 'rules'].includes(ctx.tab) ? ctx.tab : 'policies') as AutoTab;
   const waiting = s.approvals.filter(a => a.state === 'pending' && inScope(ctx, a.customer)).length;
   return (
     <Section<AutoTab>
       kicker="Operations"
       title="Automation"
-      sub="Policies for Protection, Resilience and Mobility, and the approvals that guard risky actions."
+      sub="Policies for Protection, Resilience and Mobility, workflows that chain steps together, and the approvals that guard risky actions."
       tab={tab}
       onTab={t => ctx.go(`automation/${t}`)}
       tabs={[
         { v: 'policies', label: 'Policies', count: s.policies.length },
+        { v: 'workflows', label: 'Workflows' },
         { v: 'approvals', label: 'Approvals', count: waiting || undefined },
         { v: 'rules', label: 'Approval rules' }
       ]}
     >
       {tab === 'policies' ? <Policies ctx={ctx} /> : null}
+      {tab === 'workflows' ? <WorkflowsTab ctx={ctx} /> : null}
       {tab === 'approvals' ? <ApprovalsTab ctx={ctx} /> : null}
       {tab === 'rules' ? <ApprovalRulesTab ctx={ctx} /> : null}
     </Section>
