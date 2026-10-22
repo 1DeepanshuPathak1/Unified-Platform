@@ -39,7 +39,7 @@ const LINE_ICON = {
   warn: ['triangle-alert', 'var(--warn)'],
   err: ['circle-x', 'var(--err)']
 };
-const PRODS = { Backup: 'Backup & Recovery', DR: 'Disaster Recovery', Migration: 'Migration', All: 'All products' };
+const PRODS = { Backup: 'Protection', DR: 'Resilience', Migration: 'Mobility', All: 'All products' };
 const fmtS = n => (n >= 60 ? `${Math.floor(n / 60)} min ${String(n % 60).padStart(2, '0')} s` : `${n} s`);
 const short = s => {
   const m = /(\d+) (\w+) \d+, (\d+:\d+)/.exec(s || '');

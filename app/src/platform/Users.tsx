@@ -13,7 +13,7 @@ const ST: Record<UserStatus, [string, string, string]> = {
   active: ['circle-check', 'Active', 'ok'],
   invited: ['mail', 'Invited', 'run'],
   deactivated: ['circle-minus', 'Deactivated', 'tx'],
-  locked: ['lock', 'Locked', 'warn'],
+  locked: ['user-x', 'Locked', 'warn'],
   deleted: ['trash-2', 'Deleted', 'tx']
 };
 
@@ -49,7 +49,7 @@ export function UsersTab({ ctx }: { ctx: Ctx }) {
     <>
       {mfaMissing.length ? (
         <div style={{ padding: '0 24px 12px' }}>
-          <Bar tone="warn" icon="lock" actions={<Btn kind="ghost" size="sm" onClick={() => { setQ(mfaMissing[0].name); setView('current'); }}>Show</Btn>}>
+          <Bar tone="warn" icon="fingerprint" actions={<Btn kind="ghost" size="sm" onClick={() => { setQ(mfaMissing[0].name); setView('current'); }}>Show</Btn>}>
             {plural(mfaMissing.length, 'active user')} without MFA: {mfaMissing.map(u => u.name).join(', ')}. They are blocked from 28 Oct 2026 until they set it up.
           </Bar>
         </div>
@@ -143,7 +143,7 @@ export function UsersTab({ ctx }: { ctx: Ctx }) {
                   Edit roles…
                 </Btn>
                 {d.status === 'locked' ? (
-                  <Btn kind="outline" icon="lock" perm={adm} onClick={() => { setStatus([d.id], 'active'); audit({ who: 'priya.raman', customer: d.customer, what: 'Unlocked a user', object: d.email, when: ctx.now(), r: 'ok' }); ctx.toast(`${d.name} unlocked`, 'ok'); }}>
+                  <Btn kind="outline" icon="user-check" perm={adm} onClick={() => { setStatus([d.id], 'active'); audit({ who: 'priya.raman', customer: d.customer, what: 'Unlocked a user', object: d.email, when: ctx.now(), r: 'ok' }); ctx.toast(`${d.name} unlocked`, 'ok'); }}>
                     Unlock
                   </Btn>
                 ) : null}
@@ -234,7 +234,7 @@ export function UsersTab({ ctx }: { ctx: Ctx }) {
               items={[
                 { icon: 'send', tone: 'info', text: 'Invited', when: d.created },
                 ...(d.status !== 'invited' ? [{ icon: 'user-check', tone: 'ok', text: `Activated and enrolled ${d.mfa === 'Not set up' ? 'without MFA' : d.mfa.toLowerCase()}`, when: d.created }] : []),
-                ...(d.status === 'locked' ? [{ icon: 'lock', tone: 'warn', text: 'Locked after repeated failed sign-ins', when: d.last }] : []),
+                ...(d.status === 'locked' ? [{ icon: 'user-x', tone: 'warn', text: 'Locked after repeated failed sign-ins', when: d.last }] : []),
                 ...(d.status === 'deactivated' || d.status === 'deleted' ? [{ icon: 'circle-minus', tone: 'tx', text: 'Deactivated: sessions ended, tokens revoked', when: d.last }] : []),
                 ...(d.status === 'deleted' ? [{ icon: 'trash-2', tone: 'tx', text: 'Deleted. Name kept in the audit log; personal data erased.', when: '30 Jun 2026, 10:00 IST' }] : [])
               ]}

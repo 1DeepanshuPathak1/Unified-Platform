@@ -43,7 +43,7 @@ export function SignInTab({ ctx }: { ctx: Ctx }) {
   return (
     <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 24px 24px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 960 }}>
-        <Bar tone={withMfa.length === users.length ? 'ok' : 'warn'} icon="lock">
+        <Bar tone={withMfa.length === users.length ? 'ok' : 'warn'} icon="fingerprint">
           {withMfa.length} of {plural(users.length, 'active user')} use MFA{users.length - withMfa.length ? `; ${users.filter(u => u.mfa === 'Not set up').map(u => u.name).join(', ')} not yet` : ''}{sms.length ? ` · ${sms.length} on SMS` : ''}.
         </Bar>
         <Panel title="Multi-factor authentication" right={<InfoTip tip="Applies to password and single sign-on users. With single sign-on, Aegis accepts the identity provider's MFA claim and still asks for its own step-up before destructive actions." />}>
@@ -79,7 +79,7 @@ export function SignInTab({ ctx }: { ctx: Ctx }) {
             {STEP_UP.map(x => (
               <div key={x.a} style={{ display: 'flex', alignItems: 'center', gap: 12, minHeight: 36, borderBottom: '1px solid var(--ln)' }}>
                 <span style={{ flex: 1 }}>{x.a}</span>
-                {x.locked ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '12px var(--f-ui)', color: 'var(--tx-3)' }}><Icon name="lock" />Always</span> : null}
+                {x.locked ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, font: '12px var(--f-ui)', color: 'var(--tx-3)' }}><Icon name="pin" />Always</span> : null}
                 <Toggle on={steps[x.a]} onChange={v => { if (!x.locked) { setSteps(st => ({ ...st, [x.a]: v })); setDirty(true); } }} label={x.a} perm={x.locked ? { ok: false, why: 'Required by Host360 policy.', op: 0.45 } : undefined} />
               </div>
             ))}

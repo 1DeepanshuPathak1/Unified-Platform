@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import AegisTable from '../components/AegisTable';
 import { Icon } from '../lib/Icon';
-import { POLICY_VERSIONS, WORKLOADS, type Policy, type PolicyType } from '../data/platform';
+import { POLICY_VERSIONS, TIER_SHORT, TIERS, WORKLOADS, type Policy, type PolicyType, type Tier } from '../data/platform';
+import { MODE_LABEL, MODE_TIP, TIER_TARGET, rpoOf } from '../products/resilience/data';
 import { Btn, Field, FilterInput, RadioCard, Seg, SelectFilter, SelectInput, TextInput, Toggle } from '../ui/controls';
 import { Activity, Bar, Facts, H3, MiniTable, Page, PageHeader, Spacer, TableArea, Toolbar, plural } from '../ui/layout';
 import { Dialog, Drawer, useClosable } from '../ui/overlay';
@@ -23,6 +24,19 @@ const REPOS = [
   { name: 'mer-obj-immutable', where: 'Mumbai, India' },
   { name: 'atl-obj-fra', where: 'Frankfurt, Germany' }
 ];
+
+const DR_SITES = [
+  { name: 'production-openstack', where: 'Chennai, India' },
+  { name: 'Chennai-proxmox-prod', where: 'Chennai, India' },
+  { name: 'region-2-os', where: 'Hyderabad, India' },
+  { name: 'fra-openstack', where: 'Frankfurt, Germany' }
+];
+const HEAD: Record<PolicyType, { kicker: string; title: string; sub: string }> = {
+  Backup: { kicker: 'Protection', title: 'Policies', sub: 'Schedules, retention and where recovery points are stored. The same policies appear under Automation › Policies.' },
+  DR: { kicker: 'Resilience', title: 'Protection plans', sub: 'How often each workload is copied to its recovery site, how old its newest point may be (RPO) and how fast it must run again (RTO).' },
+  Migration: { kicker: 'Mobility', title: 'Migration policies', sub: 'Sync passes, verification, test boots and cutover approval.' }
+};
+const covered = (p: Policy) => WORKLOADS.filter(w => w.dr.plan === p.name);
 
 /** Policies, one engine with three types. Product sections open it filtered to their own type. */
 export default function Policies({ ctx, fixedType }: { ctx: Ctx; fixedType?: PolicyType }) {
@@ -61,45 +75,24 @@ export default function Policies({ ctx, fixedType }: { ctx: Ctx; fixedType?: Pol
         </Toggle>
         <Spacer />
         <Btn kind="primary" icon="plus" perm={cfg} onClick={() => create.open(true)}>
-          Create a policy
+          {fixedType === 'DR' ? 'Create a protection plan' : 'Create a policy'}
         </Btn>
       </Toolbar>
       <TableArea>
         <AegisTable
           label="Policies"
-          cols={[
-            { k: 'name', label: 'Policy', w: 'minmax(200px,1.5fr)' },
-            { k: 'type', label: 'Type', w: '120px' },
-            { k: 'level', label: 'Level', w: '96px' },
-            { k: 'inh', label: 'Inherits from', w: 'minmax(140px,1fr)', dim: true },
-            { k: 'owner', label: 'Owner', w: 'minmax(140px,1fr)', dim: true },
-            { k: 'v', label: 'Version', w: '72px', r: true },
-            { k: 'n', label: 'Assigned', w: '80px', r: true },
-            { k: 'drift', label: 'Drift', w: '72px', r: true },
-            { k: 'up', label: 'Changed', w: '188px', dim: true }
-          ]}
-          rows={rows.map(p => ({
-            id: p.id,
-            name: { v: p.name, strong: true },
-            type: { t: 'icon', i: TYPE_ICON[p.type], l: p.type, c: 'tx', s: p.type },
-            level: p.level,
-            inh: p.inherits ? p.inherits : { v: p.template ? 'Template' : '—', muted: true },
-            owner: p.owner,
-            v: { v: `v${p.version}`, s: p.version },
-            n: { v: String(p.assigned), s: p.assigned },
-            drift: p.drift ? { t: 'status', i: 'triangle-alert', l: String(p.drift), c: 'warn', s: p.drift, tip: `${plural(p.drift, 'workload')} differ from the policy` } : { v: '0', muted: true, s: 0 },
-            up: p.updated
-          }))}
+          cols={fixedType === 'DR' ? DR_COLS : POLICY_COLS}
+          rows={rows.map(p => (fixedType === 'DR' ? drRow(p) : policyRow(p)))}
           onRow={(id: string) => { drawer.open(id); setTab('Settings'); setDiffV(null); }}
           active={drawer.value}
           state={ctx.ui}
-          unit={['policy', 'policies']}
+          unit={fixedType === 'DR' ? ['plan', 'plans'] : ['policy', 'policies']}
           filtered={type !== (fixedType || 'All') || level !== 'All' || driftOnly || !!ql}
           onClear={() => { setType(fixedType || 'All'); setLevel('All'); setDriftOnly(false); setQ(''); }}
-          emptyText="No policies yet. Start from a template; tenant and workload policies inherit from it."
-          emptyAction="Create a policy"
+          emptyText={fixedType === 'DR' ? 'No protection plans yet. Start from the Business-critical template; tenant plans inherit from it.' : 'No policies yet. Start from a template; tenant and workload policies inherit from it.'}
+          emptyAction={fixedType === 'DR' ? 'Create a protection plan' : 'Create a policy'}
           onEmpty={() => create.open(true)}
-          footR="Global → tenant → workload; the most specific setting wins"
+          footR={fixedType === 'DR' ? 'RPO and RTO come from the criticality tier unless a plan overrides them' : 'Global → tenant → workload; the most specific setting wins'}
           sort="name"
         />
       </TableArea>
@@ -235,12 +228,65 @@ export default function Policies({ ctx, fixedType }: { ctx: Ctx; fixedType?: Pol
   if (fixedType)
     return (
       <Page>
-        <PageHeader kicker="Protection" title="Policies" sub="Schedules, retention and where recovery points are stored. The same policies appear under Automation › Policies." />
+        <PageHeader kicker={HEAD[fixedType].kicker} title={HEAD[fixedType].title} sub={HEAD[fixedType].sub} />
         {body}
       </Page>
     );
   return body;
 }
+
+const POLICY_COLS = [
+  { k: 'name', label: 'Policy', w: 'minmax(200px,1.5fr)' },
+  { k: 'type', label: 'Type', w: '120px' },
+  { k: 'level', label: 'Level', w: '96px' },
+  { k: 'inh', label: 'Inherits from', w: 'minmax(140px,1fr)', dim: true },
+  { k: 'owner', label: 'Owner', w: 'minmax(140px,1fr)', dim: true },
+  { k: 'v', label: 'Version', w: '72px', r: true },
+  { k: 'n', label: 'Assigned', w: '80px', r: true },
+  { k: 'drift', label: 'Drift', w: '72px', r: true },
+  { k: 'up', label: 'Changed', w: '188px', dim: true }
+];
+const driftCell = (p: Policy) => (p.drift ? { t: 'status', i: 'triangle-alert', l: String(p.drift), c: 'warn', s: p.drift, tip: `${plural(p.drift, 'workload')} differ from the policy` } : { v: '0', muted: true, s: 0 });
+const policyRow = (p: Policy) => ({
+  id: p.id,
+  name: { v: p.name, strong: true },
+  type: { t: 'icon', i: TYPE_ICON[p.type], l: p.type, c: 'tx', s: p.type },
+  level: p.level,
+  inh: p.inherits ? p.inherits : { v: p.template ? 'Template' : '—', muted: true },
+  owner: p.owner,
+  v: { v: `v${p.version}`, s: p.version },
+  n: { v: String(p.assigned), s: p.assigned },
+  drift: driftCell(p),
+  up: p.updated
+});
+const DR_COLS = [
+  { k: 'name', label: 'Plan', w: 'minmax(190px,1.5fr)' },
+  { k: 'level', label: 'Level', w: '80px', dim: true },
+  { k: 'tier', label: 'Tier', w: '72px' },
+  { k: 'rpo', label: 'RPO', w: '72px', r: true },
+  { k: 'rto', label: 'RTO', w: '64px', r: true },
+  { k: 'mode', label: 'Replication', w: 'minmax(120px,1fr)', dim: true },
+  { k: 'n', label: 'Workloads', w: '88px', r: true },
+  { k: 'comp', label: 'Within RPO', w: '150px' },
+  { k: 'drift', label: 'Drift', w: '64px', r: true }
+];
+const drRow = (p: Policy) => {
+  const ws = covered(p).filter(w => w.dr.s !== 'none' && w.dr.target);
+  const ok = ws.filter(w => rpoOf(w).state === 'within').length;
+  const unread = ws.filter(w => rpoOf(w).state === 'unreach').length;
+  return {
+    id: p.id,
+    name: { v: p.name, strong: true },
+    level: p.level,
+    tier: p.dr ? { v: TIER_SHORT[p.dr.tier], tip: p.dr.tier, s: TIERS.indexOf(p.dr.tier) } : { v: '—', muted: true },
+    rpo: p.dr ? p.dr.rpo : '—',
+    rto: p.dr ? p.dr.rto : '—',
+    mode: p.dr ? { v: p.dr.mode === 'Continuous' ? 'Continuous' : `Every ${p.dr.every || p.dr.rpo}`, tip: `${MODE_LABEL[p.dr.mode]}. ${MODE_TIP[p.dr.mode]}` } : '—',
+    n: { v: String(p.assigned), s: p.assigned },
+    comp: ws.length ? { t: 'bar', pct: (ok / ws.length) * 100, c: ok === ws.length ? 'ok' : 'warn', v: `${ok} of ${ws.length}${unread ? ' · 1 not read' : ''}`, s: ok / ws.length } : { v: 'None visible here', muted: true, s: -1 },
+    drift: driftCell(p)
+  };
+};
 
 function chain(p: Policy, all: Policy[]): Policy[] {
   const out = [p];
@@ -257,14 +303,32 @@ function chain(p: Policy, all: Policy[]): Policy[] {
 function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedType?: PolicyType; closing: boolean; onClose: () => void }) {
   const [type, setType] = useState<PolicyType>(fixedType || 'Backup');
   const [name, setName] = useState('');
-  const [level, setLevel] = useState('Tenant');
+  const [level, setLevel] = useState<Policy['level']>('Tenant');
   const [tenant, setTenant] = useState('Atlas Freight GmbH');
-  const [tpl, setTpl] = useState('Production daily');
+  const [tpl, setTpl] = useState(fixedType === 'DR' ? 'Business-critical' : fixedType === 'Migration' ? 'Standard migration' : 'Production daily');
   const [repo, setRepo] = useState('obj-check');
   const [immut, setImmut] = useState('Compliance lock, 14 d');
+  const [tier, setTier] = useState<Tier>('Mission Critical');
+  const [rpo, setRpo] = useState('15 min');
+  const [rto, setRto] = useState('1 h');
+  const [mode, setMode] = useState<'Continuous' | 'Scheduled'>('Scheduled');
+  const [dest, setDest] = useState('production-openstack');
+  const [versions, setVersions] = useState('2, one every 4 h');
   const [refused, setRefused] = useState<string | null>(null);
   const cust = CUSTOMERS.find(c => c.name === tenant)!;
   const repoInfo = REPOS.find(r => r.name === repo)!;
+  const site = DR_SITES.find(x => x.name === dest)!;
+  const pickTier = (t: Tier) => {
+    setTier(t);
+    const x = TIER_TARGET[t];
+    if (x) {
+      setRpo(x.rpo);
+      setRto(x.rto);
+    }
+    setRefused(null);
+  };
+  const modeErr = type === 'DR' && rpo === 'Seconds' && mode === 'Scheduled' ? 'An RPO of seconds needs continuous replication.' : null;
+  const err = !name.trim() ? 'Name the policy.' : modeErr;
   const save = () => {
     const eu = cust.residency.startsWith('European');
     const india = cust.residency.startsWith('India');
@@ -273,14 +337,28 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
       audit({ who: 'priya.raman', customer: cust.id, what: 'Tried to save backup policy', object: name || 'New policy', when: ctx.now(), r: 'refused', note: `Data residency: ${repo} is in ${repoInfo.where}.` });
       return;
     }
-    ctx.toast(`Policy ${name.trim()} saved as version 1`, 'ok');
-    audit({ who: 'priya.raman', customer: cust.id, what: `Created ${type} policy`, object: name.trim(), when: ctx.now(), r: 'ok' });
+    if (type === 'DR' && ((eu && !site.where.includes('Germany')) || (india && !site.where.includes('India')))) {
+      setRefused(`${cust.name}'s data must stay in ${eu ? 'the European Union (GDPR rule RES-EU-01)' : 'India (DPDP rule RES-IN-01)'}. The recovery site ${dest} is in ${site.where}. Choose a recovery site inside the region.`);
+      audit({ who: 'priya.raman', customer: cust.id, what: 'Tried to save protection plan', object: name || 'New plan', when: ctx.now(), r: 'refused', note: `Data residency: ${dest} is in ${site.where}.` });
+      return;
+    }
+    const settings: [string, string][] =
+      type === 'DR'
+        ? [['Criticality tier', `${tier} (${TIER_SHORT[tier]})`], ['Recovery target (RPO)', rpo === 'Seconds' ? 'Seconds' : rpo], ['Recovery time (RTO)', rto], ['Replication mode', mode === 'Continuous' ? MODE_LABEL.Continuous : `Scheduled every ${rpo}: snapshot and changed blocks`], ['Recovery site', `${dest} (${site.where})`], ['Versions kept', versions], ['Drill cadence', TIER_TARGET[tier]?.drill || 'Not required']]
+        : type === 'Backup'
+          ? [['Inherits from', tpl], ['Repository', `${repo} (${repoInfo.where})`], ['Immutability', immut]]
+          : [['Inherits from', tpl]];
+    update(st => {
+      st.policies.unshift({ id: 'p' + Date.now(), name: name.trim(), type, level, owner: level === 'Global' ? 'Host360' : cust.name, inherits: tpl, version: 1, updated: ctx.now(), updatedBy: 'priya.raman', assigned: 0, drift: 0, residency: cust.residency.startsWith('India') ? 'India only' : cust.residency.startsWith('European') ? 'EU only' : undefined, overrides: [], settings, dr: type === 'DR' ? { tier, rpo: rpo === 'Seconds' ? 'Seconds' : rpo, rto, mode, every: mode === 'Scheduled' ? rpo : undefined, dest } : undefined });
+    });
+    ctx.toast(`${type === 'DR' ? 'Protection plan' : 'Policy'} ${name.trim()} saved as version 1`, 'ok');
+    audit({ who: 'priya.raman', customer: cust.id, what: `Created ${type === 'DR' ? 'protection plan' : `${type} policy`}`, object: name.trim(), when: ctx.now(), r: 'ok' });
     onClose();
   };
   return (
     <Dialog
       size="lg"
-      title="Create a policy"
+      title={type === 'DR' && fixedType ? 'Create a protection plan' : 'Create a policy'}
       sub="Start from a template; anything you do not change is inherited and follows the template's updates."
       closing={closing}
       onClose={onClose}
@@ -290,8 +368,8 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
           <Btn kind="ghost" onClick={onClose}>
             Cancel
           </Btn>
-          <Btn kind="primary" icon="check" disabled={!name.trim()} why="Name the policy." perm={ctx.can('configure', 'Creating policies')} onClick={save}>
-            Save policy
+          <Btn kind="primary" icon="check" disabled={!!err} why={err || undefined} perm={ctx.can('configure', 'Creating policies')} onClick={save}>
+            {type === 'DR' && fixedType ? 'Save plan' : 'Save policy'}
           </Btn>
         </>
       }
@@ -305,13 +383,13 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
       ) : null}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 }}>
         <Field id="po-name" label="Name">
-          <TextInput id="po-name" value={name} onChange={v => { setName(v); setRefused(null); }} placeholder="Atlas daily" />
+          <TextInput id="po-name" value={name} onChange={v => { setName(v); setRefused(null); }} placeholder={type === 'DR' ? 'Atlas Tier-1 replication' : 'Atlas daily'} />
         </Field>
         <Field id="po-tpl" label="Start from">
           <SelectInput id="po-tpl" value={tpl} onChange={setTpl} options={type === 'Backup' ? ['Production daily', 'Database hourly', 'Lab weekly'] : type === 'DR' ? ['Business-critical', 'Non-critical'] : ['Standard migration']} />
         </Field>
         <Field id="po-level" label="Level">
-          <SelectInput id="po-level" value={level} onChange={setLevel} options={['Global', 'Tenant', 'Workload']} />
+          <SelectInput id="po-level" value={level} onChange={v => setLevel(v as Policy['level'])} options={['Global', 'Tenant', 'Workload']} />
         </Field>
         <Field id="po-tenant" label="Tenant">
           <SelectInput id="po-tenant" value={tenant} onChange={v => { setTenant(v); setRefused(null); }} options={CUSTOMERS.map(c => c.name)} />
@@ -326,14 +404,37 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
             </Field>
           </>
         ) : null}
+        {type === 'DR' ? (
+          <>
+            <Field id="po-tier" label="Criticality tier" hint="Sets the RPO, RTO and drill cadence; change them below if this plan differs.">
+              <SelectInput id="po-tier" value={tier} onChange={v => pickTier(v as Tier)} options={TIERS.filter(t => TIER_TARGET[t]).map(t => ({ v: t, label: `${TIER_SHORT[t]} · ${t}` }))} />
+            </Field>
+            <Field id="po-dest" label="Recovery site" hint={`${site.where} · tenant data must stay in: ${cust.residency}`}>
+              <SelectInput id="po-dest" value={dest} onChange={v => { setDest(v); setRefused(null); }} options={DR_SITES.map(x => ({ v: x.name, label: `${x.name} · ${x.where}` }))} />
+            </Field>
+            <Field id="po-rpo" label="Recovery point objective (RPO)" err={modeErr}>
+              <SelectInput id="po-rpo" value={rpo} onChange={v => { setRpo(v); if (v === 'Seconds') setMode('Continuous'); }} options={['Seconds', '15 min', '1 h', '4 h', '1 d']} />
+            </Field>
+            <Field id="po-rto" label="Recovery time objective (RTO)">
+              <SelectInput id="po-rto" value={rto} onChange={setRto} options={['15 min', '1 h', '4 h', '24 h']} />
+            </Field>
+            <div role="radiogroup" aria-label="Replication mode" style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <RadioCard on={mode === 'Scheduled'} onClick={() => { setMode('Scheduled'); if (rpo === 'Seconds') setRpo('15 min'); }} icon="calendar-clock" title="Scheduled" note={`A snapshot every ${rpo === 'Seconds' ? '15 min' : rpo}; only changed blocks are copied.`} />
+              <RadioCard on={mode === 'Continuous'} onClick={() => setMode('Continuous')} icon="activity" title="Continuous" note="Every write is journalled and copied. RPO of seconds; about 4 × the bandwidth." />
+            </div>
+            <Field id="po-ver" label="Versions kept at the recovery site">
+              <SelectInput id="po-ver" value={versions} onChange={setVersions} options={['1', '2, one every 4 h', '4, one every 6 h', '24, one every hour']} />
+            </Field>
+          </>
+        ) : null}
       </div>
       {refused ? (
         <Bar tone="err" icon="ban" multiline>
-          <strong style={{ display: 'block', fontWeight: 600 }}>The policy was not saved</strong>
+          <strong style={{ display: 'block', fontWeight: 600 }}>The {type === 'DR' ? 'plan' : 'policy'} was not saved</strong>
           {refused}
         </Bar>
       ) : null}
-      <Activity items={[{ icon: 'arrow-down', tone: 'info', text: `Inherits from ${tpl}: schedule, retention, encryption and consistency.`, when: 'Change any of them after saving; the rest keeps following the template.' }]} />
+      <Activity items={[{ icon: 'arrow-down', tone: 'info', text: type === 'DR' ? `Inherits from ${tpl}: priority, sync window and drill evidence.` : `Inherits from ${tpl}: schedule, retention, encryption and consistency.`, when: 'Change any of them after saving; the rest keeps following the template.' }]} />
     </Dialog>
   );
 }

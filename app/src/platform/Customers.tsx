@@ -299,7 +299,7 @@ function Hierarchy({ ctx }: { ctx: Ctx }) {
     </button>
   );
   const direct = s.customers.filter(c => !c.partner && c.status !== 'archived');
-  const tree: ReactElement[] = [row('org', 0, 'shield', 'Host360 Managed Services', 'Provider · IST')];
+  const tree: ReactElement[] = [row('org', 0, 'building-2', 'Host360 Managed Services', 'Provider · IST')];
   const cust = (c: Customer, depth: number) => {
     tree.push(row('c:' + c.id, depth, 'users', c.name, `${c.tz.split(' ')[0].split('/')[1] || c.tz} · ${ST[c.status][1]}`));
     c.departments.forEach(d => {

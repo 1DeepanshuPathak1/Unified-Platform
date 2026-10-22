@@ -164,7 +164,7 @@ export const WORKLOADS: Workload[] = [
   },
   {
     id: 'cbs-db-01', name: 'cbs-db-01', type: 'VM', os: 'Oracle Linux 9', customer: 'mer', project: 'Meridian-CBS', site: 'production-openstack', env: 'Production', tier: 'Mission Critical', owner: 'Anitha Krishnan', app: 'Core Banking', tags: ['oracle', 'rbi-scope'],
-    backup: { s: 'protected', policy: 'Meridian database hourly', last: T('21 Oct', '16:00'), points: 168 }, dr: { s: 'protected', plan: 'Meridian Tier-0 replication', target: '15 min', age: '4 min' }, mig: { s: 'na' },
+    backup: { s: 'protected', policy: 'Meridian database hourly', last: T('21 Oct', '16:00'), points: 168 }, dr: { s: 'protected', plan: 'Meridian Tier-0 replication', target: '15 min', age: '9 s' }, mig: { s: 'na' },
     alerts: 0, sizeGB: 2400, cpu: '32 vCPU', mem: '256 GB', ip: '10.60.1.11', classification: 'Critical', sensitive: true,
     lifecycle: L(['Discovered', T('05 Mar', '11:02'), 'Found by the agentless scan of production-openstack'], ['Protected', T('06 Mar', '02:00'), 'First backup to mer-obj-immutable · compliance lock 30 d'], ['Replicated', T('09 Mar', '20:15'), 'Replicating to region-2-os'], ['Tested', T('28 Sep', '22:00'), 'Quarterly RBI drill passed · RTO 41 min against 60 min'])
   },
@@ -294,7 +294,7 @@ export const WORKLOADS: Workload[] = [
   },
   {
     id: 'kav-wms-db', name: 'kav-wms-db', type: 'Database', os: 'PostgreSQL 16', customer: 'kav', project: 'Kaveri-WMS', site: 'Chennai-proxmox-prod', env: 'Production', tier: 'Business Critical', owner: 'Rahul Menon', app: 'Kaveri WMS', tags: ['postgres'],
-    backup: { s: 'protected', policy: 'Kaveri database 4-hourly', last: T('21 Oct', '16:00'), points: 84 }, dr: { s: 'protected', plan: 'Kaveri WMS', target: '1 h', age: '31 min' }, mig: { s: 'na' }, alerts: 0, sizeGB: 310, classification: 'Non-critical',
+    backup: { s: 'protected', policy: 'Kaveri database 4-hourly', last: T('21 Oct', '16:00'), points: 84 }, dr: { s: 'protected', plan: 'Kaveri finance', target: '1 h', age: '31 min' }, mig: { s: 'na' }, alerts: 0, sizeGB: 310, classification: 'Non-critical',
     lifecycle: L(disc('27 May', 'Chennai-proxmox-prod'), ['Protected', T('28 May', '04:00'), 'Kaveri database 4-hourly'])
   },
   {
@@ -468,6 +468,8 @@ export interface Policy {
   overrides?: string[];
   template?: boolean;
   residency?: string;
+  /** Resilience plans only: what the plan promises. */
+  dr?: { tier: Tier; rpo: string; rto: string; mode: 'Continuous' | 'Scheduled'; every?: string; dest: string };
 }
 export const POLICIES: Policy[] = [
   { id: 'g-bk-daily', name: 'Production daily', type: 'Backup', level: 'Global', owner: 'Host360', version: 7, updated: T('14 Oct', '10:20'), updatedBy: 'arun.kumar', assigned: 89, drift: 2, template: true,
@@ -481,11 +483,20 @@ export const POLICIES: Policy[] = [
   { id: 't-mer-db', name: 'Meridian database hourly', type: 'Backup', level: 'Tenant', owner: 'Meridian Cooperative Bank', inherits: 'Database hourly', version: 9, updated: T('19 Oct', '18:05'), updatedBy: 'anitha.k@meridianbank.in', assigned: 6, drift: 1, residency: 'India only', overrides: ['Immutability: Compliance lock, 30 d', 'Repository: mer-obj-immutable'],
     settings: [['Schedule', 'Inherited: every hour'], ['Retention', '168 hourly · 30 daily · 12 monthly (overrides)'], ['Repository', 'mer-obj-immutable · Mumbai'], ['Immutability', 'Compliance lock, 30 d (overrides 14 d)'], ['Encryption', 'AES-256, key from Meridian Thales HSM (BYOK)']] },
   { id: 'g-dr-bc', name: 'Business-critical', type: 'DR', level: 'Global', owner: 'Host360', version: 5, updated: T('21 Oct', '15:46'), updatedBy: 'priya.raman', assigned: 6, drift: 1, template: true,
-    settings: [['Recovery target (RPO)', '15 min'], ['Recovery time (RTO)', '1 h'], ['Replication mode', 'Continuous, change-tracking'], ['Versions kept', '2, one every 4 h'], ['Priority', 'Highest'], ['Drill cadence', 'Monthly']] },
+    dr: { tier: 'Mission Critical', rpo: '15 min', rto: '1 h', mode: 'Scheduled', every: '15 min', dest: 'production-openstack' },
+    settings: [['Criticality tier', 'Mission Critical (Tier 0)'], ['Recovery target (RPO)', '15 min'], ['Recovery time (RTO)', '1 h'], ['Replication mode', 'Scheduled every 15 min: snapshot and changed blocks'], ['Recovery site', 'production-openstack'], ['Versions kept', '2, one every 4 h'], ['Priority', 'Highest'], ['Drill cadence', 'Monthly']] },
   { id: 'g-dr-nc', name: 'Non-critical', type: 'DR', level: 'Global', owner: 'Host360', version: 2, updated: T('02 Jul', '10:00'), updatedBy: 'vivek.rao', assigned: 4, drift: 0, template: true,
-    settings: [['Recovery target (RPO)', '1 d'], ['Recovery time (RTO)', '24 h'], ['Replication mode', 'Scheduled, 22:00 to 06:00'], ['Versions kept', '4'], ['Priority', 'Low'], ['Drill cadence', 'Every six months']] },
-  { id: 't-mer-t0', name: 'Meridian Tier-0 replication', type: 'DR', level: 'Tenant', owner: 'Meridian Cooperative Bank', inherits: 'Business-critical', version: 6, updated: T('12 Oct', '11:30'), updatedBy: 'anitha.k@meridianbank.in', assigned: 5, drift: 0, residency: 'India only', overrides: ['Destination: region-2-os only', 'Drill cadence: Quarterly (RBI)'],
-    settings: [['Recovery target (RPO)', 'Inherited: 15 min'], ['Recovery time (RTO)', 'Inherited: 1 h'], ['Destination', 'region-2-os (overrides any)'], ['Drill cadence', 'Quarterly with signed evidence (overrides monthly)']] },
+    dr: { tier: 'Important', rpo: '1 d', rto: '24 h', mode: 'Scheduled', every: '1 d, 22:00 to 06:00', dest: 'production-openstack' },
+    settings: [['Criticality tier', 'Important (Tier 2)'], ['Recovery target (RPO)', '1 d'], ['Recovery time (RTO)', '24 h'], ['Replication mode', 'Scheduled once a day, 22:00 to 06:00'], ['Recovery site', 'production-openstack'], ['Versions kept', '4'], ['Priority', 'Low'], ['Drill cadence', 'Every six months']] },
+  { id: 't-mer-t0', name: 'Meridian Tier-0 replication', type: 'DR', level: 'Tenant', owner: 'Meridian Cooperative Bank', inherits: 'Business-critical', version: 6, updated: T('12 Oct', '11:30'), updatedBy: 'anitha.k@meridianbank.in', assigned: 5, drift: 0, residency: 'India only', overrides: ['Replication mode: continuous for cbs-db-01', 'Recovery site: inside India only', 'Drill cadence: quarterly with signed evidence (RBI)'],
+    dr: { tier: 'Mission Critical', rpo: '15 min', rto: '1 h', mode: 'Continuous', dest: 'region-2-os, Chennai-proxmox-prod' },
+    settings: [['Criticality tier', 'Inherited: Mission Critical (Tier 0)'], ['Recovery target (RPO)', 'Inherited: 15 min'], ['Recovery time (RTO)', 'Inherited: 1 h'], ['Replication mode', 'Continuous write journal for cbs-db-01 (overrides scheduled)'], ['Recovery site', 'region-2-os or Chennai-proxmox-prod, inside India (overrides any)'], ['Drill cadence', 'Quarterly with signed evidence (overrides monthly)']] },
+  { id: 't-mer-t1', name: 'Meridian Tier-1 replication', type: 'DR', level: 'Tenant', owner: 'Meridian Cooperative Bank', inherits: 'Business-critical', version: 3, updated: T('20 Aug', '16:10'), updatedBy: 'anitha.k@meridianbank.in', assigned: 2, drift: 0, residency: 'India only', overrides: ['RPO: 1 h', 'RTO: 4 h', 'Physical servers: agent'],
+    dr: { tier: 'Business Critical', rpo: '1 h', rto: '4 h', mode: 'Scheduled', every: '1 h', dest: 'Chennai-proxmox-prod, production-openstack' },
+    settings: [['Criticality tier', 'Business Critical (Tier 1) (overrides Tier 0)'], ['Recovery target (RPO)', '1 h (overrides 15 min)'], ['Recovery time (RTO)', '4 h (overrides 1 h)'], ['Replication mode', 'Scheduled every hour; physical servers through the agent'], ['Recovery site', 'Inside India'], ['Drill cadence', 'Quarterly']] },
+  { id: 't-kav-dr', name: 'Kaveri finance', type: 'DR', level: 'Tenant', owner: 'Kaveri Logistics Pvt Ltd', inherits: 'Business-critical', version: 2, updated: T('05 Sep', '14:30'), updatedBy: 'rahul@kaveri-logistics.in', assigned: 2, drift: 0, overrides: ['RPO: 1 h', 'RTO: 4 h'],
+    dr: { tier: 'Business Critical', rpo: '1 h', rto: '4 h', mode: 'Scheduled', every: '1 h', dest: 'production-openstack' },
+    settings: [['Criticality tier', 'Business Critical (Tier 1)'], ['Recovery target (RPO)', '1 h (overrides 15 min)'], ['Recovery time (RTO)', '4 h (overrides 1 h)'], ['Replication mode', 'Inherited: scheduled, every hour'], ['Recovery site', 'Inherited: production-openstack'], ['Drill cadence', 'Quarterly']] },
   { id: 'g-mig-std', name: 'Standard migration', type: 'Migration', level: 'Global', owner: 'Host360', version: 3, updated: T('01 Aug', '12:00'), updatedBy: 'meera.iyer', assigned: 10, drift: 0, template: true,
     settings: [['Sync passes', 'First full copy, then change tracking every 4 h'], ['Verification', 'Byte-for-byte before cutover'], ['Test boot', 'Required, isolated network'], ['Cutover approval', 'Migration Approver, go/no-go'], ['Driver injection', 'VirtIO for Windows'], ['After cutover', 'Assign backup and DR from the criticality tier']] },
   { id: 'w-sql01', name: 'SQL01 cutover override', type: 'Migration', level: 'Workload', owner: 'Meridian Cooperative Bank', inherits: 'Standard migration', version: 1, updated: T('17 Oct', '16:20'), updatedBy: 's.iyer@meridianbank.in', assigned: 1, drift: 0, overrides: ['Cutover approval: two approvers', 'Final sync: database quiesced'],

@@ -574,7 +574,7 @@ export default class AegisSites extends DC {
           (w.platform === 'vmw' && u === 'Backup') || (w.platform !== 'vmw' && u === 'Migration' && w.platform === 'pve' && false);
         const on = !!w.usedBy[u] && !dis;
         return {
-          label: u === 'DR' ? 'Disaster Recovery' : u === 'Backup' ? 'Backup & Recovery' : 'Migration',
+          label: u === 'DR' ? 'Resilience' : u === 'Backup' ? 'Protection' : 'Mobility',
           on,
           dis: dis ? 'true' : undefined,
           why: dis ? 'Backup & Recovery does not use VMware.' : undefined,
@@ -633,7 +633,7 @@ export default class AegisSites extends DC {
               site.guests != null
                 ? `${site.guests} guests from protection, and their policy assignments`
                 : 'Its guests from protection, and their policy assignments',
-              `${site.name} from ${site.usedBy.map(u => (u === 'DR' ? 'Disaster Recovery' : u === 'Backup' ? 'Backup & Recovery' : u)).join(' and ')}`
+              `${site.name} from ${site.usedBy.map(u => (u === 'DR' ? 'Resilience' : u === 'Backup' ? 'Protection' : 'Mobility')).join(' and ')}`
             ],
             kept: 'Kept: recovery points already stored in repositories, mappings history and the audit trail. Removing a site does not change anything on the platform itself.'
           };

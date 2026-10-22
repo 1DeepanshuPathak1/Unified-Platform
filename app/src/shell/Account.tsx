@@ -29,7 +29,7 @@ export function UserMenu({ roleLine, side, themeIcon, themeLabel, onTheme, onAcc
       </div>
       <div style={{ padding: '4px 0' }}>
         {btn('user', 'Profile', () => onAccount('profile'))}
-        {btn('lock', 'Sign-in and MFA', () => onAccount('mfa'))}
+        {btn('fingerprint', 'Sign-in and MFA', () => onAccount('mfa'))}
         {btn('key', 'API tokens', () => onAccount('tokens'))}
         {btn(themeIcon, themeLabel, onTheme)}
       </div>
@@ -99,7 +99,7 @@ export function AccountDialog({ ctx, tab: initial, closing, onClose }: { ctx: Ct
       ) : null}
       {tab === 'mfa' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, animation: 'ae-fade 150ms var(--ease)' }}>
-          <Bar tone="info" icon="lock">
+          <Bar tone="info" icon="fingerprint">
             Your organisation requires MFA for every user and a fresh check before destructive actions.
           </Bar>
           <section>

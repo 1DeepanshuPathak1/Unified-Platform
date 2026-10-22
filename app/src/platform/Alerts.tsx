@@ -320,7 +320,7 @@ function AlertRuleDialog({ rule, perm, closing, onClose, onSave }: { rule: Rule 
         </>
       }
     >
-      {predefined ? <Bar tone="info" icon="lock">Predefined rules can be switched off and re-routed, but their condition is fixed.</Bar> : null}
+      {predefined ? <Bar tone="info" icon="pin">Predefined rules can be switched off and re-routed, but their condition is fixed.</Bar> : null}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 }}>
         <Field id="ar-name" label="Name">
           <TextInput id="ar-name" value={name} onChange={setName} placeholder="Repository above 85 %" />

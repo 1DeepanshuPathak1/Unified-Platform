@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { RUNBOOKS, DRILLS, type Runbook, type Drill } from '../products/resilience/data';
+import type { DrRun } from '../products/resilience/runner';
 import { APPROVALS, CUSTOMERS, ENTITLEMENTS, P_ALERTS, POLICIES, ROLES, USERS, APPLICATIONS, type Approval, type Customer, type Entitlement, type PAlert, type Policy, type Role, type User, type Application, type AuditRec, AUDIT } from '../data/platform';
 
 /**
@@ -15,7 +17,11 @@ export const store = {
   roles: ROLES.map(r => ({ ...r })) as Role[],
   apps: APPLICATIONS.map(a => ({ ...a })) as Application[],
   audit: [...AUDIT] as AuditRec[],
-  inboxDone: {} as Record<string, boolean>
+  inboxDone: {} as Record<string, boolean>,
+  runbooks: RUNBOOKS.map(r => JSON.parse(JSON.stringify(r))) as Runbook[],
+  drills: [...DRILLS] as Drill[],
+  /** Failover, test and failback runs by recovery plan id; they keep going when the screen closes. */
+  drRuns: {} as Record<string, DrRun>
 };
 
 const listeners = new Set<() => void>();

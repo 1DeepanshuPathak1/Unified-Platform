@@ -348,7 +348,7 @@ export default class AegisRestore extends DC {
     return (
       <div style={{ height: '100%', minHeight: 0, overflow: 'auto', animation: 'ae-page 150ms var(--ease)' }}>
         <div style={{ padding: '20px 24px 16px' }}>
-          <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>{'Backup & Recovery'}</div>
+          <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Protection</div>
           <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Restore</h1>
           <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Bring back a whole VM, single disks or files from a recovery point.</p>
         </div>

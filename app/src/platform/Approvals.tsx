@@ -274,7 +274,7 @@ export function ApprovalRulesTab({ ctx }: { ctx: Ctx }) {
             { k: 'expiry', label: 'Request expires', w: '150px', dim: true },
             { k: 'm', label: 'Type', w: '120px' }
           ]}
-          rows={rules.map(r => ({ id: r.id, action: { v: r.action, strong: true }, scope: r.scope, approvers: r.approvers, expiry: r.expiry, m: r.mandatory ? { t: 'status', i: 'lock', l: 'Mandatory', c: 'tx' } : { t: 'status', i: 'circle', l: 'Optional', c: 'tx' } }))}
+          rows={rules.map(r => ({ id: r.id, action: { v: r.action, strong: true }, scope: r.scope, approvers: r.approvers, expiry: r.expiry, m: r.mandatory ? { t: 'status', i: 'pin', l: 'Mandatory', c: 'tx' } : { t: 'status', i: 'circle', l: 'Optional', c: 'tx' } }))}
           onRow={(id: string) => dlg.open(rules.find(r => r.id === id)!)}
           state={ctx.ui}
           unit={['rule', 'rules']}
@@ -325,7 +325,7 @@ function RuleDialog({ rule, closing, onClose, onSave, perm }: { rule: Rule | nul
         </>
       }
     >
-      {locked ? <Bar tone="info" icon="lock">This rule is mandatory. It can be tightened by adding another rule, not loosened.</Bar> : null}
+      {locked ? <Bar tone="info" icon="pin">This rule is mandatory. It can be tightened by adding another rule, not loosened.</Bar> : null}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 }}>
         <Field id="ru-act" label="Action">
           <SelectInput id="ru-act" value={action} onChange={setAction} options={['Delete recovery points', 'Fail over (planned or unplanned)', 'Cut over', 'Restore', 'Change a global policy', 'Unlock compliance mode', 'Log in as owner', 'Remove a site', 'Rotate a credential']} />

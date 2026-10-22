@@ -106,7 +106,7 @@ function BestMatch({ ctx, w }: { ctx: Ctx; w: Workload }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ font: '500 20px/28px var(--f-head)' }}>{w.name}</span>
             <TierTag tier={w.tier} />
-            {w.sensitive ? <span data-tip="Sensitive: restores need an additional approver" style={{ display: 'inline-flex', color: 'var(--tx-2)' }}><Icon name="lock" /></span> : null}
+            {w.sensitive ? <span data-tip="Sensitive: restores need an additional approver" style={{ display: 'inline-flex', color: 'var(--tx-2)' }}><Icon name="eye-off" /></span> : null}
           </div>
           <div style={{ font: '13px/18px var(--f-ui)', color: 'var(--tx-2)' }}>
             {w.type} · {w.os} · {w.site}

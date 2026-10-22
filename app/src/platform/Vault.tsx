@@ -89,7 +89,7 @@ export function VaultTab({ ctx }: { ctx: Ctx }) {
             acc: x.account,
             how: x.access,
             used: x.usedBy.map(u => ({ Backup: 'Protection', DR: 'Resilience', Migration: 'Mobility' })[u] || u),
-            fp: x.status === 'unreach' ? { t: 'status', i: 'triangle-alert', l: 'Not checked', c: 'warn', tip: 'Could not be read: the site did not answer' } : { t: 'status', i: 'shield', l: 'Confirmed', c: 'ok', tip: x.fp },
+            fp: x.status === 'unreach' ? { t: 'status', i: 'triangle-alert', l: 'Not checked', c: 'warn', tip: 'Could not be read: the site did not answer' } : { t: 'status', i: 'badge-check', l: 'Confirmed', c: 'ok', tip: x.fp },
             rot: last(x.id),
             pol: ROTATED[x.id][1] === 'Manual' ? { v: 'Manual', muted: true } : ROTATED[x.id][1]
           }))}
@@ -136,7 +136,7 @@ export function VaultTab({ ctx }: { ctx: Ctx }) {
                   { k: 'Account', v: d.account },
                   { k: 'Access method', v: d.access },
                   { k: 'Secret', v: 'Stored encrypted; never shown', icon: 'shield', tone: 'ok' },
-                  { k: 'Certificate', v: d.fp, icon: 'shield', tone: 'ok' },
+                  { k: 'Certificate', v: d.fp, icon: 'badge-check', tone: 'ok' },
                   { k: 'Used by', v: d.usedBy.map(u => ({ Backup: 'Protection', DR: 'Resilience', Migration: 'Mobility' })[u] || u).join(', ') },
                   ...(d.vmw ? [{ k: 'Note', v: 'VMware sources serve Resilience and Mobility only; they never appear in Protection.', muted: true }] : [])
                 ]}
@@ -168,7 +168,7 @@ export function VaultTab({ ctx }: { ctx: Ctx }) {
                 items={[
                   ...(rotated[d.id] ? [{ icon: 'refresh-cw', tone: 'ok', text: 'Rotated by priya.raman; new secret checked, old one revoked', when: rotated[d.id] }] : []),
                   { icon: 'refresh-cw', tone: 'ok', text: ROTATED[d.id][1] === 'Manual' ? 'Stored when the site was added' : 'Rotated automatically; new secret checked, old one revoked', when: ROTATED[d.id][0] },
-                  { icon: 'shield', tone: 'info', text: 'Certificate fingerprint confirmed by priya.raman', when: ROTATED[d.id][0] }
+                  { icon: 'badge-check', tone: 'info', text: 'Certificate fingerprint confirmed by priya.raman', when: ROTATED[d.id][0] }
                 ]}
               />
             </div>

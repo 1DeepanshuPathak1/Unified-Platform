@@ -8,7 +8,7 @@ import { DangerDialog, Dialog, Drawer, useClosable } from '../ui/overlay';
 import type { Ctx } from '../ui/ctx';
 import { audit, update, useStore } from './store';
 
-const KIND_ICON: Record<Role['kind'], string> = { 'Built-in': 'lock', Template: 'copy', Custom: 'pencil' };
+const KIND_ICON: Record<Role['kind'], string> = { 'Built-in': 'pin', Template: 'copy', Custom: 'pencil' };
 
 export function RolesTab({ ctx }: { ctx: Ctx }) {
   const s = useStore();

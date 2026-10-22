@@ -707,7 +707,7 @@ export default class AegisMigServers extends DC {
       >
         <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Migration</div>
+            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Mobility</div>
             <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Servers</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>
               Virtual machines on VMware sources, and where each one is in its migration.

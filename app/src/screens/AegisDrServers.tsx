@@ -5,6 +5,7 @@ import { pc } from '../lib/pseudo';
 import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
 import { AEGIS } from '../data/aegis';
+import { DR_INFO, MODE_LABEL, MODE_TIP, parseDur } from '../products/resilience/data';
 import AegisTable from '../components/AegisTable';
 
 const SC = { ok: 'var(--ok)', warn: 'var(--warn)', err: 'var(--err)', run: 'var(--run)' };
@@ -215,10 +216,11 @@ export default class AegisDrServers extends DC {
     const tableRows = rows.map(x => ({
       id: x.id,
       name: x.name,
-      pri: x.pri,
-      rec: x.rec,
+      route: { v: `${x.pri} → ${x.rec}`, tip: `Primary ${x.pri}, recovery site ${x.rec}` },
       plan: x.plan,
+      mode: DR_INFO[x.id] ? { v: DR_INFO[x.id].mode, tip: `${MODE_LABEL[DR_INFO[x.id].mode]}${DR_INFO[x.id].every ? `, every ${DR_INFO[x.id].every}` : ''}. ${MODE_TIP[DR_INFO[x.id].mode]}` } : { v: '—', muted: true },
       target: { v: x.target, s: targetMin(x) },
+      rto: DR_INFO[x.id] ? { v: DR_INFO[x.id].rto, s: parseDur(DR_INFO[x.id].rto) } : { v: '—', muted: true },
       age:
         x.ageMin == null
           ? { v: 'Not read', muted: true, italic: true, s: null }
@@ -234,13 +236,14 @@ export default class AegisDrServers extends DC {
       state: stateCell(x)
     }));
     const cols = [
-      { k: 'name', label: 'Server', w: 'minmax(140px,1.3fr)' },
-      { k: 'pri', label: 'Primary site', w: 'minmax(140px,1.3fr)', dim: true },
-      { k: 'rec', label: 'Recovery site', w: 'minmax(140px,1.3fr)', dim: true },
-      { k: 'plan', label: 'Protection plan', w: 'minmax(120px,1fr)', dim: true },
-      { k: 'target', label: 'Recovery target', w: '120px', r: true },
-      { k: 'age', label: 'Age of newest point', w: '160px' },
-      { k: 'vers', label: 'Versions', w: '88px', r: true },
+      { k: 'name', label: 'Server', w: 'minmax(130px,1.2fr)' },
+      { k: 'route', label: 'Primary → recovery', w: 'minmax(150px,1.4fr)', dim: true },
+      { k: 'plan', label: 'Protection plan', w: 'minmax(110px,1fr)', dim: true },
+      { k: 'mode', label: 'Mode', w: '96px', dim: true },
+      { k: 'target', label: 'RPO', w: '64px', r: true },
+      { k: 'rto', label: 'RTO', w: '56px', r: true },
+      { k: 'age', label: 'Newest point', w: '128px' },
+      { k: 'vers', label: 'Versions', w: '76px', r: true },
       { k: 'state', label: 'State', w: 'minmax(170px,1.3fr)' }
     ];
     const selIds = tableRows.map(r => r.id).filter(id => s.sel[id]);
@@ -302,7 +305,9 @@ export default class AegisDrServers extends DC {
           { k: 'Primary site', v: dsrv.pri },
           { k: 'Recovery site', v: dsrv.rec },
           { k: 'Protection plan', v: dsrv.plan },
-          { k: 'Recovery target', v: dsrv.target },
+          { k: 'Replication mode', v: DR_INFO[dsrv.id] ? `${MODE_LABEL[DR_INFO[dsrv.id].mode]}${DR_INFO[dsrv.id].every ? `, every ${DR_INFO[dsrv.id].every}` : ''}` : '—' },
+          { k: 'Recovery target (RPO)', v: dsrv.target },
+          { k: 'Recovery time target (RTO)', v: DR_INFO[dsrv.id] ? `${DR_INFO[dsrv.id].rto}${DR_INFO[dsrv.id].rtoMeasured ? `; ${DR_INFO[dsrv.id].rtoMeasured} at the last drill` : ''}` : '—' },
           unread
             ? { k: 'Age of newest point', v: 'Not read', fs: 'italic', c: 'var(--tx-3)' }
             : {
@@ -661,7 +666,7 @@ export default class AegisDrServers extends DC {
       >
         <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Disaster Recovery</div>
+            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Resilience</div>
             <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Protected servers</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Servers replicated from a primary site to a recovery site.</p>
           </div>

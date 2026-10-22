@@ -515,7 +515,7 @@ export default class AegisGuests extends DC {
       >
         <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>{'Backup & Recovery'}</div>
+            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Protection</div>
             <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Protected guests</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Proxmox VE and OpenStack guests, their policies and recovery points.</p>
           </div>

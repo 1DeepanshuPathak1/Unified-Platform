@@ -34,6 +34,8 @@ export interface JobSpec {
   doneToast?: string;
   doneLog?: string;
   lines?: Record<string, string>;
+  /** Progress is driven by the caller through `patchJob` instead of the console's timer. */
+  external?: boolean;
 }
 
 /** What the console hands every screen. */
@@ -61,6 +63,8 @@ export interface Ctx {
   go: (route: string, openId?: string) => void;
   toast: (text: string, kind?: ToastKind, action?: { label: string; run: () => void }) => void;
   startJob: (spec: JobSpec) => string;
+  /** Updates a job started with `external: true`. */
+  patchJob: (id: string, patch: Partial<Pick<LiveJob, 'pct' | 'phase' | 'status'>> & { line?: { text: string; lv: 'info' | 'ok' | 'warn' | 'err' } }) => void;
   can: (action: 'configure' | 'operate' | 'restore' | 'destroy' | 'admin', verb?: string) => Perm;
   now: () => string;
   hms: () => string;

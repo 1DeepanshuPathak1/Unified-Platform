@@ -60,3 +60,8 @@ a:hover {
     animation: none;
   }
 }
+
+/* Runbook builder: a step's move and remove buttons show on hover or keyboard focus. */
+.ae-step .ae-step-tools { opacity: 0; transition: opacity 100ms; }
+.ae-step:hover .ae-step-tools,
+.ae-step:focus-within .ae-step-tools { opacity: 1; }

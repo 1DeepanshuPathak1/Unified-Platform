@@ -19,7 +19,7 @@ export default class AegisReports extends DC {
     const cfg = ctx.can('configure', 'Scheduling a report');
     const op = ctx.can('operate', 'Generating a report');
     return {
-      productLabel: { backup: 'Backup & Recovery', dr: 'Disaster Recovery', mig: 'Migration' }[p],
+      productLabel: { backup: 'Protection', dr: 'Resilience', mig: 'Mobility' }[p],
       cfgDis: cfg.dis,
       cfgWhy: cfg.why,
       cfgOp: cfg.op,

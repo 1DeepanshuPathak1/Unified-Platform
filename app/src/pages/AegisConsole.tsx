@@ -11,8 +11,6 @@ import AegisDrServers from '../screens/AegisDrServers';
 import AegisMigServers from '../screens/AegisMigServers';
 import AegisList from '../screens/AegisList';
 import AegisOverview from '../screens/AegisOverview';
-import AegisRecovery from '../screens/AegisRecovery';
-import AegisProtPlans from '../screens/AegisProtPlans';
 import AegisMappings from '../screens/AegisMappings';
 import AegisReports from '../screens/AegisReports';
 import AegisRestore from '../screens/AegisRestore';
@@ -31,6 +29,8 @@ import Policies from '../platform/Policies';
 import { ActivitySection, AutomationSection } from '../platform/sections';
 import { audit } from '../platform/store';
 import { CUSTOMERS } from '../data/platform';
+import ResilienceOverview from '../products/resilience/Overview';
+import RecoveryPlans from '../products/resilience/RecoveryPlans';
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = n => String(n).padStart(2, '0');
@@ -66,7 +66,10 @@ const PLATFORM = {
   automation: 1,
   settings: 1,
   billing: 1,
-  'backup/policies': 1
+  'backup/policies': 1,
+  'dr/overview': 1,
+  'dr/recovery': 1,
+  'dr/plans': 1
 };
 
 export default class AegisConsole extends DC {
@@ -225,10 +228,23 @@ export default class AegisConsole extends DC {
       doneToast: spec.doneToast,
       doneLog: spec.doneLog,
       lines: spec.lines || {},
+      external: !!spec.external,
       log: [{ t: hms(d), text: spec.firstLine || `${spec.name} started for ${spec.object}`, lv: 'info' }]
     };
     this.setState(s => ({ jobs: [job].concat(s.jobs) }));
     return id;
+  }
+
+  patchJob(id, p) {
+    const j = this.state.jobs.find(x => x.id === id);
+    if (!j) return;
+    const d = nowD();
+    const { line, ...rest } = p;
+    const finishing = p.status === 'ok' && j.status !== 'ok';
+    this.setState(s => ({
+      jobs: s.jobs.map(x => (x.id !== id ? x : { ...x, ...rest, log: line ? x.log.concat([{ t: hms(d), text: line.text, lv: line.lv }]).slice(-60) : x.log }))
+    }));
+    if (finishing && j.doneToast) this.toast(j.doneToast, 'ok');
   }
 
   tickJobs() {
@@ -236,7 +252,7 @@ export default class AegisConsole extends DC {
     const d = nowD();
     const finished = [];
     const jobs = this.state.jobs.map(j => {
-      if (j.status !== 'run') return j;
+      if (j.status !== 'run' || j.external) return j;
       const n = j.phases.length - 1;
       const np = Math.min(100, j.pct + j.speed * (0.6 + Math.random() * 0.8));
       const oi = Math.min(n - 1, Math.floor((j.pct / 100) * n));
@@ -409,6 +425,7 @@ export default class AegisConsole extends DC {
       go: (r, id) => this.go(r, id),
       toast: (t, k, a) => this.toast(t, k, a),
       startJob: spec => this.startJob(spec),
+      patchJob: (id, p) => this.patchJob(id, p),
       can: (a, v) => this.can(a, v),
       now: () => fmtD(nowD()),
       hms: () => hms(nowD())
@@ -418,10 +435,8 @@ export default class AegisConsole extends DC {
       guests: key === 'backup/guests',
       drServers: key === 'dr/servers',
       migServers: key === 'mig/servers',
-      overview: page === 'overview',
+      overview: page === 'overview' && !PLATFORM[key],
       list: LIST_PAGES.includes(key),
-      protPlans: key === 'dr/plans',
-      recovery: key === 'dr/recovery',
       mappings: key === 'mappings',
       platform: !!PLATFORM[key],
       reports: key === 'reports',
@@ -434,8 +449,6 @@ export default class AegisConsole extends DC {
       'migServers',
       'list',
       'overview',
-      'recovery',
-      'protPlans',
       'mappings',
       'platform',
       'reports',
@@ -1256,16 +1269,6 @@ export default class AegisConsole extends DC {
                 <AegisOverview ctx={v.ctx} />
               </div>
             ) : null}
-            {v.is?.recovery ? (
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisRecovery ctx={v.ctx} />
-              </div>
-            ) : null}
-            {v.is?.protPlans ? (
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisProtPlans ctx={v.ctx} />
-              </div>
-            ) : null}
             {v.is?.mappings ? (
               <div style={{ flex: 1, minHeight: 0 }}>
                 <AegisMappings ctx={v.ctx} />
@@ -1283,6 +1286,9 @@ export default class AegisConsole extends DC {
                 {v.key === 'settings' ? <SettingsSection ctx={v.ctx} /> : null}
                 {v.key === 'billing' ? <BillingSection ctx={v.ctx} /> : null}
                 {v.key === 'backup/policies' ? <Policies ctx={v.ctx} fixedType="Backup" /> : null}
+                {v.key === 'dr/overview' ? <ResilienceOverview ctx={v.ctx} /> : null}
+                {v.key === 'dr/recovery' ? <RecoveryPlans ctx={v.ctx} /> : null}
+                {v.key === 'dr/plans' ? <Policies ctx={v.ctx} fixedType="DR" /> : null}
               </div>
             ) : null}
 
