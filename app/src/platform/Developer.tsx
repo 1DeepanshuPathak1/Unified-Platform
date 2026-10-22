@@ -23,11 +23,12 @@ const ENDPOINTS: Endpoint[] = [
   { id: 'e8', group: 'Events', method: 'GET', path: '/events', summary: 'Events since a cursor, for polling instead of webhooks', scope: 'events:read', params: [{ name: 'after', in: 'query', type: 'string', example: 'evt_01JB2K' }], response: '{\n  "items": [ { "id": "evt_01JB2M", "type": "backup.failed", "object": "file-srv-03", "at": "2026-10-21T02:48:10+05:30" } ]\n}' }
 ];
 const METHOD_TONE: Record<Endpoint['method'], string> = { GET: 'ok', POST: 'run', DELETE: 'err' };
-const EVENTS = ['backup.failed', 'backup.succeeded', 'restore.finished', 'failover.started', 'failover.finished', 'cutover.committed', 'alert.raised', 'approval.requested', 'licence.expiring'];
+const EVENTS = ['backup.completed', 'backup.failed', 'restore.finished', 'replication.lagging', 'failover.started', 'failover.finished', 'migration.finished', 'cutover.committed', 'storage.threshold_crossed', 'licence.expiring', 'alert.raised', 'approval.requested'];
 interface Sub { id: string; name: string; events: string[]; url: string; state: 'ok' | 'err'; last: string; log: [string, string, string][] }
 const SUBS: Sub[] = [
   { id: 's1', name: 'ServiceNow incidents', events: ['backup.failed', 'failover.started', 'alert.raised'], url: 'https://host360.service-now.com/api/x_aegis/events', state: 'ok', last: T('21 Oct', '14:53'), log: [[T('21 Oct', '14:53'), 'alert.raised · region-2-os', '200 in 312 ms'], [T('21 Oct', '02:48'), 'backup.failed · file-srv-03', '200 in 280 ms']] },
   { id: 's2', name: 'Meridian SOC (Splunk HEC)', events: ['failover.started', 'failover.finished', 'approval.requested'], url: 'https://splunk-hec.meridianbank.in:8088/services/collector', state: 'err', last: T('21 Oct', '13:05'), log: [[T('21 Oct', '13:05'), 'approval.requested · APR-1040', '503, retried 5 times; gave up at 13:35'], [T('20 Oct', '22:14'), 'failover.finished · test', '200 in 190 ms']] },
+  { id: 's4', name: 'Host360 NOC (Teams)', events: ['replication.lagging', 'storage.threshold_crossed', 'migration.finished'], url: 'https://prod-12.centralindia.logic.azure.com/workflows/aegis-noc', state: 'ok', last: T('21 Oct', '15:53'), log: [[T('21 Oct', '15:53'), 'replication.lagging · erp-db-01 (past its 15 min target)', '202 in 410 ms'], [T('21 Oct', '09:12'), 'storage.threshold_crossed · obj-check 85 %', '202 in 388 ms'], [T('18 Oct', '23:52'), 'migration.finished · Wave 0 · Pilot', '202 in 402 ms']] },
   { id: 's3', name: 'Kaveri ops bot', events: ['restore.finished', 'licence.expiring'], url: 'https://bots.kaverilogistics.in/aegis', state: 'ok', last: T('09 Oct', '15:20'), log: [[T('09 Oct', '15:20'), 'restore.finished · kav-wms-db', '204 in 95 ms']] }
 ];
 const TEMPLATES = [

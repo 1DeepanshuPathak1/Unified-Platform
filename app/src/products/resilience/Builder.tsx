@@ -303,18 +303,18 @@ export function StepDialog({ rb, step, closing, onClose, onSave }: { rb: Runbook
         {x.kind === 'gate' ? (
           <>
             <Field id="sd-c" label="Check">
-              <SelectInput id="sd-c" value={x.check || 'Port'} onChange={v => set({ check: v as GateCheck })} options={['Port', 'HTTP', 'Ping', 'SQL query']} />
+              <SelectInput id="sd-c" value={x.check || 'Port'} onChange={v => set({ check: v as GateCheck })} options={['Port', 'HTTP', 'Ping', 'SQL query', 'Service running', 'Database mounted', 'Business transaction']} />
             </Field>
-            <Field id="sd-t" label={x.check === 'HTTP' ? 'URL' : x.check === 'SQL query' ? 'Database server' : 'Server or address'}>
-              <TextInput id="sd-t" value={x.target || ''} onChange={v => set({ target: v })} placeholder={x.check === 'HTTP' ? 'https://erp.host360.ai/health' : 'sql-prod-02'} />
+            <Field id="sd-t" label={x.check === 'HTTP' ? 'URL' : x.check === 'SQL query' || x.check === 'Database mounted' ? 'Database server' : x.check === 'Business transaction' ? 'Test script' : x.check === 'Service running' ? 'Server' : 'Server or address'} hint={x.check === 'Business transaction' ? 'From the script library; runs on the orchestrator against the recovered servers' : undefined}>
+              <TextInput id="sd-t" value={x.target || ''} onChange={v => set({ target: v })} placeholder={x.check === 'HTTP' ? 'https://erp.host360.ai/health' : x.check === 'Business transaction' ? 'erp-smoke-test.ps1' : 'sql-prod-02'} />
             </Field>
             {x.check === 'Port' ? (
               <Field id="sd-p" label="Port">
                 <TextInput id="sd-p" value={x.port ? String(x.port) : ''} onChange={v => set({ port: +v.replace(/\D/g, '') || undefined })} inputMode="numeric" placeholder="443" />
               </Field>
             ) : (
-              <Field id="sd-e" label="Expect">
-                <TextInput id="sd-e" value={x.expect || ''} onChange={v => set({ expect: v })} placeholder={x.check === 'HTTP' ? '200 OK' : 'SELECT 1 returns 1'} />
+              <Field id="sd-e" label={x.check === 'Service running' ? 'Service name' : x.check === 'Database mounted' ? 'Database' : 'Expect'}>
+                <TextInput id="sd-e" value={x.expect || ''} onChange={v => set({ expect: v })} placeholder={x.check === 'HTTP' ? '200 OK' : x.check === 'Service running' ? 'MSSQLSERVER' : x.check === 'Database mounted' ? 'ERP_PROD is ONLINE' : x.check === 'Business transaction' ? 'Posts a test order and reads it back' : 'SELECT 1 returns 1'} />
               </Field>
             )}
             <Field id="sd-to2" label="Give up after (s)">

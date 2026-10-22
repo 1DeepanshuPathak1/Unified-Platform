@@ -6,6 +6,7 @@ import AegisHandoff from './pages/AegisHandoff';
 import Coverage from './pages/Coverage';
 import AdminPortal from './pages/AdminPortal';
 import Signup from './pages/Signup';
+import PublicCalculator from './pages/PublicCalculator';
 
 const preview = new URLSearchParams(location.search);
 const UI_STATES: Record<string, string> = { live: 'Live', reading: 'Reading…', unreachable: 'Unreachable', empty: 'Empty' };
@@ -23,7 +24,7 @@ export default class App extends DC {
   read() {
     const h = location.hash || '';
     if (!h.startsWith('#/')) return;
-    const v = h.startsWith('#/design-system') ? 'ds' : h.startsWith('#/handoff') ? 'handoff' : h.startsWith('#/coverage') ? 'coverage' : h.startsWith('#/admin') ? 'admin' : h.startsWith('#/signup') ? 'signup' : 'console';
+    const v = h.startsWith('#/design-system') ? 'ds' : h.startsWith('#/handoff') ? 'handoff' : h.startsWith('#/coverage') ? 'coverage' : h.startsWith('#/admin') ? 'admin' : h.startsWith('#/signup') ? 'signup' : h.startsWith('#/calculator') ? 'calculator' : 'console';
     if (v !== this.state.view) {
       this.setState({ view: v });
       window.scrollTo(0, 0);
@@ -32,7 +33,7 @@ export default class App extends DC {
   }
   renderVals() {
     const v = this.state.view;
-    return { consoleDisplay: v === 'console' ? 'block' : 'none', isDs: v === 'ds', isHandoff: v === 'handoff', isCoverage: v === 'coverage', isAdmin: v === 'admin', isSignup: v === 'signup' };
+    return { consoleDisplay: v === 'console' ? 'block' : 'none', isDs: v === 'ds', isHandoff: v === 'handoff', isCoverage: v === 'coverage', isAdmin: v === 'admin', isSignup: v === 'signup', isCalculator: v === 'calculator' };
   }
 
   render() {
@@ -61,6 +62,7 @@ export default class App extends DC {
         ) : null}
         {v.isAdmin ? <AdminPortal /> : null}
         {v.isSignup ? <Signup /> : null}
+        {v.isCalculator ? <PublicCalculator /> : null}
       </>
     );
   }

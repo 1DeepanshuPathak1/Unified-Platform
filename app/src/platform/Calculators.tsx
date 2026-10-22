@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import AegisTable from '../components/AegisTable';
-import { Btn, Field, FilterInput, Seg, SelectInput, TextInput } from '../ui/controls';
+import { Btn, CheckBox, Field, FilterInput, RadioCard, Seg, SelectInput, TextInput } from '../ui/controls';
+import { Dialog, useClosable } from '../ui/overlay';
+import { audit } from './store';
 import { Facts, MiniTable, Panel, Spacer, TableArea, Tiles, Toolbar } from '../ui/layout';
 import type { Ctx } from '../ui/ctx';
+import { Icon } from '../lib/Icon';
 
 /* ---------------------------------------------------------------- One engine for all three calculators */
 
@@ -50,13 +53,33 @@ const num = (v: string) => (Number.isFinite(+v) ? +v : 0);
 
 /** Support › Calculators: backup storage, DR site capacity and migration duration from one set of assumptions. */
 export function CalculatorsTab({ ctx }: { ctx: Ctx }) {
+  const embed = useClosable<boolean>();
+  return (
+    <>
+      <CalculatorBody
+        toast={ctx.toast}
+        inConsole
+        extra={
+          <>
+            <Btn kind="ghost" icon="external-link" onClick={() => { location.hash = '/calculator'; }}>Public page</Btn>
+            <Btn kind="outline" icon="square-terminal" perm={ctx.can('configure', 'Publishing the calculator')} onClick={() => embed.open(true)}>Put on a website…</Btn>
+          </>
+        }
+      />
+      {embed.value ? <EmbedDialog ctx={ctx} closing={embed.closing} onClose={embed.close} /> : null}
+    </>
+  );
+}
+
+/** The same three calculators, in the console or on the public page at aegis.host360.ai/calculator. */
+export function CalculatorBody({ toast, inConsole, extra, lead }: { toast: (m: string, tone?: string) => void; inConsole?: boolean; extra?: ReactNode; lead?: (calc: string, summary: string) => ReactNode }) {
   const [calc, setCalc] = useState<'backup' | 'dr' | 'mig'>('backup');
   const [a, setA] = useState<Assume>(DEFAULTS);
   const [f, setF] = useState<Record<string, string>>({ source: '20', daily: '14', weekly: '4', monthly: '12', yearly: '1', copy: 'Yes', vcpu: '320', ram: '1280', storage: '22', simul: '60', over: '1.5', versions: '7', tb: '12.4', servers: '29', perWave: '6', sync: '4' });
   const set = (k: string, v: string) => setF(x => ({ ...x, [k]: v.replace(/[^\d.]/g, '') }));
   const mine = () => {
     setF(x => ({ ...x, source: '18.6', vcpu: '268', ram: '1088', storage: '22.4', tb: '12.4', servers: '29' }));
-    ctx.toast('Filled from the inventory: Meridian Cooperative Bank and Host360 servers still on VMware', 'ok');
+    toast('Filled from the inventory: Meridian Cooperative Bank and Host360 servers still on VMware', 'ok');
   };
   const b = engine.backup(a, num(f.source), num(f.daily), num(f.weekly), num(f.monthly), num(f.yearly), f.copy === 'Yes');
   const d = engine.dr(a, num(f.vcpu), num(f.ram), num(f.storage), num(f.simul), num(f.over) || 1, num(f.versions));
@@ -67,7 +90,8 @@ export function CalculatorsTab({ ctx }: { ctx: Ctx }) {
       <Toolbar>
         <Seg label="Calculator" value={calc} onChange={setCalc} options={[{ v: 'backup', label: 'Backup storage' }, { v: 'dr', label: 'DR site' }, { v: 'mig', label: 'Migration duration' }]} />
         <Spacer />
-        <Btn kind="outline" icon="radar" onClick={mine}>Use my inventory</Btn>
+        {inConsole ? <Btn kind="outline" icon="radar" onClick={mine}>Use my inventory</Btn> : null}
+        {extra}
       </Toolbar>
       <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 24px 24px', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.3fr)', gap: 16, alignItems: 'start' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -83,7 +107,7 @@ export function CalculatorsTab({ ctx }: { ctx: Ctx }) {
               <Field id="as-c" label="Daily change (%)"><TextInput id="as-c" value={String(a.change)} onChange={v => setA(x => ({ ...x, change: num(v) }))} inputMode="numeric" /></Field>
               <Field id="as-d" label="Deduplication (×)"><TextInput id="as-d" value={String(a.dedupe)} onChange={v => setA(x => ({ ...x, dedupe: num(v) || 1 }))} inputMode="numeric" /></Field>
               <Field id="as-z" label="Compression (×)"><TextInput id="as-z" value={String(a.compress)} onChange={v => setA(x => ({ ...x, compress: num(v) || 1 }))} inputMode="numeric" /></Field>
-              <Field id="as-t" label="Copy rate (MB/s)" hint="Measured on aegis-proxy-chn-01"><TextInput id="as-t" value={String(a.mbps)} onChange={v => setA(x => ({ ...x, mbps: num(v) || 1 }))} inputMode="numeric" /></Field>
+              <Field id="as-t" label="Copy rate (MB/s)" hint={inConsole ? 'Measured on aegis-proxy-chn-01' : 'Typical over a 10 Gb/s link'}><TextInput id="as-t" value={String(a.mbps)} onChange={v => setA(x => ({ ...x, mbps: num(v) || 1 }))} inputMode="numeric" /></Field>
             </div>
           </Panel>
         </div>
@@ -97,18 +121,61 @@ export function CalculatorsTab({ ctx }: { ctx: Ctx }) {
           {calc === 'dr' ? (
             <>
               <Tiles items={[{ label: 'vCPU to reserve', value: String(d.vcpu), icon: 'cpu', sub: `${f.simul} % at ${f.over}× over-commit` }, { label: 'Memory to reserve', value: fmt(d.ram, 0), unit: 'GB', icon: 'layers', sub: 'Memory is never over-committed' }, { label: 'Storage at the site', value: fmt(d.storage), unit: 'TB', icon: 'hard-drive', sub: `${f.versions} versions; plus ${fmt(d.test)} TB for test copies` }]} />
-              <Facts items={[{ k: 'Compared with region-2-os', v: `${d.vcpu} of 256 vCPU reserved would leave ${256 - d.vcpu} for other customers; see Resilience › Site capacity` }, { k: 'Formula', v: 'vCPU × share ÷ over-commit; memory × share; storage × (1 + versions × daily change)' }]} />
+              <Facts items={[...(inConsole ? [{ k: 'Compared with region-2-os', v: `${d.vcpu} of 256 vCPU reserved would leave ${256 - d.vcpu} for other customers; see Resilience › Site capacity` }] : []), { k: 'Formula', v: 'vCPU × share ÷ over-commit; memory × share; storage × (1 + versions × daily change)' }]} />
             </>
           ) : null}
           {calc === 'mig' ? (
             <>
               <Tiles items={[{ label: 'First pass', value: m.firstH < 48 ? fmt(m.firstH) : fmt(m.firstH / 24), unit: m.firstH < 48 ? 'hours' : 'days', icon: 'timer', sub: `${f.tb} TB at ${a.mbps} MB/s` }, { label: 'Waves', value: String(m.waves), icon: 'calendar', sub: `${f.perWave} servers each, one a weekend` }, { label: 'Programme', value: String(m.weeks), unit: 'weeks', icon: 'route', sub: 'Waves plus two weeks of first passes' }, { label: 'Downtime per server', value: String(m.downtimeMin), unit: 'min', icon: 'clock', sub: 'Final sync plus boot' }]} />
-              <Facts items={[{ k: 'Same as', v: 'The estimates in Mobility › Assessment use this engine with each server’s own size' }, { k: 'Formula', v: 'Data ÷ copy rate; final sync = change since the last pass ÷ copy rate + 12 min to boot and check' }]} />
+              <Facts items={[...(inConsole ? [{ k: 'Same as', v: 'The estimates in Mobility › Assessment use this engine with each server’s own size' }] : []), { k: 'Formula', v: 'Data ÷ copy rate; final sync = change since the last pass ÷ copy rate + 12 min to boot and check' }]} />
             </>
           ) : null}
+          {lead ? lead(calc, calc === 'backup' ? `${fmt(b.total)} TB of repository for ${f.source} TB protected` : calc === 'dr' ? `${d.vcpu} vCPU, ${fmt(d.ram, 0)} GB and ${fmt(d.storage)} TB at the recovery site` : `${m.waves} waves over ${m.weeks} weeks, ${m.downtimeMin} min downtime per server`) : null}
         </div>
       </div>
     </>
+  );
+}
+
+function EmbedDialog({ ctx, closing, onClose }: { ctx: Ctx; closing: boolean; onClose: () => void }) {
+  const [which, setWhich] = useState<string[]>(['backup', 'dr', 'mig']);
+  const [brand, setBrand] = useState<'host360' | 'partner'>('host360');
+  const [to, setTo] = useState('sales@host360.ai');
+  const src = `https://aegis.host360.ai/calculator?embed=1&show=${which.join(',')}${brand === 'partner' ? '&brand=partner-cloudnest' : ''}`;
+  const code = `<iframe src="${src}" title="Backup, DR and migration calculator" width="100%" height="760" style="border:0" loading="lazy"></iframe>`;
+  const ok = which.length > 0 && /^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(to);
+  return (
+    <Dialog
+      size="lg"
+      title="Put the calculator on a website"
+      sub="The same engine and assumptions as the console, without sign-in. Visitors can ask for the sizing by e-mail; their request goes to the address below."
+      closing={closing}
+      onClose={onClose}
+      footer={
+        <>
+          <Btn kind="ghost" onClick={onClose}>Close</Btn>
+          <Btn kind="outline" icon="external-link" onClick={() => { onClose(); location.hash = '/calculator'; }}>Preview the public page</Btn>
+          <Btn kind="primary" icon="copy" disabled={!ok} why={!which.length ? 'Pick at least one calculator.' : 'Give a valid e-mail address for requests.'} onClick={() => {
+            const p = navigator.clipboard?.writeText(code);
+            audit({ who: 'priya.raman', customer: 'h360', what: 'Published the website calculator', object: which.join(', '), when: ctx.now(), r: 'ok', after: [['Branding', brand === 'host360' ? 'Host360' : 'CloudNest IT Services'], ['Requests to', to]] });
+            if (!p) return ctx.toast('Copy is blocked here; select the code and copy it yourself', 'warn');
+            p.then(() => ctx.toast('Embed code copied', 'ok'), () => ctx.toast('Copy is blocked here; select the code and copy it yourself', 'warn'));
+          }}>Copy embed code</Btn>
+        </>
+      }
+    >
+      <Field label="Calculators">
+        <div style={{ display: 'flex', gap: 16 }}>
+          {[['backup', 'Backup storage'], ['dr', 'DR site'], ['mig', 'Migration duration']].map(([v, l]) => <CheckBox key={v} on={which.includes(v)} onChange={x => setWhich(s => (x ? [...s, v] : s.filter(y => y !== v)))}>{l}</CheckBox>)}
+        </div>
+      </Field>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <RadioCard on={brand === 'host360'} onClick={() => setBrand('host360')} title="Host360 branding" note="For host360.ai" />
+        <RadioCard on={brand === 'partner'} onClick={() => setBrand('partner')} title="Partner branding" note="CloudNest IT Services logo and colours from Branding" />
+      </div>
+      <Field id="em-to" label="Send requests to"><TextInput id="em-to" value={to} onChange={setTo} /></Field>
+      <pre style={{ margin: 0, padding: 12, background: 'var(--panel-2)', border: '1px solid var(--ln)', font: '12px/18px var(--f-ui)', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', userSelect: 'text' }}>{code}</pre>
+    </Dialog>
   );
 }
 
@@ -141,13 +208,16 @@ const cell = (v: Sup, note: string) => (v === 'Yes' ? { t: 'status', i: 'circle-
 
 /** Support › Compatibility: what each product supports, by platform, guest OS, database, Kubernetes and storage. */
 export function CompatibilityTab({ ctx }: { ctx: Ctx }) {
+  const [mode, setMode] = useState<'matrix' | 'check'>('check');
   const [cat, setCat] = useState('All');
   const [q, setQ] = useState('');
   const ql = q.trim().toLowerCase();
   const rows = MATRIX.filter(r => (cat === 'All' || r.cat === cat) && (!ql || `${r.item} ${r.note}`.toLowerCase().includes(ql)));
+  if (mode === 'check') return <CompatCheck mode={<Seg<'matrix' | 'check'> label="View" value={mode} onChange={setMode} options={[{ v: 'check', label: 'Check a combination' }, { v: 'matrix', label: 'Full matrix' }]} />} />;
   return (
     <>
       <Toolbar>
+        <Seg<'matrix' | 'check'> label="View" value={mode} onChange={setMode} options={[{ v: 'check', label: 'Check a combination' }, { v: 'matrix', label: 'Full matrix' }]} />
         <Seg label="Category" value={cat} onChange={setCat} options={['All', 'Platforms', 'Guest OS', 'Databases', 'Kubernetes', 'Storage'].map(v => ({ v, label: v }))} />
         <FilterInput value={q} onChange={setQ} placeholder="Filter, e.g. Oracle" label="Filter the matrix" width={220} />
         <Spacer />
@@ -165,6 +235,89 @@ export function CompatibilityTab({ ctx }: { ctx: Ctx }) {
           emptyText="Nothing matches."
         />
       </TableArea>
+    </>
+  );
+}
+
+/* ---------------------------------------------------------------- Source × version × workload × operation × target */
+
+type Op = 'Back up' | 'Restore' | 'Replicate' | 'Test failover' | 'Fail over' | 'Migrate';
+type Lvl = 'Yes' | 'Limited' | 'No';
+const SOURCES: Record<string, string[]> = { 'VMware vSphere': ['8.0 U3', '7.0 U3', '6.7'], 'Proxmox VE': ['9.0', '8.2', '7.4'], OpenStack: ['2025.1', '2024.1', 'Zed (2022.2)'], 'Microsoft Hyper-V': ['2022', '2019'], 'Physical server': ['Any'] };
+const WORKLOADS = ['Windows Server 2022', 'Windows Server 2012 R2', 'Windows Server 2008 R2', 'Red Hat Enterprise Linux 9', 'CentOS 7', 'Ubuntu 24.04', 'SQL Server 2019', 'Oracle 19c RAC', 'SAP HANA 2.0', 'Kubernetes 1.30'];
+const OPS: Op[] = ['Back up', 'Restore', 'Replicate', 'Test failover', 'Fail over', 'Migrate'];
+const TARGETS: Record<Op, string[]> = {
+  'Back up': ['S3-compatible with object lock', 'NFS', 'SMB', 'Filesystem'],
+  Restore: ['The same place', 'Proxmox VE 9.0', 'OpenStack 2025.1'],
+  Replicate: ['Proxmox VE 9.0', 'Proxmox VE 8.2', 'OpenStack 2025.1', 'OpenStack 2024.1'],
+  'Test failover': ['Proxmox VE 9.0', 'OpenStack 2025.1'],
+  'Fail over': ['Proxmox VE 9.0', 'Proxmox VE 8.2', 'OpenStack 2025.1', 'OpenStack 2024.1'],
+  Migrate: ['Proxmox VE 9.0', 'Proxmox VE 8.2', 'OpenStack 2025.1', 'OpenStack 2024.1']
+};
+const RANK: Record<Lvl, number> = { Yes: 0, Limited: 1, No: 2 };
+
+/** Every rule that applies to one combination; the answer is the worst of them. */
+function judge(src: string, ver: string, wl: string, op: Op, tgt: string): [string, Lvl, string][] {
+  const out: [string, Lvl, string][] = [];
+  const dr = op === 'Replicate' || op === 'Test failover' || op === 'Fail over';
+  // Source and operation
+  if (src === 'VMware vSphere') out.push(['Source', op === 'Back up' || op === 'Restore' ? 'Limited' : 'Yes', op === 'Back up' || op === 'Restore' ? 'VMware is never a Protection source; back up the guest with the Aegis agent instead' : `${op} from vCenter or ESXi with the read-only role`]);
+  else if (src === 'Microsoft Hyper-V') out.push(['Source', dr ? 'No' : op === 'Migrate' ? 'Limited' : 'Limited', dr ? 'No replication from Hyper-V' : 'Through the Aegis agent in the guest']);
+  else if (src === 'Physical server') out.push(['Source', op === 'Migrate' || dr ? 'Limited' : 'Yes', op === 'Migrate' ? 'Physical to virtual through the agent; one extra reboot' : dr ? 'Agent-based replication; boot settings checked per server' : 'With the Aegis agent']);
+  else out.push(['Source', op === 'Migrate' ? 'No' : 'Yes', op === 'Migrate' ? `${src} is a destination for Mobility, not a source` : `${op} on ${src}`]);
+  // Version
+  if (ver === '6.7') out.push(['Version', 'No', 'vSphere 6.7 is past VMware’s end of support; 7.0 U3 is the oldest supported']);
+  else if (ver === '7.4') out.push(['Version', 'Limited', 'Proxmox VE 7.4 is end of life; upgrade to 8.2 or later']);
+  else if (ver.startsWith('Zed')) out.push(['Version', 'Limited', 'OpenStack Zed is unmaintained upstream; 2024.1 or later']);
+  else out.push(['Version', 'Yes', `${src} ${ver} is tested with Aegis 4.2.1`]);
+  // Workload and operation
+  const w = (l: Lvl, t: string) => out.push(['Workload', l, t]);
+  if (wl === 'Windows Server 2008 R2') w(op === 'Migrate' ? 'Limited' : op === 'Back up' ? 'Limited' : 'Limited', op === 'Migrate' ? 'Legacy profile: VirtIO 0.1.185 and a first boot on IDE; out of support' : 'Out of support; application-consistent backup is not available');
+  else if (wl === 'Windows Server 2012 R2') w(op === 'Migrate' ? 'Limited' : 'Yes', op === 'Migrate' ? 'Drivers inject; no Microsoft support after the move' : 'Supported');
+  else if (wl === 'CentOS 7') w(op === 'Back up' || op === 'Restore' ? 'Limited' : 'Yes', op === 'Back up' || op === 'Restore' ? 'End of life; file-level restore only from 2027' : 'Supported; initramfs rebuilt with VirtIO');
+  else if (wl === 'Oracle 19c RAC') w(op === 'Migrate' ? 'No' : 'Yes', op === 'Migrate' ? 'Shared disks cannot be migrated as-is; rebuild the cluster at the destination and use Data Guard' : 'RMAN integration; replicated as one consistency group');
+  else if (wl === 'SAP HANA 2.0') w(op === 'Migrate' ? 'No' : op === 'Back up' || op === 'Restore' ? 'Limited' : 'Yes', op === 'Migrate' ? 'Use HANA system replication to the destination' : op === 'Back up' || op === 'Restore' ? 'Backint certification in progress; file backups until then' : 'Replicated as one consistency group');
+  else if (wl === 'Kubernetes 1.30') w(op === 'Migrate' ? 'No' : dr ? 'Limited' : 'Yes', op === 'Migrate' ? 'Move workloads with a backup and restore to the new cluster' : dr ? 'At application level: namespaces and volumes restored into a standby cluster' : 'Namespaces and persistent volumes');
+  else if (wl === 'SQL Server 2019') w('Yes', op === 'Back up' ? 'Application-consistent with log backups' : 'Supported');
+  else w('Yes', 'Supported');
+  // Target
+  if (tgt === 'SMB') out.push(['Target', 'Limited', 'SMB cannot be locked; backups on it are not immutable']);
+  else if (tgt === 'S3-compatible with object lock') out.push(['Target', 'Yes', 'Immutable in governance or compliance mode']);
+  else if (tgt === 'The same place') out.push(['Target', 'Yes', 'Back to the original location; overwrites need step-up']);
+  else out.push(['Target', 'Yes', `${tgt} is a supported destination`]);
+  return out;
+}
+
+function CompatCheck({ mode }: { mode: ReactNode }) {
+  const [src, setSrc] = useState('VMware vSphere');
+  const [ver, setVer] = useState(SOURCES['VMware vSphere'][0]);
+  const [wl, setWl] = useState(WORKLOADS[0]);
+  const [op, setOp] = useState<Op>('Migrate');
+  const [tgt, setTgt] = useState(TARGETS.Migrate[0]);
+  const lines = judge(src, ver, wl, op, tgt);
+  const worst = lines.reduce<Lvl>((a, l) => (RANK[l[1]] > RANK[a] ? l[1] : a), 'Yes');
+  const tone = { Yes: ['circle-check', 'ok', 'Supported'], Limited: ['triangle-alert', 'warn', 'Supported with limits'], No: ['circle-x', 'err', 'Not supported'] }[worst];
+  return (
+    <>
+      <Toolbar>
+        {mode}
+        <Spacer />
+        <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>For Aegis 4.2.1 · updated 17 Oct 2026</span>
+      </Toolbar>
+      <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,minmax(0,1fr))', gap: 12 }}>
+          <Field id="cc-s" label="Source"><SelectInput id="cc-s" value={src} onChange={v => { setSrc(v); setVer(SOURCES[v][0]); }} options={Object.keys(SOURCES)} /></Field>
+          <Field id="cc-v" label="Version"><SelectInput id="cc-v" value={ver} onChange={setVer} options={SOURCES[src]} /></Field>
+          <Field id="cc-w" label="Workload"><SelectInput id="cc-w" value={wl} onChange={setWl} options={WORKLOADS} /></Field>
+          <Field id="cc-o" label="Operation"><SelectInput id="cc-o" value={op} onChange={v => { setOp(v as Op); setTgt(TARGETS[v as Op][0]); }} options={OPS} /></Field>
+          <Field id="cc-t" label="Target"><SelectInput id="cc-t" value={tgt} onChange={setTgt} options={TARGETS[op]} /></Field>
+        </div>
+        <Panel title={<span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}><Icon name={tone[0]} style={{ color: `var(--${tone[1]})` }} />{tone[2]}: {op.toLowerCase()} {wl} from {src} {ver} to {tgt}</span>}>
+          <div style={{ padding: '4px 16px 12px' }}>
+            <MiniTable label="Why" cols={[{ label: 'Rule', w: '100px' }, { label: 'Result', w: '110px' }, { label: 'Detail' }]} rows={lines.map(([k, l, t]) => [k, <span key="r" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: `var(--${l === 'Yes' ? 'ok' : l === 'Limited' ? 'warn' : 'err'})` }}><Icon name={l === 'Yes' ? 'circle-check' : l === 'Limited' ? 'triangle-alert' : 'circle-x'} />{l}</span>, <span key="t" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={t}>{t}</span>])} />
+          </div>
+        </Panel>
+      </div>
     </>
   );
 }

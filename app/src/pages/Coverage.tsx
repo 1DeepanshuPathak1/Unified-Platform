@@ -39,7 +39,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
   const rows = COVERAGE.filter(c => (status === 'All' || c.now === status) && (prio === 'All' || c.prio === prio) && (part === 'All' || c.part === part) && (!changed || c.turn === CURRENT_TURN) && (!ql || `${c.id} ${c.item} ${c.object} ${c.group}`.toLowerCase().includes(ql)));
   const count = (st: CovStatus, list = COVERAGE) => list.filter(c => c.now === st).length;
   const p0 = COVERAGE.filter(c => c.prio === 'P0');
-  const changedRows = COVERAGE.filter(c => c.turn === CURRENT_TURN && (c.prev ?? c.was) !== c.now);
+  const changedRows = COVERAGE.filter(c => c.turn === CURRENT_TURN);
   const tile = (label: string, value: string, sub: string, color?: string): ReactElement => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px', borderLeft: '1px solid var(--ln)', minWidth: 0 }}>
       <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>{label}</span>
@@ -96,11 +96,20 @@ export default function Coverage({ hub }: { hub?: boolean }) {
             <ul style={{ listStyle: 'none', padding: 0, background: 'var(--panel)', border: '1px solid var(--ln)' }}>
               {changedRows.map(c => (
                 <li key={c.id} style={{ display: 'grid', gridTemplateColumns: '48px minmax(0,1fr) 300px', gap: 12, alignItems: 'center', minHeight: 40, padding: '6px 16px', borderBottom: '1px solid var(--ln)' }}>
-                  <span style={{ font: '700 12px var(--f-ui)', color: 'var(--tx-3)' }}>{c.id}</span>
-                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={c.item} data-tip-overflow="">{c.item}</span>
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, font: '13px var(--f-ui)', whiteSpace: 'nowrap' }}>
-                    <StatusL s={c.prev ?? c.was} muted />
-                    <Icon name="arrow-right" style={{ color: 'var(--tx-3)' }} />
+                  <span style={{ font: '700 12px var(--f-ui)', color: 'var(--tx-3)', alignSelf: c.added ? 'start' : undefined, paddingTop: c.added ? 2 : 0 }}>{c.id}</span>
+                  <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={c.item} data-tip-overflow="">{c.item}</span>
+                    {c.added ? <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>Added: {c.added}</span> : null}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8, font: '13px var(--f-ui)', whiteSpace: 'nowrap', alignSelf: c.added ? 'start' : undefined }}>
+                    {(c.prev ?? c.was) !== c.now ? (
+                      <>
+                        <StatusL s={c.prev ?? c.was} muted />
+                        <Icon name="arrow-right" style={{ color: 'var(--tx-3)' }} />
+                      </>
+                    ) : (
+                      <span style={{ color: 'var(--tx-3)' }}>Gaps closed ·</span>
+                    )}
                     <StatusL s={c.now} />
                   </span>
                 </li>
@@ -157,7 +166,7 @@ function StatusL({ s, muted }: { s: CovStatus; muted?: boolean }) {
 
 function Row({ c }: { c: CovItem }) {
   return (
-    <div role="row" style={{ ...grid, borderBottom: '1px solid var(--ln)', background: c.turn === CURRENT_TURN && (c.prev ?? c.was) !== c.now ? 'var(--acc-soft)' : undefined }}>
+    <div role="row" style={{ ...grid, borderBottom: '1px solid var(--ln)', background: c.turn === CURRENT_TURN ? 'var(--acc-soft)' : undefined }}>
       <div role="cell" style={{ fontWeight: 700, color: 'var(--tx-2)' }}>{c.id}</div>
       <div role="cell" style={{ fontFamily: 'var(--f-body)', fontSize: 14, lineHeight: '20px' }}>
         <div>{c.item}</div>
@@ -167,7 +176,7 @@ function Row({ c }: { c: CovItem }) {
         {c.screens.length ? (
           c.screens.map((s, i) =>
             s.route ? (
-              <a key={i} href={`#/${/^(dr|mig|backup|admin)\/|^signup$/.test(s.route) ? s.route : `backup/${s.route}`}`} style={{ color: 'var(--acc-tx)', fontWeight: 600 }}>
+              <a key={i} href={`#/${/^(dr|mig|backup|admin)\/|^(signup|calculator)$/.test(s.route) ? s.route : `backup/${s.route}`}`} style={{ color: 'var(--acc-tx)', fontWeight: 600 }}>
                 {s.label}
               </a>
             ) : (

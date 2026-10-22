@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AudienceReport, AUDIENCES, type Audience } from './Report';
 import AegisTable from '../../components/AegisTable';
 import { Icon } from '../../lib/Icon';
 import { TIER_SHORT } from '../../data/platform';
@@ -10,12 +11,13 @@ import { custName, Go, inScope, scopeCustomers, showCustomerCol, TierTag } from 
 import { ASSESSED, band, bandLabel, findings, totalGB, type Assessed, type Finding } from './assess';
 import { STAGE_LABEL } from './data';
 
-type View = 'summary' | 'servers' | 'sizing' | 'risk';
+type View = 'summary' | 'servers' | 'sizing' | 'risk' | 'report';
 const VIEWS: { v: View; label: string }[] = [
   { v: 'summary', label: 'Executive summary' },
   { v: 'servers', label: 'Servers' },
   { v: 'sizing', label: 'Sizing and cost' },
-  { v: 'risk', label: 'Security and licensing' }
+  { v: 'risk', label: 'Security and licensing' },
+  { v: 'report', label: 'Report' }
 ];
 const fmtH = (h: number) => (h < 1 ? `${Math.max(1, Math.round(h * 60))} min` : `${h.toFixed(h < 10 ? 1 : 0)} h`);
 const fmtMin = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
@@ -25,7 +27,8 @@ const SEV_TONE = { Low: ['info', 'tx'], Medium: ['triangle-alert', 'warn'], High
 /**
  * Mobility › Assessment: what the discovery found and what it means: compatibility, readiness
  * and risk for every server, estimates for the copy and the downtime, right-sizing, and the
- * security and licensing questions to answer before the first wave. One report, four views.
+ * security and licensing questions to answer before the first wave. The Report tab writes it up
+ * for four readers: engineer, CIO, MSP and sales.
  */
 export default function Assessment({ ctx }: { ctx: Ctx }) {
   const [view, setView] = useState<View>(VIEWS.some(v => v.v === ctx.tab) ? (ctx.tab as View) : 'summary');
@@ -59,6 +62,7 @@ export default function Assessment({ ctx }: { ctx: Ctx }) {
       {view === 'servers' ? <Servers ctx={ctx} list={list} /> : null}
       {view === 'sizing' ? <Sizing ctx={ctx} list={list} /> : null}
       {view === 'risk' ? <Risks ctx={ctx} list={list} /> : null}
+      {view === 'report' ? <AudienceReport ctx={ctx} list={list} /> : null}
       {exp.value ? <ExportDialog ctx={ctx} view={view} closing={exp.closing} onClose={exp.close} /> : null}
     </Page>
   );
@@ -386,21 +390,27 @@ function Risks({ ctx, list }: { ctx: Ctx; list: Assessed[] }) {
 }
 
 function ExportDialog({ ctx, view, closing, onClose }: { ctx: Ctx; view: View; closing: boolean; onClose: () => void }) {
-  const [views, setViews] = useState<Record<View, boolean>>({ summary: true, servers: view === 'servers', sizing: view === 'sizing', risk: view === 'risk' });
+  const [views, setViews] = useState<Record<string, boolean>>({ summary: true, servers: view === 'servers', sizing: view === 'sizing', risk: view === 'risk' });
+  const [aud, setAud] = useState<Audience[]>(['cio']);
   const [fmt, setFmt] = useState<'pdf' | 'xlsx'>('pdf');
   const [brand, setBrand] = useState<'host360' | 'customer'>('host360');
-  const n = Object.values(views).filter(Boolean).length;
+  const n = Object.values(views).filter(Boolean).length + aud.length;
   return (
     <Dialog
       title="Export the assessment"
       sub="The report as it stands at 21 Oct 2026, 15:30 IST."
       closing={closing}
       onClose={onClose}
-      footer={<><Btn kind="ghost" onClick={onClose}>Cancel</Btn><Btn kind="primary" icon="download" disabled={!n} why="Pick at least one view." onClick={() => { ctx.toast(`assessment-2026-10-21.${fmt} is ready (${plural(n, 'view')})`, 'ok'); onClose(); }}>Export</Btn></>}
+      footer={<><Btn kind="ghost" onClick={onClose}>Cancel</Btn><Btn kind="primary" icon="download" disabled={!n} why="Pick at least one view or reader." onClick={() => { ctx.toast(`assessment-2026-10-21.${fmt} is ready (${plural(n, 'part')}${aud.length ? `, written for ${aud.map(a => AUDIENCES.find(x => x.v === a)!.label).join(', ')}` : ''})`, 'ok'); onClose(); }}>Export</Btn></>}
     >
-      <Field label="Views">
+      <Field label="Written for">
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {VIEWS.map(v => <CheckBox key={v.v} on={views[v.v]} onChange={x => setViews(s => ({ ...s, [v.v]: x }))}>{v.label}</CheckBox>)}
+          {AUDIENCES.map(a => <CheckBox key={a.v} on={aud.includes(a.v)} onChange={x => setAud(s => (x ? [...s, a.v] : s.filter(y => y !== a.v)))}><span data-tip={a.note}>{a.label}</span></CheckBox>)}
+        </div>
+      </Field>
+      <Field label="Appendices">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {VIEWS.filter(v => v.v !== 'report').map(v => <CheckBox key={v.v} on={views[v.v]} onChange={x => setViews(s => ({ ...s, [v.v]: x }))}>{v.label}</CheckBox>)}
         </div>
       </Field>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>

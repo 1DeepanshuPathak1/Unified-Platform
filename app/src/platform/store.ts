@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { RUNBOOKS, DRILLS, DRILL_SCHEDULE, RECONCILIATIONS, type Runbook, type Drill, type ScheduledDrill, type Reconciliation } from '../products/resilience/data';
 import { PROTECTED_AFTER, type AfterCutover } from '../products/mobility/data';
+import { INTEGRATIONS, type Integ } from '../data/integrations';
 import type { DrRun } from '../products/resilience/runner';
 import { APPROVALS, CUSTOMERS, ENTITLEMENTS, P_ALERTS, POLICIES, ROLES, USERS, APPLICATIONS, type Approval, type Customer, type Entitlement, type PAlert, type Policy, type Role, type User, type Application, type AuditRec, AUDIT } from '../data/platform';
 
@@ -30,7 +31,8 @@ export const store = {
   /** Where a return to primary is going, by recovery plan id, while it runs. */
   failbackTarget: {} as Record<string, { target: string; same: boolean }>,
   /** DNS record changes made from a recovery plan: TTL now, and whether it is lowered before planned failovers. */
-  dnsTtl: {} as Record<string, { ttl: number; auto: boolean; checked?: string }>
+  dnsTtl: {} as Record<string, { ttl: number; auto: boolean; checked?: string }>,
+  integrations: INTEGRATIONS.map(i => ({ ...i })) as Integ[]
 };
 
 const listeners = new Set<() => void>();

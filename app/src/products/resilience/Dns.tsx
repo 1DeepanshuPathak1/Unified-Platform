@@ -21,6 +21,7 @@ const RECORDS: Record<string, Rec[]> = {
   trs: [{ name: 'treasury.meridianbank.in', type: 'A', primary: '10.30.4.21', recovery: '10.60.4.21', ttl: 900, provider: 'Infoblox · mum-ipam', server: 'mum-oracle-phy-01' }]
 };
 const LOW = 60;
+const PROVIDER_ID: Record<string, string> = { 'Route 53': 'r53', Infoblox: 'infoblox', Cloudflare: 'cf' };
 const secs = (n: number) => (n >= 3600 ? `${n / 3600} h` : n >= 60 && n % 60 === 0 && n > 60 ? `${n / 60} min` : `${n} s`);
 
 /** Recovery plan › DNS: which names move to the recovery site, when, and whether clients will follow quickly. */
@@ -33,12 +34,15 @@ export function DnsMapping({ ctx, rb, onAddStep }: { ctx: Ctx; rb: Runbook; onAd
   const recs = (RECORDS[rb.id] || []).filter(r => serversOf(rb).includes(r.server) || steps.some(y => y.x.record === r.name));
   const drill = s.drillSchedule.find(d => d.plan === rb.id);
   const cfg = ctx.can('configure', 'Changing DNS for a recovery plan');
+  const prov = (r: Rec) => s.integrations.find(i => i.id === PROVIDER_ID[r.provider.split(' · ')[0]]);
+  const linked = (r: Rec) => prov(r)?.state === 'connected';
   const ttlOf = (r: Rec) => s.dnsTtl[r.name]?.ttl ?? r.ttl;
   const autoOf = (r: Rec) => !!s.dnsTtl[r.name]?.auto;
   const stepOf = (r: Rec) => steps.find(y => y.x.record === r.name);
   const state = (r: Rec): [string, string, string, string] => {
     const st = stepOf(r);
     if (r.type === 'CNAME' && lbOnly && !st) return ['circle-check', 'ok', 'Follows the load balancer', 'The name points at the load balancer; its pool step moves traffic, so the record does not change.'];
+    if (st && !linked(r)) return ['circle-x', 'err', 'Provider not connected', `${r.provider.split(' · ')[0]} is not connected in Automation › Integrations, so the Update DNS step will fail. Connect it, or change the record by hand during the failover.`];
     if (!st) return ['triangle-alert', 'warn', 'Not changed by the plan', `${r.name} points at ${r.server} at the primary site, but no step changes it. After a failover clients still go to ${r.primary}.`];
     if (ttlOf(r) <= LOW) return ['circle-check', 'ok', 'Ready', `Changed in stage ${rb.stages.indexOf(st.st) + 1}, ${st.st.name}. TTL ${secs(ttlOf(r))}: clients follow within a minute.`];
     if (autoOf(r)) return ['circle-check', 'ok', `Lowered before a failover`, `TTL is ${secs(ttlOf(r))} today. Aegis lowers it to ${LOW} s 24 h before a planned failover and puts it back after the return.`];
@@ -114,7 +118,11 @@ export function DnsMapping({ ctx, rb, onAddStep }: { ctx: Ctx; rb: Runbook; onAd
           <H3>Providers</H3>
           <Facts
             labelW={150}
-            items={[...new Set(recs.map(r => r.provider))].map(p => ({ k: p.split(' · ')[0], v: `Zone ${p.split(' · ')[1]} · connected, can change A and CNAME records`, icon: 'circle-check', tone: 'ok' as const }))}
+            items={[...new Set(recs.map(r => r.provider))].map(p => {
+              const i = s.integrations.find(x => x.id === PROVIDER_ID[p.split(' · ')[0]]);
+              const on = i?.state === 'connected';
+              return { k: p.split(' · ')[0], v: on ? `Zone ${p.split(' · ')[1]} · connected, can change A and CNAME records` : i?.state === 'attention' ? `Zone ${p.split(' · ')[1]} · ${i.detail}` : `Zone ${p.split(' · ')[1]} · not connected; records are changed by hand`, icon: on ? 'circle-check' : 'triangle-alert', tone: on ? ('ok' as const) : ('warn' as const) };
+            })}
           />
           <Btn kind="ghost" size="sm" icon="arrow-right" style={{ marginTop: 8 }} onClick={() => ctx.go('automation/integrations')}>
             Integrations

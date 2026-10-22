@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { CopyCurl } from '../ui/CopyCurl';
 import AegisTable from '../components/AegisTable';
 import { Icon } from '../lib/Icon';
 import { Btn, Field, FilterInput, RadioCard, Seg, SelectFilter, SelectInput, Tabs, Tag, TextArea, TextInput, InfoTip } from '../ui/controls';
@@ -144,6 +145,7 @@ function WorkloadList({ ctx }: { ctx: Ctx }) {
             <SelectFilter label="Type" value={type} onChange={setType} options={['All', ...W_TYPES]} />
             <SelectFilter label="Criticality" value={tier} onChange={setTier} options={['All', ...TIERS]} />
             <Spacer />
+            <CopyCurl ctx={ctx} path="/workloads" query={{ customer: ctx.actingAs?.customer, view: view !== 'all' ? view : undefined, type: type !== 'All' ? type : undefined, tier: tier !== 'All' ? tier : undefined, q: ql || undefined }} />
           </>
         )}
       </Toolbar>

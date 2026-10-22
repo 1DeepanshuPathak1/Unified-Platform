@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CopyCurl } from '../../ui/CopyCurl';
 import AegisTable from '../../components/AegisTable';
 import { Icon } from '../../lib/Icon';
 import { Btn, Field, FilterInput, RadioCard, SelectFilter, SelectInput, Tabs, TextInput } from '../../ui/controls';
@@ -212,6 +213,7 @@ function PlanPage({ ctx, rb, onBack }: { ctx: Ctx; rb: Runbook; onBack: () => vo
               </>
             ) : (
               <>
+                <CopyCurl ctx={ctx} method="POST" path={`/recovery-plans/${rb.id}/test`} body={{ network: rb.testNet }} />
                 <Btn kind="outline" icon={checking ? 'loader-circle' : 'list'} spin={checking} onClick={validate} disabled={checking}>
                   Dry run
                 </Btn>

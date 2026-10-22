@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CopyCurl } from '../ui/CopyCurl';
 import { Icon } from '../lib/Icon';
 import { Btn, Seg } from '../ui/controls';
 import { Bar, MiniTable, Spacer, Toolbar, plural } from '../ui/layout';
@@ -65,6 +66,7 @@ export function RecoveryPointsTab({ ctx, w, onRestore }: { ctx: Ctx; w: Workload
       <Toolbar style={{ padding: 0 }}>
         <Seg label="Show" value={f} onChange={setF} options={(['All', 'Backups', 'Replicas', 'Copies'] as const).map(v => ({ v, label: v }))} />
         <Spacer />
+        <CopyCurl ctx={ctx} size="sm" path={`/workloads/${w.id}/recovery-points`} query={{ kind: f === 'All' ? undefined : f.toLowerCase() }} />
         <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>
           {plural(all.length, 'point')} shown of {(w.backup.points || 0) + (w.dr.age ? 96 : 0)} · {locked} locked
         </span>

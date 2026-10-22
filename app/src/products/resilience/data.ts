@@ -108,7 +108,7 @@ export function rpoOf(w: Workload): { age: number | null; target: number | null;
 
 // ---- recovery plans as runbooks ----
 export type StepKind = 'boot' | 'delay' | 'gate' | 'script' | 'manual' | 'dns' | 'lb';
-export type GateCheck = 'Port' | 'HTTP' | 'Ping' | 'SQL query';
+export type GateCheck = 'Port' | 'HTTP' | 'Ping' | 'SQL query' | 'Service running' | 'Database mounted' | 'Business transaction';
 export type OnFail = 'Stop the run' | 'Ask a person' | 'Continue';
 export interface RStep {
   id: string;
@@ -181,8 +181,8 @@ export const RUNBOOKS: Runbook[] = [
     lastTest: { when: T('18 Oct', '22:10'), r: 'ok', dur: '18 min 40 s', by: 'priya.raman' }, nextDrill: T('18 Nov', '22:00'), validated: T('21 Oct', '06:00'),
     stages: [
       { id: 'c1', name: 'Directory', steps: [boot('ad-dc-01'), gate('Port', '10.50.0.10', { port: 389 })] },
-      { id: 'c2', name: 'Databases', steps: [boot('sql-prod-02'), boot('erp-db-01'), wait(60), gate('SQL query', 'sql-prod-02', { expect: 'SELECT 1 returns 1' }), S('script', { name: 'Point ERP at the recovered databases', lang: 'PowerShell', where: 'Orchestrator', body: "Set-ErpConnection -Server sql-prod-02.dr.host360.ai -Database ERP_PROD\nSet-ErpConnection -Server erp-db-01.dr.host360.ai -Database ERP_LEDGER", timeout: 300, onFail: 'Ask a person' })] },
-      { id: 'c3', name: 'Applications', steps: [boot('erp-app-01'), boot('mail-gw-01'), gate('HTTP', 'https://erp.host360.ai/health', { expect: '200 OK' }), gate('Port', 'mail-gw-01', { port: 25, onFail: 'Ask a person' })] },
+      { id: 'c2', name: 'Databases', steps: [boot('sql-prod-02'), boot('erp-db-01'), wait(60), gate('SQL query', 'sql-prod-02', { expect: 'SELECT 1 returns 1' }), gate('Database mounted', 'erp-db-01', { expect: 'ERP_LEDGER is ONLINE' }), S('script', { name: 'Point ERP at the recovered databases', lang: 'PowerShell', where: 'Orchestrator', body: "Set-ErpConnection -Server sql-prod-02.dr.host360.ai -Database ERP_PROD\nSet-ErpConnection -Server erp-db-01.dr.host360.ai -Database ERP_LEDGER", timeout: 300, onFail: 'Ask a person' })] },
+      { id: 'c3', name: 'Applications', steps: [boot('erp-app-01'), boot('mail-gw-01'), gate('HTTP', 'https://erp.host360.ai/health', { expect: '200 OK' }), gate('Service running', 'erp-app-01', { expect: 'ErpAppServer' }), gate('Port', 'mail-gw-01', { port: 25, onFail: 'Ask a person' }), gate('Business transaction', 'erp-smoke-test.ps1', { expect: 'Posts a ₹1 test journal entry and reads it back', timeout: 300, onFail: 'Ask a person' })] },
       { id: 'c4', name: 'Hand-over', steps: [S('dns', { record: 'erp.host360.ai', value: '10.50.0.31' }), S('manual', { text: 'Confirm with the ERP team that month-end jobs are paused, then tell the service desk the ERP runs at the recovery site.', who: 'ERP service owner (Arun Kumar)' })] }
     ]
   },
@@ -214,7 +214,7 @@ export const RUNBOOKS: Runbook[] = [
     lastTest: { when: T('28 Sep', '22:00'), r: 'ok', dur: '41 min', by: 'anitha.k@meridianbank.in' }, nextDrill: T('28 Oct', '22:00'), validated: T('21 Oct', '06:00'),
     stages: [
       { id: 'k1', name: 'Database', steps: [boot('cbs-db-01'), gate('SQL query', 'cbs-db-01', { expect: 'Finacle health view returns OPEN' })] },
-      { id: 'k2', name: 'Services', steps: [boot('payments-api'), gate('HTTP', 'https://upi.meridianbank.in/health', { expect: '200 OK' })] },
+      { id: 'k2', name: 'Services', steps: [boot('payments-api'), gate('HTTP', 'https://upi.meridianbank.in/health', { expect: '200 OK' }), gate('Business transaction', 'upi-loopback-test.sh', { expect: 'A ₹1 UPI collect request to the bank’s own test VPA settles', timeout: 300, onFail: 'Ask a person' })] },
       { id: 'k3', name: 'Front door', steps: [S('lb', { pool: 'lb-cbs-prod · pool cbs', value: 'Recreated at region-2-os' }), S('dns', { record: 'cbs.meridianbank.in', value: '10.70.1.11' }), S('manual', { text: 'Tell NPCI and the branch network that core banking runs from the DR site.', who: 'CBS duty manager' })] }
     ]
   },
@@ -248,7 +248,10 @@ export const RUNBOOKS: Runbook[] = [
 ];
 
 export const RUNBOOK_TEMPLATES: { id: string; name: string; note: string; stages: string[] }[] = [
-  { id: 'three', name: 'Three-tier application', note: 'Database, then application servers, then the front door and DNS.', stages: ['Database', 'Application', 'Front door'] },
+  { id: 'three', name: 'Three-tier web application', note: 'Database, then application servers, then the front door and DNS.', stages: ['Database', 'Application', 'Front door'] },
+  { id: 'dbc', name: 'Database cluster', note: 'The primary node first; replicas join once it is mounted; applications only after the cluster has quorum.', stages: ['Primary node', 'Replica nodes', 'Applications'] },
+  { id: 'files', name: 'File services', note: 'Directory first, then the file servers; shares checked, then the namespace and DNS updated.', stages: ['Directory', 'File servers', 'Namespace and DNS'] },
+  { id: 'k8s', name: 'Kubernetes application', note: 'Control plane, then workers with their persistent volumes, then the ingress and DNS.', stages: ['Control plane', 'Workers and volumes', 'Ingress and DNS'] },
   { id: 'dir', name: 'Directory first', note: 'Domain controllers start and answer before anything else.', stages: ['Directory', 'Databases', 'Applications', 'Hand-over'] },
   { id: 'db', name: 'Database first', note: 'Databases start and pass a query check before the apps.', stages: ['Database', 'Applications'] },
   { id: 'lb', name: 'Web tier behind a load balancer', note: 'Web servers start together, then the pool is switched.', stages: ['Front ends', 'Load balancer'] },

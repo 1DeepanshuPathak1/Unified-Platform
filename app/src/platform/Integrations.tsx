@@ -1,40 +1,20 @@
 import { useState } from 'react';
 import { Icon } from '../lib/Icon';
 import { pc } from '../lib/pseudo';
-import { T } from '../data/platform';
+import { INTEGRATIONS, type Integ, type IntegCat } from '../data/integrations';
 import { Btn, Field, FilterInput, Seg, SelectInput, TextInput } from '../ui/controls';
 import { Bar, Facts, Spacer, Status, Toolbar, plural } from '../ui/layout';
 import { Dialog, Drawer, useClosable } from '../ui/overlay';
 import type { Ctx } from '../ui/ctx';
-import { audit } from './store';
+import { audit, update, useStore } from './store';
 
-type Cat = 'Service desk' | 'Chat and paging' | 'Security (SIEM)' | 'DNS and IPAM' | 'PSA' | 'Payments' | 'Accounting';
-interface Integ { id: string; name: string; cat: Cat; what: string; state: 'connected' | 'available' | 'attention'; detail?: string; since?: string; fields: [string, string][]; uses?: string[] }
-const LIST: Integ[] = [
-  { id: 'snow', name: 'ServiceNow', cat: 'Service desk', what: 'Incidents from alerts, change records for failovers and cutovers', state: 'connected', since: T('18 Jan', '11:00'), detail: 'host360.service-now.com · OAuth client aegis-int', fields: [['Instance', 'host360.service-now.com'], ['Client ID', 'aegis-int']], uses: ['Alerts › incident on Critical', 'Cutover go/no-go › change record CHG', 'Workflows › webhook step'] },
-  { id: 'jira', name: 'Jira Service Management', cat: 'Service desk', what: 'Change requests and tickets for customers who use Jira', state: 'available', fields: [['Site', 'yourcompany.atlassian.net'], ['API token', '']] },
-  { id: 'fresh', name: 'Freshservice', cat: 'Service desk', what: 'Tickets and change records', state: 'available', fields: [['Domain', 'yourcompany.freshservice.com'], ['API key', '']] },
-  { id: 'teams', name: 'Microsoft Teams', cat: 'Chat and paging', what: 'Alerts and approvals as adaptive cards with buttons', state: 'connected', since: T('02 Feb', '10:30'), detail: 'Infra › #aegis-alerts', fields: [['Workflow URL', 'https://prod-12.centralindia.logic.azure.com/…']], uses: ['Notifications › Critical, Serious, Warning'] },
-  { id: 'slack', name: 'Slack', cat: 'Chat and paging', what: 'Alerts and approvals in channels', state: 'attention', since: T('27 May', '12:00'), detail: 'Kaveri’s workspace: bot token revoked on 19 Oct', fields: [['Workspace', 'kaveri-logistics.slack.com']], uses: ['Notifications › Kaveri #it-alerts'] },
-  { id: 'pd', name: 'PagerDuty', cat: 'Chat and paging', what: 'Pages on-call and resolves when the alert clears', state: 'connected', since: T('18 Jan', '11:20'), detail: 'Service “Aegis platform” · Events API v2', fields: [['Routing key', '••••3f2a']], uses: ['Escalation › 15 min'] },
-  { id: 'splunk', name: 'Splunk', cat: 'Security (SIEM)', what: 'Audit and security events streamed over HEC', state: 'connected', since: T('11 Apr', '16:00'), detail: 'Meridian SOC · HEC endpoint failing since 13:05', fields: [['HEC URL', 'https://splunk-hec.meridianbank.in:8088'], ['Token', '••••']], uses: ['Audit log › SIEM streaming'] },
-  { id: 'qradar', name: 'IBM QRadar', cat: 'Security (SIEM)', what: 'Audit and security events over syslog (LEEF)', state: 'available', fields: [['Syslog host', ''], ['Port', '6514 (TLS)']] },
-  { id: 'sentinel', name: 'Microsoft Sentinel', cat: 'Security (SIEM)', what: 'Audit and security events to a Log Analytics workspace', state: 'available', fields: [['Workspace ID', ''], ['Shared key', '']] },
-  { id: 'infoblox', name: 'Infoblox', cat: 'DNS and IPAM', what: 'Changes DNS records during failover and failback; reserves IPs at the recovery site', state: 'connected', since: T('30 Jun', '11:30'), detail: 'grid-master.host360.local · WAPI 2.12', fields: [['Grid master', 'grid-master.host360.local'], ['User', 'svc-aegis-dns']], uses: ['Recovery plans › DNS step', 'Failover › re-IP'] },
-  { id: 'r53', name: 'AWS Route 53', cat: 'DNS and IPAM', what: 'Public DNS changes during failover', state: 'available', fields: [['Hosted zone', ''], ['Role ARN', '']] },
-  { id: 'cf', name: 'Cloudflare DNS', cat: 'DNS and IPAM', what: 'Public DNS changes during failover', state: 'available', fields: [['Zone', ''], ['API token', '']] },
-  { id: 'cw', name: 'ConnectWise PSA', cat: 'PSA', what: 'Tickets and agreements for MSP partners; usage as agreement additions', state: 'available', fields: [['Site', 'na.myconnectwise.net'], ['Company ID', ''], ['Keys', '']] },
-  { id: 'razor', name: 'Razorpay', cat: 'Payments', what: 'Card, UPI and net-banking payments against invoices; auto-reconciled', state: 'connected', since: T('01 Apr', '09:00'), detail: 'Live mode · account acc_Host360MS', fields: [['Key ID', 'rzp_live_••••Q2'], ['Webhook secret', '••••']], uses: ['Invoices › pay link and UPI QR'] },
-  { id: 'stripe', name: 'Stripe', cat: 'Payments', what: 'Card and SEPA payments for customers outside India', state: 'available', fields: [['Secret key', ''], ['Webhook secret', '']] },
-  { id: 'tally', name: 'Tally Prime', cat: 'Accounting', what: 'Sales vouchers with GST ledgers, exported daily', state: 'connected', since: T('01 Apr', '09:30'), detail: 'Tally ODBC on finance-01 · company “Host360 Managed Services FY26-27”', fields: [['Server', 'finance-01:9000']], uses: ['Invoices › sales voucher on issue'] },
-  { id: 'zoho', name: 'Zoho Books', cat: 'Accounting', what: 'Invoices and payments for partners who use Zoho', state: 'available', fields: [['Organisation ID', ''], ['OAuth', '']] }
-];
-const CATS: Cat[] = ['Service desk', 'Chat and paging', 'Security (SIEM)', 'DNS and IPAM', 'PSA', 'Payments', 'Accounting'];
+const CATS: IntegCat[] = ['Service desk', 'Chat and paging', 'Identity', 'Monitoring', 'CMDB', 'Security (SIEM)', 'DNS and IPAM', 'PSA and RMM', 'Payments', 'Accounting', 'Marketplaces'];
 const ST = { connected: ['circle-check', 'ok', 'Connected'], available: ['plus', 'tx', 'Available'], attention: ['triangle-alert', 'warn', 'Needs attention'] } as const;
 
 /** Automation › Integrations: every system Aegis talks to, connected or ready to connect. */
 export function IntegrationsTab({ ctx }: { ctx: Ctx }) {
-  const [list, setList] = useState<Integ[]>(LIST);
+  const list = useStore().integrations;
+  const setList = (fn: (x: Integ[]) => Integ[]) => update(s => { s.integrations = fn(s.integrations); });
   const [cat, setCat] = useState('All');
   const [show, setShow] = useState<'all' | 'connected'>('all');
   const [q, setQ] = useState('');
@@ -46,7 +26,7 @@ export function IntegrationsTab({ ctx }: { ctx: Ctx }) {
   const cfg = ctx.can('configure', 'Connecting integrations');
   return (
     <>
-      {list.some(i => i.state === 'attention') ? <div style={{ padding: '0 24px 12px' }}><Bar tone="warn">{list.filter(i => i.state === 'attention').map(i => `${i.name}: ${i.detail}`).join(' · ')}</Bar></div> : null}
+      {list.some(i => i.state === 'attention') ? <div style={{ padding: '0 24px 12px' }}><Bar tone="warn" actions={<Btn kind="ghost" size="sm" onClick={() => { setShow('connected'); setCat('All'); setQ(''); }}>Show them</Btn>}>{plural(list.filter(i => i.state === 'attention').length, 'integration')} need attention: {list.filter(i => i.state === 'attention').map(i => i.name).join(', ')}. Each card says why.</Bar></div> : null}
       <Toolbar>
         <Seg label="Show" value={show} onChange={setShow} options={[{ v: 'all', label: 'All', count: list.length }, { v: 'connected', label: 'Connected', count: list.filter(i => i.state !== 'available').length }]} />
         <SelectInput value={cat} onChange={setCat} options={['All', ...CATS].map(c => ({ v: c, label: c === 'All' ? 'Every category' : c }))} width={200} />
@@ -55,7 +35,7 @@ export function IntegrationsTab({ ctx }: { ctx: Ctx }) {
       </Toolbar>
       <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 24px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: 12, alignContent: 'start' }}>
         {rows.map(i => (
-          <button key={i.id} type="button" onClick={() => (i.state === 'available' ? connect.open(i.id) : drawer.open(i.id))} className={pc('hover', 'border-color:var(--ln-2);background:var(--hover)')} style={{ textAlign: 'left', border: '1px solid var(--ln)', background: 'var(--panel)', padding: 16, display: 'flex', flexDirection: 'column', gap: 8, minHeight: 128 }}>
+          <button key={i.id} type="button" onClick={() => (i.manage ? ctx.go(i.manage) : i.state === 'available' ? connect.open(i.id) : drawer.open(i.id))} className={pc('hover', 'border-color:var(--ln-2);background:var(--hover)')} style={{ textAlign: 'left', border: '1px solid var(--ln)', background: 'var(--panel)', padding: 16, display: 'flex', flexDirection: 'column', gap: 8, minHeight: 128 }}>
             <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <span aria-hidden style={{ width: 28, height: 28, display: 'grid', placeItems: 'center', border: '1px solid var(--ln-2)', font: '700 12px var(--f-ui)', color: 'var(--tx-2)' }}>{i.name.slice(0, 2)}</span>
               <strong style={{ fontWeight: 600, flex: 1 }}>{i.name}</strong>
@@ -63,6 +43,8 @@ export function IntegrationsTab({ ctx }: { ctx: Ctx }) {
             </span>
             <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>{i.cat}</span>
             <span style={{ color: 'var(--tx-2)', font: '13px/18px var(--f-body)' }}>{i.what}</span>
+            {i.state === 'attention' && !i.manage ? <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--warn)', marginTop: 'auto' }}>{i.detail}</span> : null}
+            {i.manage ? <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--acc-tx)', marginTop: 'auto' }}>{i.detail ? `${i.detail} · ` : ''}Managed in {i.manage.startsWith('settings') ? 'Settings › Single sign-on' : 'Alerts & Activity › Platform health'}</span> : null}
           </button>
         ))}
         {!rows.length ? <p style={{ color: 'var(--tx-2)' }}>No integrations match. <button type="button" onClick={() => { setCat('All'); setQ(''); setShow('all'); }} style={{ color: 'var(--acc-tx)', fontWeight: 600 }}>Clear filters</button></p> : null}

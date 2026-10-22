@@ -103,12 +103,13 @@ export function DrillCalendar({ ctx }: { ctx: Ctx }) {
       />
       <MiniTable
         label="Booked drills"
-        cols={[{ label: 'Plan' }, ...(showCust ? [{ label: 'Customer', w: '180px' }] : []), { label: 'Next', w: '170px' }, { label: 'Repeats', w: '130px' }, { label: 'Bubble DNS', w: '170px' }, { label: 'Clean-up', w: '150px' }, { label: '', w: '84px', r: true }]}
+        cols={[{ label: 'Plan', w: 'minmax(0,1.2fr)' }, ...(showCust ? [{ label: 'Customer', w: 'minmax(0,1fr)' }] : []), { label: 'Scope', w: 'minmax(0,1fr)' }, { label: 'Next', w: '150px' }, { label: 'Repeats', w: '120px' }, { label: 'Bubble DNS', w: '160px' }, { label: 'Clean-up', w: '140px' }, { label: '', w: '76px', r: true }]}
         rows={booked.map(d => {
           const next = occurrences(d).find(x => x >= TODAY) || d.day;
           return [
-            <strong key="p" style={{ fontWeight: 600 }}>{name(d.plan)}</strong>,
-            ...(showCust ? [custName(plans.find(r => r.id === d.plan)?.customer || '')] : []),
+            <strong key="p" style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={name(d.plan)} data-tip-overflow="">{name(d.plan)}</strong>,
+            ...(showCust ? [<span key="c" data-tip={custName(plans.find(r => r.id === d.plan)?.customer || '')} data-tip-overflow="" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{custName(plans.find(r => r.id === d.plan)?.customer || '')}</span>] : []),
+            <span key="s" data-tip={d.scope} data-tip-overflow="" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.scope}</span>,
             `${dayLabel(next).replace(' 2026', '')}, ${d.time}`,
             d.repeat,
             <span key="d" data-tip={d.records || d.dns} style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.dns}</span>,
@@ -135,9 +136,16 @@ function BookDrillDialog({ ctx, plans, plan, closing, onClose }: { ctx: Ctx; pla
   const [cleanup, setCleanup] = useState('4 h after the test');
   const [repeat, setRepeat] = useState<ScheduledDrill['repeat']>(tier === 'Mission Critical' ? 'Monthly' : tier === 'Business Critical' ? 'Quarterly' : 'Every six months');
   const [notify, setNotify] = useState(true);
+  const [scope, setScope] = useState<'plan' | 'stages' | 'app' | 'site'>('plan');
+  const apps = appsOf(rb);
+  const [app, setApp] = useState(apps[0]?.id || '');
+  const sitePlans = plans.filter(r => r.to === rb.to);
+  const appStages = (aid: string) => rb.stages.filter(st => st.steps.some(x => x.kind === 'boot' && apps.find(a => a.id === aid)?.members.includes(x.w || ''))).map(st => st.id);
+  const chosen = scope === 'plan' || scope === 'site' ? rb.stages.map(st => st.id) : scope === 'app' ? appStages(app) : stages;
   const past = day < '2026-10-22';
   const recOk = dns !== 'Static records' || /\S+\s*→\s*\d+\.\d+\.\d+\.\d+/.test(records);
-  const ok = !!stages.length && !past && recOk;
+  const ok = !!chosen.length && !past && recOk;
+  const scopeText = scope === 'plan' ? 'Whole plan' : scope === 'site' ? `Whole site: ${rb.to}` : scope === 'app' ? `Application: ${apps.find(a => a.id === app)?.name}` : rb.stages.filter(st => stages.includes(st.id)).map(st => st.name).join(', ');
   return (
     <Dialog
       title="Book a drill"
@@ -148,11 +156,11 @@ function BookDrillDialog({ ctx, plans, plan, closing, onClose }: { ctx: Ctx; pla
       footer={
         <>
           <Btn kind="ghost" onClick={onClose}>Cancel</Btn>
-          <Btn kind="primary" icon="calendar" disabled={!ok} why={past ? 'The date is in the past.' : !stages.length ? 'Pick at least one stage.' : 'Give static records as name → address.'} onClick={() => {
-            const d: ScheduledDrill = { id: 'sd' + Date.now(), plan: rb.id, day, time, scope: stages.length === rb.stages.length ? 'Whole plan' : rb.stages.filter(s => stages.includes(s.id)).map(s => s.name).join(', '), dns, records: dns === 'Static records' ? records : undefined, cleanup, repeat, by: 'priya.raman' };
-            update(x => { x.drillSchedule.push(d); });
-            audit({ who: 'priya.raman', customer: rb.customer, what: 'Booked a drill', object: rb.name, when: ctx.now(), r: 'ok', after: [['When', `${dayLabel(day)}, ${time} IST`], ['Repeats', repeat], ['Bubble DNS', dns]] });
-            ctx.toast(`Drill for ${rb.name} booked for ${dayLabel(day)}, ${time} IST`, 'ok');
+          <Btn kind="primary" icon="calendar" disabled={!ok} why={past ? 'The date is in the past.' : !chosen.length ? (scope === 'app' ? 'None of this application’s servers are in the plan.' : 'Pick at least one stage.') : 'Give static records as name → address.'} onClick={() => {
+            const targets = scope === 'site' ? sitePlans : [rb];
+            update(x => { targets.forEach((r, i) => x.drillSchedule.push({ id: 'sd' + Date.now() + i, plan: r.id, day, time, scope: scopeText, dns, records: dns === 'Static records' ? records : undefined, cleanup, repeat, by: 'priya.raman' })); });
+            audit({ who: 'priya.raman', customer: rb.customer, what: scope === 'site' ? 'Booked a whole-site drill' : 'Booked a drill', object: scope === 'site' ? `${rb.to} (${targets.map(r => r.name).join(', ')})` : rb.name, when: ctx.now(), r: 'ok', after: [['When', `${dayLabel(day)}, ${time} IST`], ['Scope', scopeText], ['Repeats', repeat], ['Bubble DNS', dns]] });
+            ctx.toast(scope === 'site' ? `Whole-site drill of ${rb.to} booked for ${dayLabel(day)}, ${time} IST: ${targets.length} plans` : `Drill for ${rb.name} booked for ${dayLabel(day)}, ${time} IST`, 'ok');
             onClose();
           }}>Book drill</Btn>
         </>
@@ -164,11 +172,22 @@ function BookDrillDialog({ ctx, plans, plan, closing, onClose }: { ctx: Ctx; pla
         <Field id="bd-t" label="Starts (IST)"><TextInput id="bd-t" type="time" value={time} onChange={setTime} /></Field>
         <Field id="bd-r" label="Repeats" hint={`${TIER_SHORT[tier]} needs ${TIER_TARGET[tier]?.drill.toLowerCase() || 'no drills'}`}><SelectInput id="bd-r" value={repeat} onChange={v => setRepeat(v as ScheduledDrill['repeat'])} options={['Once', 'Monthly', 'Quarterly', 'Every six months']} /></Field>
       </div>
-      <Field label="Stages to test">
+      <Field label="What to test">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,minmax(0,1fr))', gap: 8 }}>
+          <RadioCard on={scope === 'plan'} onClick={() => setScope('plan')} title="Whole plan" note={`${rb.stages.length} stages`} />
+          <RadioCard on={scope === 'stages'} onClick={() => setScope('stages')} title="Some stages" note="One wave of the boot order" />
+          <RadioCard on={scope === 'app'} onClick={() => setScope('app')} disabled={!apps.length} why="No application is linked to this plan." title="One application" note={apps.length ? apps.map(a => a.name).join(', ') : 'No application linked'} />
+          <RadioCard on={scope === 'site'} onClick={() => setScope('site')} title="Whole site" note={`${sitePlans.length} plans recover to ${rb.to}`} />
+        </div>
+      </Field>
+      {scope === 'stages' ? (
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           {rb.stages.map(st => <CheckBox key={st.id} on={stages.includes(st.id)} onChange={v => setStages(x => (v ? [...x, st.id] : x.filter(y => y !== st.id)))}>{st.name}</CheckBox>)}
         </div>
-      </Field>
+      ) : null}
+      {scope === 'app' && apps.length > 1 ? <Field id="bd-a" label="Application"><SelectInput id="bd-a" value={app} onChange={setApp} options={apps.map(a => ({ v: a.id, label: a.name }))} /></Field> : null}
+      {scope === 'app' ? <p style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Starts the stages that hold its servers: {rb.stages.filter(st => appStages(app).includes(st.id)).map(st => st.name).join(', ') || 'none'}.</p> : null}
+      {scope === 'site' ? <Bar tone="info" multiline>Tests every plan that recovers to {rb.to}, one after another in criticality order: {sitePlans.map(r => r.name).join(', ')}. Each plan gets its own bubble on {rb.testNet}; the evidence report covers the whole site.</Bar> : null}
       <Field label="Name resolution inside the bubble">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
           <RadioCard on={dns === 'Copy from the directory'} onClick={() => setDns('Copy from the directory')} title="Copy from the directory" note="A copy of the directory server answers DNS in the bubble" />
@@ -190,6 +209,7 @@ function BookDrillDialog({ ctx, plans, plan, closing, onClose }: { ctx: Ctx; pla
           { k: 'Bubble network', v: `${rb.testNet}: no route to production or the internet`, icon: 'pin', tone: 'acc' },
           { k: 'Measured', v: `RPO and RTO against ${rb.rtoTarget}, per stage and in total` },
           { k: 'Evidence', v: 'Timings, health checks and screenshots, signed and filed with the plan' },
+          { k: 'Replication', v: 'Keeps running during the test. Test copies start from a recovery point and never write to the replicas, so the RPO is not affected' },
           { k: 'Left over', v: 'Anything still running after clean-up is listed as an orphan and alerted' }
         ]}
       />

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CopyCurl } from '../ui/CopyCurl';
 import AegisTable from '../components/AegisTable';
 import { Icon } from '../lib/Icon';
 import { AEGIS } from '../data/aegis';
@@ -139,6 +140,7 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
               </>
             ) : null}
             <Spacer />
+            {view !== 'limits' ? <CopyCurl ctx={ctx} path="/jobs" query={{ state: view === 'queue' ? 'active' : 'finished', product: prod !== 'All' ? prod.toLowerCase() : undefined, q: q.trim() || undefined }} /> : null}
             {view === 'queue' ? (
               <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>
                 {queue.filter(j => j.state === 'run').length} running · {queue.filter(j => j.state === 'queued').length} queued · {queue.filter(j => j.state === 'paused').length} paused

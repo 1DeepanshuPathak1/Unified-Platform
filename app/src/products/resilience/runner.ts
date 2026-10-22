@@ -41,7 +41,7 @@ export function stepText(x: RStep, rb: Runbook, kind?: RunKind): [string, string
       return [`Wait ${x.secs} s`, 'Gives services time to settle before the next step.'];
     case 'gate':
       return [
-        x.check === 'Port' ? `Check port ${x.port} on ${x.target}` : x.check === 'HTTP' ? `Check ${x.target}` : x.check === 'Ping' ? `Ping ${x.target}` : `Run a query on ${x.target}`,
+        x.check === 'Port' ? `Check port ${x.port} on ${x.target}` : x.check === 'HTTP' ? `Check ${x.target}` : x.check === 'Ping' ? `Ping ${x.target}` : x.check === 'Service running' ? `Check ${x.expect || 'the service'} runs on ${x.target}` : x.check === 'Database mounted' ? `Check the database is mounted on ${x.target}` : x.check === 'Business transaction' ? `Run a business transaction (${x.target})` : `Run a query on ${x.target}`,
         `${x.expect ? `Expects ${x.expect}. ` : ''}Up to ${x.timeout || 120} s; if it fails: ${(x.onFail || 'Stop the run').toLowerCase()}.`
       ];
     case 'script':

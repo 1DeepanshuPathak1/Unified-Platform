@@ -243,6 +243,7 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
               rows={[
                 ...servers.map(w => [<strong key="n" style={{ fontWeight: 600 }}>{w.name}</strong>, test ? `A copy starts on ${rb.testNet}; the original keeps running` : kind === 'Planned' ? `Shut down at ${rb.from} after a final sync, started at ${rb.to}` : `Started at ${rb.to} from a point ${w.dr.age} old`]),
                 ...(test ? [] : netSteps.map(x => [<strong key="n" style={{ fontWeight: 600 }}>{x.kind === 'dns' ? x.record : x.pool}</strong>, x.kind === 'dns' ? `DNS points at ${x.value}` : `Members become ${x.value}`])),
+                ...(test ? [[<strong key="r" style={{ fontWeight: 600 }}>Replication</strong>, `Keeps running for ${plural(servers.length, 'server')}; the test copies start from the newest point and never write to the replicas`], [<strong key="d" style={{ fontWeight: 600 }}>DNS and load balancers</strong>, 'Not changed; names resolve inside the bubble only']] : []),
                 ...(test ? [] : [[<strong key="r" style={{ fontWeight: 600 }}>Replication</strong>, `Paused for ${plural(servers.length, 'server')} until you return to primary`], [<strong key="b" style={{ fontWeight: 600 }}>Backups</strong>, 'Protection jobs for these servers are paused while they run at the recovery site']])
               ] as ReactNode[][]}
             />

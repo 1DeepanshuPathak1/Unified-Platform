@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { CopyCurl } from '../../ui/CopyCurl';
 import AegisTable from '../../components/AegisTable';
 import { Icon } from '../../lib/Icon';
 import { Btn, CheckBox, Field, Seg, SelectFilter, SelectInput, Tabs, TextInput } from '../../ui/controls';
@@ -194,6 +195,7 @@ function WaveList({ ctx, waves, inv, blackouts, onEdit }: { ctx: Ctx; waves: Wav
               <Btn kind="primary" icon="power" perm={ctx.can('operate', 'Cutting over')} disabled={d.state === 'done' || !dc.mine.length || dc.mine.some(v => v.stage !== 'ready' && v.stage !== 'committed')} why={d.state === 'done' ? 'This wave is done.' : `${plural(dc.mine.filter(v => v.stage !== 'ready' && v.stage !== 'committed').length, 'server')} not ready for cutover.`} onClick={() => ctx.go('mig/servers')}>Cut over the wave</Btn>
               <Btn kind="outline" icon="pencil" perm={ctx.can('configure', 'Planning waves')} disabled={d.state === 'done'} why="This wave is done." onClick={() => onEdit(d)}>Edit…</Btn>
               <Spacer />
+              <CopyCurl ctx={ctx} path={`/migrations/waves/${d.id}`} />
               <Btn kind="ghost" icon="server" onClick={() => ctx.go('mig/servers')}>Servers</Btn>
             </>
           }
