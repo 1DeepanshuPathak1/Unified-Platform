@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&amp;family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="aegis-tokens.css">
+<script src="aegis-icons.js"></script>
+<script src="aegis-ui.js"></script>
+<script src="aegis-spec.js"></script>
+<style>html,body{margin:0;background:#15191f}a{color:inherit;text-decoration:none}a:hover{color:inherit}</style>
+</helmet>
+<div data-ae="" data-theme="{{ theme }}" style="min-height:100vh;background:var(--app);color:var(--tx);font:14px/20px var(--f-body)">
+<header style="position:sticky;top:0;z-index:10;height:52px;display:flex;align-items:center;gap:12px;padding:0 24px;background:var(--hdr);border-bottom:1px solid var(--ln)">
+<ae-icon name="mark" size="24"></ae-icon><span style="font:500 17px/24px var(--f-head)">Host360 Aegis</span><span style="width:1px;height:24px;background:var(--ln-2)"></span><span style="font:500 16px/24px var(--f-head);color:var(--tx-2)">Design system</span>
+<span style="flex:1"></span>
+<a href="{{ handoffHref }}" style="height:32px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;border:1px solid var(--ln-2);font-weight:600" style-hover="background:var(--hover)">Handoff values<ae-icon name="arrow-right"></ae-icon></a>
+<a href="{{ consoleHref }}" style="height:32px;display:inline-flex;align-items:center;gap:6px;padding:0 12px;border:1px solid var(--ln-2);font-weight:600" style-hover="background:var(--hover)">Open the console<ae-icon name="external-link"></ae-icon></a>
+<button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" data-tip="{{ themeLabel }}" style="width:36px;height:36px;display:grid;place-items:center;color:var(--tx-2)" style-hover="background:var(--hover)"><ae-icon name="{{ themeIcon }}"></ae-icon></button>
+</header>
+<div style="display:grid;grid-template-columns:220px minmax(0,1fr);max-width:1600px">
+<nav aria-label="Sections" style="position:sticky;top:52px;align-self:start;height:calc(100vh - 52px);overflow:auto;padding:24px 8px 24px 24px;border-right:1px solid var(--ln)">
+<sc-for list="{{ toc }}" as="t" hint-placeholder-count="10"><a href="{{ t.href }}" style="display:block;height:32px;line-height:32px;padding:0 10px;color:var(--tx-2);white-space:nowrap" style-hover="background:var(--hover);color:var(--tx)">{{ t.label }}</a></sc-for>
+</nav>
+<main style="padding:32px 40px 80px;display:flex;flex-direction:column;gap:56px;min-width:0">
+
+<section id="intro" style="display:flex;flex-direction:column;gap:10px;max-width:820px">
+<h1 style="font:500 28px/36px var(--f-head)">One system for Backup &amp; Recovery, Disaster Recovery and Migration</h1>
+<p style="color:var(--tx-2);text-wrap:pretty">Flat surfaces with hairline borders, square corners, one teal accent for the primary action, selection and focus, and status colours only for status. Toggle the theme above; every value on this page is read from the live tokens in aegis-tokens.css.</p>
+<p style="font-size:13px;line-height:18px;color:var(--tx-3)">Headings render in Jost until the self-hosted ES Build files are added; the font stack already names ES Build first. Tahoma falls back to Verdana where it is not installed. A shield always means encryption and a padlock always means immutability; neither icon is used for anything else.</p>
+</section>
+
+<section id="colour" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Colour tokens</h2>
+<div role="table" style="background:var(--panel);border:1px solid var(--ln);font:13px/18px var(--f-ui)">
+<div role="row" style="display:grid;grid-template-columns:130px 90px minmax(0,1.4fr) minmax(0,1.3fr) minmax(0,1.3fr);gap:12px;align-items:center;height:36px;padding:0 16px;background:var(--panel-2);border-bottom:1px solid var(--ln);font-size:12px;color:var(--tx-2)"><span>Token</span><span>Role</span><span>Used for</span><span>Dark (default)</span><span>Light</span></div>
+<sc-for list="{{ colors }}" as="c" hint-placeholder-count="12">
+<div role="row" style="display:grid;grid-template-columns:130px 90px minmax(0,1.4fr) minmax(0,1.3fr) minmax(0,1.3fr);gap:12px;align-items:center;min-height:44px;padding:4px 16px;border-bottom:1px solid var(--ln)">
+<span style="font-weight:700">{{ c.name }}</span><span style="color:var(--tx-2)">{{ c.role }}</span><span style="color:var(--tx-2)">{{ c.use }}</span>
+<span style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:28px;height:28px;flex:none;background:{{ c.dv }};border:1px solid oklch(0.5 0 0 / 0.3)"></span><span style="min-width:0"><span style="display:block">{{ c.dh }}</span><span style="display:block;font-size:11px;color:var(--tx-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.dv }}</span></span></span>
+<span style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:28px;height:28px;flex:none;background:{{ c.lv }};border:1px solid oklch(0.5 0 0 / 0.3)"></span><span style="min-width:0"><span style="display:block">{{ c.lh }}</span><span style="display:block;font-size:11px;color:var(--tx-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.lv }}</span></span></span>
+</div>
+</sc-for>
+</div>
+<h3 style="font:600 15px/22px var(--f-body);margin-top:8px">Contrast (WCAG 2.1 AA)</h3>
+<div role="table" style="background:var(--panel);border:1px solid var(--ln);font:13px/18px var(--f-ui)">
+<sc-for list="{{ contrast }}" as="k" hint-placeholder-count="8"><div role="row" style="display:grid;grid-template-columns:minmax(0,1.6fr) 90px 160px 90px 160px;gap:12px;align-items:center;min-height:40px;padding:0 16px;border-bottom:1px solid var(--ln)"><span>{{ k.pair }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ k.d }}</span><span style="display:flex;align-items:center;gap:6px"><ae-icon name="{{ k.di }}" style="color:{{ k.dc }}"></ae-icon>{{ k.dl }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ k.l }}</span><span style="display:flex;align-items:center;gap:6px"><ae-icon name="{{ k.li }}" style="color:{{ k.lc }}"></ae-icon>{{ k.ll }}</span></div></sc-for>
+</div>
+</section>
+
+<section id="type" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Type scale</h2>
+<div role="table" style="background:var(--panel);border:1px solid var(--ln)">
+<div role="row" style="display:grid;grid-template-columns:minmax(120px,1.4fr) minmax(110px,1fr) 56px 56px 72px 80px minmax(0,2fr);gap:12px;align-items:center;height:36px;padding:0 16px;background:var(--panel-2);border-bottom:1px solid var(--ln);font:12px var(--f-ui);color:var(--tx-2)"><span>Role</span><span>Font</span><span>Size</span><span>Weight</span><span>Line height</span><span>Letter spacing</span><span>Sample</span></div>
+<sc-for list="{{ type }}" as="t" hint-placeholder-count="12"><div role="row" style="display:grid;grid-template-columns:minmax(120px,1.4fr) minmax(110px,1fr) 56px 56px 72px 80px minmax(0,2fr);gap:12px;align-items:center;min-height:52px;padding:8px 16px;border-bottom:1px solid var(--ln);font:13px var(--f-ui)"><span>{{ t.role }}</span><span style="color:var(--tx-2)">{{ t.font }}</span><span style="font-variant-numeric:tabular-nums">{{ t.size }}</span><span>{{ t.weight }}</span><span>{{ t.lh }}</span><span>{{ t.ls }}</span><span style="font:{{ t.css }};font-style:{{ t.fs }};letter-spacing:{{ t.ls }};font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.sample }}</span></div></sc-for>
+</div>
+</section>
+
+<section id="space" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Spacing, grid, borders, radius and elevation</h2>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:16px;align-items:start">
+<div style="background:var(--panel);border:1px solid var(--ln);padding:16px;display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ space }}" as="s" hint-placeholder-count="9"><div style="display:grid;grid-template-columns:64px 48px minmax(0,1fr);gap:12px;align-items:center;font:13px var(--f-ui)"><span style="color:var(--tx-2)">{{ s.name }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ s.px }}</span><span style="height:12px;width:{{ s.w }};background:var(--acc-soft);border:1px solid var(--acc)"></span></div></sc-for>
+</div>
+<dl style="background:var(--panel);border:1px solid var(--ln);display:grid;grid-template-columns:220px minmax(0,1fr);padding:0 16px;font:13px/18px var(--f-ui)"><sc-for list="{{ layout }}" as="l" hint-placeholder-count="10"><dt style="padding:9px 0;border-bottom:1px solid var(--ln);color:var(--tx-3)">{{ l.k }}</dt><dd style="padding:9px 0;border-bottom:1px solid var(--ln)">{{ l.v }}</dd></sc-for></dl>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;padding:24px;background:var(--app);border:1px dashed var(--ln-2)">
+<div style="height:96px;display:grid;place-items:center;background:var(--panel);border:1px solid var(--ln);font:12px var(--f-ui);color:var(--tx-2)">Panel · flat · 1 px --ln</div>
+<div style="height:96px;display:grid;place-items:center;background:var(--overlay);border:1px solid var(--ln-2);box-shadow:var(--sh-menu);font:12px var(--f-ui);color:var(--tx-2)">Menu · --sh-menu</div>
+<div style="height:96px;display:grid;place-items:center;background:var(--overlay);border:1px solid var(--ln-2);box-shadow:var(--sh-over);font:12px var(--f-ui);color:var(--tx-2)">Drawer and dialog · --sh-over</div>
+</div>
+</section>
+
+<section id="icons" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Icons</h2>
+<p style="color:var(--tx-2);max-width:760px">Lucide geometry on a 24 px grid with a 1.5 stroke, drawn at 16 px in tables, buttons and navigation, and at 20 px for product marks, close buttons and empty states. Icons inherit the text colour.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));background:var(--panel);border:1px solid var(--ln)">
+<sc-for list="{{ icons }}" as="i" hint-placeholder-count="24"><div style="display:flex;align-items:center;gap:10px;height:48px;padding:0 12px;border-right:1px solid var(--ln);border-bottom:1px solid var(--ln);font:12px var(--f-ui);color:var(--tx-2)"><ae-icon name="{{ i.n }}" style="color:var(--tx)"></ae-icon><ae-icon name="{{ i.n }}" size="20" style="color:var(--tx)"></ae-icon><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ i.n }}</span></div></sc-for>
+</div>
+</section>
+
+<section id="buttons" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Buttons</h2>
+<div style="background:var(--panel);border:1px solid var(--ln);overflow-x:auto"><div style="min-width:1110px">
+<div style="display:grid;grid-template-columns:120px repeat(6,minmax(160px,1fr));gap:12px;align-items:center;height:36px;padding:0 16px;background:var(--panel-2);border-bottom:1px solid var(--ln);font:12px var(--f-ui);color:var(--tx-2)"><span>Variant</span><sc-for list="{{ states }}" as="st"><span>{{ st }}</span></sc-for></div>
+<sc-for list="{{ buttons }}" as="b" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:120px repeat(6,minmax(160px,1fr));gap:12px;align-items:center;min-height:64px;padding:0 16px;border-bottom:1px solid var(--ln)"><span style="font:13px var(--f-ui);color:var(--tx-2)">{{ b.name }}</span><sc-for list="{{ b.cells }}" as="c"><span><button aria-disabled="{{ c.dis }}" tabindex="-1" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap;background:{{ c.bg }};color:{{ c.fg }};border:1px solid {{ c.bd }};opacity:{{ c.op }};outline:{{ c.outline }};outline-offset:1px;transform:{{ c.tf }}"><ae-icon name="{{ c.icon }}" spin="{{ c.spin }}"></ae-icon>{{ c.label }}</button></span></sc-for></div></sc-for>
+</div></div>
+</section>
+
+<section id="forms" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Inputs and choices</h2>
+<div style="background:var(--panel);border:1px solid var(--ln);padding:20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px">
+<sc-for list="{{ inputs }}" as="f" hint-placeholder-count="5"><div style="display:flex;flex-direction:column;gap:6px;min-width:0"><span style="font:12px/16px var(--f-ui);color:var(--tx-2)">Site name · {{ f.state }}</span><input value="{{ f.value }}" readonly="" tabindex="-1" aria-label="{{ f.state }}" style="width:100%;min-width:0;box-sizing:border-box;height:36px;padding:0 10px;background:var(--panel-2);border:1px solid {{ f.bd }};font:14px var(--f-body);opacity:{{ f.op }};outline:{{ f.outline }};outline-offset:1px"><sc-if value="{{ f.err }}"><span style="display:flex;align-items:center;gap:6px;font:12px/16px var(--f-ui);color:var(--err)"><ae-icon name="circle-alert"></ae-icon>{{ f.err }}</span></sc-if></div></sc-for>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font:12px/16px var(--f-ui);color:var(--tx-2)">Select</span><select style="width:100%;min-width:0;height:36px;padding:0 8px;background:var(--panel-2);border:1px solid var(--ln);font:14px var(--f-body)"><option>production-openstack</option><option>Chennai-proxmox-prod</option></select></div>
+<div style="display:flex;flex-direction:column;gap:6px;grid-column:span 2"><span style="font:12px/16px var(--f-ui);color:var(--tx-2)">Search</span><div style="position:relative"><ae-icon name="search" style="position:absolute;left:12px;top:10px;color:var(--tx-3)"></ae-icon><input placeholder="Search sites, guests, servers, jobs, repositories, plans" style="width:100%;height:36px;padding:0 64px 0 36px;background:var(--panel-2);border:1px solid var(--ln);font:14px var(--f-body)" style-focus="border-color:var(--acc)"><span style="position:absolute;right:8px;top:9px;height:18px;padding:0 6px;border:1px solid var(--ln-2);font:11px/16px var(--f-ui);color:var(--tx-3)">Ctrl K</span></div></div>
+<div style="display:flex;flex-direction:column;gap:6px;grid-column:span 2"><span style="font:12px/16px var(--f-ui);color:var(--tx-2)">Segmented control</span><ae-ind mode="fill" role="radiogroup" style="display:inline-flex;align-self:flex-start;border:1px solid var(--ln-2)"><sc-for list="{{ seg }}" as="sg"><button role="radio" aria-checked="{{ sg.on }}" onClick="{{ sg.onClick }}" style="height:30px;padding:0 14px;font:13px var(--f-ui);color:{{ sg.fg }};transition:color 100ms">{{ sg.label }}</button></sc-for></ae-ind></div>
+<div style="display:flex;flex-direction:column;gap:10px"><span style="font:12px/16px var(--f-ui);color:var(--tx-2)">Checkbox</span><sc-for list="{{ checks }}" as="c"><span style="display:flex;align-items:center;gap:10px;font:13px var(--f-ui);opacity:{{ c.op }}"><span style="width:16px;height:16px;display:grid;place-items:center;border:1px solid {{ c.bd }};background:{{ c.bg }};color:var(--acc-ink);outline:{{ c.outline }};outline-offset:1px"><ae-icon name="{{ c.icon }}" size="12"></ae-icon></span>{{ c.label }}</span></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:10px"><span style="font:12px/16px var(--f-ui);color:var(--tx-2)">Radio</span><sc-for list="{{ radios }}" as="r"><span style="display:flex;align-items:center;gap:10px;font:13px var(--f-ui);opacity:{{ r.op }}"><span style="width:16px;height:16px;border-radius:50%;border:1px solid {{ r.bd }};box-shadow:inset 0 0 0 4px {{ r.rin }};background:{{ r.bg }}"></span>{{ r.label }}</span></sc-for></div>
+<div style="display:flex;flex-direction:column;gap:10px"><span style="font:12px/16px var(--f-ui);color:var(--tx-2)">Toggle</span><sc-for list="{{ toggles }}" as="t"><span style="display:flex;align-items:center;gap:10px;font:13px var(--f-ui);opacity:{{ t.op }}"><span style="width:32px;height:18px;padding:2px;display:flex;background:{{ t.tbg }};border:1px solid {{ t.tbd }}"><span style="width:12px;height:12px;background:{{ t.knob }};transform:{{ t.tx }}"></span></span>{{ t.label }}</span></sc-for></div>
+</div>
+</section>
+
+<section id="nav" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Tabs and sub-tabs</h2>
+<div style="background:var(--panel);border:1px solid var(--ln);padding:12px 16px 20px;display:flex;flex-direction:column;gap:20px">
+<ae-ind mode="underline" role="tablist" style="display:flex;border-bottom:1px solid var(--ln)"><sc-for list="{{ tabs }}" as="t"><button role="tab" aria-selected="{{ t.on }}" onClick="{{ t.onClick }}" style="height:40px;padding:0 12px;display:flex;align-items:center;gap:6px;font-weight:600;color:{{ t.fg }};transition:color 100ms" style-hover="color:var(--tx)">{{ t.label }}<span style="font:11px var(--f-ui);color:var(--tx-3)">{{ t.n }}</span></button></sc-for></ae-ind>
+<p style="font:12px var(--f-ui);color:var(--tx-3)">Click a tab: the 2 px accent line slides in 150 ms. Sub-tabs in drawers use the same component at the drawer’s padding.</p>
+</div>
+</section>
+
+<section id="table" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Table</h2>
+<div role="table" style="background:var(--panel);border:1px solid var(--ln);font:13px/18px var(--f-ui);font-variant-numeric:tabular-nums">
+<div role="row" style="display:grid;grid-template-columns:44px minmax(0,1.4fr) minmax(0,1fr) 120px 140px 36px;align-items:center;height:36px;background:var(--panel-2);border-bottom:1px solid var(--ln);font-size:12px;color:var(--tx-2)"><span style="padding-left:14px"><span style="display:block;width:16px;height:16px;border:1px solid var(--acc);background:var(--acc);color:var(--acc-ink);display:grid;place-items:center"><ae-icon name="minus" size="12"></ae-icon></span></span><span style="display:flex;align-items:center;gap:4px;padding:0 8px">Name<ae-icon name="arrow-up" style="color:var(--acc)"></ae-icon></span><span style="padding:0 8px">Policy</span><span style="padding:0 8px;text-align:right">Size</span><span style="padding:0 8px">Status</span><span></span></div>
+<sc-for list="{{ trows }}" as="r" hint-placeholder-count="5">
+<div role="row" style="display:grid;grid-template-columns:44px minmax(0,1.4fr) minmax(0,1fr) 120px 140px 36px;align-items:center;height:36px;border-bottom:1px solid var(--ln);background:{{ r.bg }};box-shadow:{{ r.ring }}"><span style="padding-left:14px"><span style="display:grid;place-items:center;width:16px;height:16px;border:1px solid {{ r.cbd }};background:{{ r.cbg }};color:var(--acc-ink)"><ae-icon name="{{ r.ci }}" size="12"></ae-icon></span></span><span style="display:flex;align-items:center;gap:8px;padding:0 8px"><button onClick="{{ r.onToggle }}" aria-label="Expand row" style="display:{{ r.exp }};color:var(--tx-3)"><ae-icon name="{{ r.chev }}"></ae-icon></button>{{ r.name }}<span style="font-size:11px;color:var(--tx-3)">{{ r.note }}</span></span><span style="padding:0 8px;color:var(--tx-2)">{{ r.policy }}</span><span style="padding:0 8px;text-align:right">{{ r.size }}</span><span style="display:flex;align-items:center;gap:6px;padding:0 8px"><ae-icon name="{{ r.si }}" spin="{{ r.spin }}" style="color:{{ r.sc }}"></ae-icon>{{ r.sl }}</span><span style="display:flex;justify-content:center;color:var(--tx-3)"><ae-icon name="chevron-right"></ae-icon></span></div>
+<sc-if value="{{ r.open }}"><div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:12px 16px 12px 60px;border-bottom:1px solid var(--ln);background:var(--panel-2);animation:ae-fade 150ms var(--ease)"><sc-for list="{{ r.detail }}" as="dd"><span><span style="display:block;font-size:11px;color:var(--tx-3)">{{ dd.k }}</span><span>{{ dd.v }}</span></span></sc-for></div></sc-if>
+</sc-for>
+<div style="display:flex;align-items:center;height:36px;padding:0 12px;font-size:12px;color:var(--tx-3)">Header · row · hover · selected · open in drawer · row with status · expandable row</div>
+</div>
+</section>
+
+<section id="status" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Badges, status, progress, stepper, timeline, KPI tile</h2>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px">
+<div style="background:var(--panel);border:1px solid var(--ln);padding:16px;display:flex;flex-direction:column;gap:14px">
+<span style="font:12px var(--f-ui);color:var(--tx-2)">Status pills and inline status</span>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ pills }}" as="p"><span style="height:24px;display:inline-flex;align-items:center;gap:6px;padding:0 8px;background:{{ p.bg }};font:12px var(--f-ui)"><ae-icon name="{{ p.i }}" spin="{{ p.spin }}" style="color:{{ p.c }}"></ae-icon>{{ p.l }}</span></sc-for></div>
+<div style="display:flex;flex-wrap:wrap;gap:16px"><sc-for list="{{ pills }}" as="p"><span style="display:inline-flex;align-items:center;gap:6px;font:13px var(--f-ui)"><ae-icon name="{{ p.i }}" spin="{{ p.spin }}" style="color:{{ p.c }}"></ae-icon>{{ p.l }}</span></sc-for></div>
+<span style="font:12px var(--f-ui);color:var(--tx-2)">Badges</span>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ badges }}" as="b"><span style="height:20px;padding:0 6px;border:1px solid var(--ln-2);font:11px/18px var(--f-ui);color:var(--tx-2)">{{ b }}</span></sc-for><span style="height:20px;display:inline-flex;align-items:center;gap:4px;padding:0 6px;border:1px solid var(--ln-2);font:11px var(--f-ui);color:var(--tx-2)"><ae-icon name="lock"></ae-icon>Compliance, 14 d</span><span style="height:20px;display:inline-flex;align-items:center;gap:4px;padding:0 6px;border:1px solid var(--ln-2);font:11px var(--f-ui);color:var(--tx-2)"><ae-icon name="shield"></ae-icon>AES-256</span></div>
+</div>
+<div style="background:var(--panel);border:1px solid var(--ln);padding:16px;display:flex;flex-direction:column;gap:16px">
+<span style="font:12px var(--f-ui);color:var(--tx-2)">Progress bar with phase</span>
+<sc-for list="{{ progress }}" as="p"><div><div style="display:flex;justify-content:space-between;font:13px var(--f-ui)"><span style="display:flex;align-items:center;gap:6px"><ae-icon name="{{ p.i }}" spin="{{ p.spin }}" style="color:{{ p.c }}"></ae-icon>{{ p.phase }}</span><span style="font-variant-numeric:tabular-nums">{{ p.pct }}</span></div><div style="margin-top:6px;height:4px;background:var(--ln)"><div style="height:4px;width:{{ p.w }};background:{{ p.c }}"></div></div></div></sc-for>
+</div>
+<div style="background:var(--panel);border:1px solid var(--ln);padding:16px;display:flex;flex-direction:column;gap:12px">
+<span style="font:12px var(--f-ui);color:var(--tx-2)">Stepper</span>
+<ol style="list-style:none;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px"><sc-for list="{{ stepper }}" as="s"><li style="display:flex;flex-direction:column;gap:8px"><span style="height:2px;background:{{ s.bar }}"></span><span style="display:flex;align-items:center;gap:8px;font:12px var(--f-ui);color:{{ s.fg }}"><span style="width:20px;height:20px;display:grid;place-items:center;border:1px solid {{ s.bd }};background:{{ s.bg }};color:{{ s.nfg }};font:700 11px var(--f-ui)">{{ s.mark }}</span>{{ s.label }}</span></li></sc-for></ol>
+</div>
+<div style="background:var(--panel);border:1px solid var(--ln);padding:16px;display:flex;flex-direction:column;gap:12px">
+<span style="font:12px var(--f-ui);color:var(--tx-2)">Timeline</span>
+<ol style="list-style:none;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr))"><sc-for list="{{ timeline }}" as="t"><li style="display:flex;flex-direction:column;gap:8px"><span style="display:flex;align-items:center"><span style="width:20px;height:20px;display:grid;place-items:center;border:1px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }}"><ae-icon name="{{ t.i }}" size="12" spin="{{ t.spin }}"></ae-icon></span><span style="flex:1;height:2px;background:{{ t.line }}"></span></span><span style="font:600 13px var(--f-body);color:{{ t.tc }}">{{ t.label }}</span></li></sc-for></ol>
+</div>
+<div style="grid-column:span 2;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--panel);border:1px solid var(--ln)">
+<sc-for list="{{ kpis }}" as="k"><div style="padding:16px 18px;border-left:1px solid {{ k.bl }};display:flex;flex-direction:column;gap:6px"><span style="display:flex;align-items:center;gap:6px;font:12px var(--f-ui);color:var(--tx-2)"><ae-icon name="{{ k.i }}" style="color:var(--tx-3)"></ae-icon>{{ k.label }}</span><span style="font:500 28px/36px var(--f-head);font-variant-numeric:tabular-nums;font-style:{{ k.fs }};color:{{ k.vc }}">{{ k.v }}<span style="font:400 15px var(--f-body);color:var(--tx-2);margin-left:6px">{{ k.u }}</span></span><span style="font:12px var(--f-ui);color:var(--tx-3)">{{ k.sub }}</span></div></sc-for>
+</div>
+</div>
+</section>
+
+<section id="overlays" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Drawer, dialogs and wizard</h2>
+<div style="position:relative;height:340px;background:var(--app);border:1px solid var(--ln);overflow:hidden">
+<div style="padding:20px 24px;width:28%;font:500 20px/28px var(--f-head);color:var(--tx-3)">Page content</div>
+<aside style="position:absolute;top:0;right:0;bottom:0;width:min(560px,72%);background:var(--overlay);border-left:1px solid var(--ln-2);box-shadow:var(--sh-over);display:flex;flex-direction:column">
+<div style="padding:20px 16px 0 24px;display:flex;gap:12px"><div style="flex:1"><div style="font:12px var(--f-ui);color:var(--tx-3)">Site · Proxmox VE</div><div style="font:500 20px/28px var(--f-head)">Chennai-proxmox-prod</div><div style="margin-top:6px;display:flex;align-items:center;gap:6px;font:13px var(--f-ui)"><ae-icon name="circle-check" style="color:var(--ok)"></ae-icon>Online</div></div><ae-icon name="x" size="20" style="color:var(--tx-2)"></ae-icon></div>
+<div style="display:flex;padding:16px 16px 0;border-bottom:1px solid var(--ln)"><span style="height:40px;line-height:40px;padding:0 10px;font-weight:600;box-shadow:inset 0 -2px 0 var(--acc)">Overview</span><span style="height:40px;line-height:40px;padding:0 10px;font-weight:600;color:var(--tx-2)">Nodes</span><span style="height:40px;line-height:40px;padding:0 10px;font-weight:600;color:var(--tx-2)">Storage</span></div>
+<div style="padding:16px 24px;font:13px var(--f-ui);color:var(--tx-2)">Drawer · 560–680 px · from the right · sub-tabs · lists live here</div>
+</aside>
+</div>
+<div style="display:grid;grid-template-columns:440fr 600fr 720fr;gap:16px;align-items:start">
+<sc-for list="{{ dialogs }}" as="d"><div style="display:flex;flex-direction:column;gap:8px"><span style="font:12px var(--f-ui);color:var(--tx-3)">{{ d.size }}</span><div style="background:var(--overlay);border:1px solid var(--ln-2);box-shadow:var(--sh-over)"><div style="padding:20px 24px 0"><div style="font:500 20px/28px var(--f-head)">{{ d.title }}</div><p style="margin-top:4px;font-size:13px;line-height:18px;color:var(--tx-2)">{{ d.desc }}</p></div><div style="padding:16px 24px"><span style="display:block;height:36px;background:var(--panel-2);border:1px solid var(--ln)"></span></div><div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--ln)"><span style="height:32px;line-height:32px;padding:0 12px;font-weight:600">Cancel</span><span style="height:32px;line-height:32px;padding:0 14px;background:{{ d.bg }};color:var(--acc-ink);font-weight:600">{{ d.btn }}</span></div></div></div></sc-for>
+</div>
+</section>
+
+<section id="feedback" style="display:flex;flex-direction:column;gap:16px">
+<h2 style="font:500 24px/32px var(--f-head)">Feedback and content</h2>
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ toasts }}" as="t"><div role="status" style="display:flex;align-items:center;gap:12px;padding:10px 8px 10px 14px;background:var(--overlay);border:1px solid var(--ln-2);box-shadow:var(--sh-menu)"><ae-icon name="{{ t.i }}" style="color:{{ t.c }}"></ae-icon><span style="flex:1">{{ t.text }}</span><span style="height:28px;line-height:28px;padding:0 10px;font-weight:600;color:var(--acc-tx)">{{ t.action }}</span><ae-icon name="x" style="color:var(--tx-3)"></ae-icon></div></sc-for>
+<div role="status" style="display:flex;align-items:center;gap:12px;min-height:40px;padding:0 8px 0 12px;background:var(--warn-s);border:1px solid var(--ln-2)"><ae-icon name="triangle-alert" style="color:var(--warn)"></ae-icon><span style="flex:1"><strong style="font-weight:600">region-2-os</strong> · Could not be read: Keystone did not answer within 30 s.</span><span style="font-weight:600;padding:0 10px">Retry</span></div>
+<div role="alert" style="display:flex;align-items:center;gap:12px;min-height:40px;padding:0 12px;background:var(--err-s);border:1px solid var(--ln-2)"><ae-icon name="circle-x" style="color:var(--err)"></ae-icon><span>Backup failed for file-srv-03: disk scsi1 read error at 412.6 GB.</span></div>
+<div style="display:flex;align-items:center;gap:12px;padding:12px 8px 12px 14px;border:1px solid var(--ln-2);background:var(--panel-2)"><ae-icon name="file-text" size="20" style="color:var(--tx-2)"></ae-icon><span style="flex:1"><span style="display:block;font-weight:600">production-openrc.sh</span><span style="display:block;font:12px var(--f-ui);color:var(--tx-3)">1.2 KB · 9 variables read</span></span><ae-icon name="x" style="color:var(--tx-3)"></ae-icon></div>
+<div style="display:flex;align-items:center;gap:16px;padding:12px 14px;background:var(--panel);border:1px solid var(--ln)"><span style="display:flex;align-items:center;gap:6px">Recovery target<button data-tip="How often a recovery point is taken. The newest point is never older than this when syncs keep up." aria-label="About recovery target" style="color:var(--tx-3)"><ae-icon name="info"></ae-icon></button></span><span style="padding:6px 10px;background:var(--tip-bg);color:var(--tip-tx);font:12px/16px var(--f-ui);max-width:320px">Tooltip: how often a recovery point is taken.</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:48px 24px;background:var(--panel);border:1px solid var(--ln);text-align:center"><span style="color:var(--tx-2)">No platforms are connected to this project yet.</span><span style="height:32px;line-height:32px;padding:0 14px;background:var(--acc);color:var(--acc-ink);font-weight:600">Add a platform</span></div>
+<div role="log" style="height:150px;overflow:auto;padding:8px 12px;background:var(--panel-2);border:1px solid var(--ln);font:12px/20px var(--f-ui);font-variant-numeric:tabular-nums"><sc-for list="{{ log }}" as="l"><div style="display:grid;grid-template-columns:64px 16px minmax(0,1fr);gap:8px;align-items:center"><span style="color:var(--tx-3)">{{ l.t }}</span><ae-icon name="{{ l.i }}" style="color:{{ l.c }}"></ae-icon><span>{{ l.text }}</span></div></sc-for></div>
+<div role="menu" style="width:280px;padding:4px 0;background:var(--overlay);border:1px solid var(--ln-2);box-shadow:var(--sh-menu)"><sc-for list="{{ menu }}" as="m"><span style="display:flex;align-items:center;gap:10px;height:36px;padding:0 12px;background:{{ m.bg }}"><span style="width:16px;display:flex;color:var(--acc)"><ae-icon name="{{ m.check }}"></ae-icon></span><span style="flex:1;font-weight:600">{{ m.label }}</span><span style="font:12px var(--f-ui);color:var(--tx-3)">{{ m.meta }}</span></span></sc-for></div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const STATES = ['Default', 'Hover', 'Focus', 'Active', 'Disabled', 'Loading'];
+class Component extends DCLogic {
+  state = { theme: 'dark', vals: null, seg: 'All', tab: 'Overview', open: true };
+  componentDidMount() {
+    try { const t = localStorage.getItem('aegis.theme'); if (t) this.setState({ theme: t }); } catch (e) {}
+    let tries = 0; const go = () => { tries++; if (!window.AEGIS_SPEC) return setTimeout(go, 80); const S = window.AEGIS_SPEC; const dark = S.read('dark'), light = S.read('light'); if (!dark['--app'] && tries < 120) return setTimeout(go, 80); this.setState({ vals: { dark, light } }); };
+    setTimeout(go, 50);
+  }
+  renderVals() {
+    const S = window.AEGIS_SPEC; const s = this.state;
+    const E = { toc: [], colors: [], contrast: [], type: [], space: [], layout: [], icons: [], states: [], buttons: [], inputs: [], seg: [], checks: [], radios: [], toggles: [], tabs: [], trows: [], pills: [], badges: [], progress: [], stepper: [], timeline: [], kpis: [], dialogs: [], toasts: [], log: [], menu: [] };
+    const base = { consoleHref: this.props.hub ? '#/backup/overview' : 'Aegis Console.dc.html', handoffHref: this.props.hub ? '#/handoff' : 'Aegis Handoff.dc.html', theme: s.theme, themeIcon: s.theme === 'dark' ? 'sun' : 'moon', themeLabel: s.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme', toggleTheme: () => { const t = s.theme === 'dark' ? 'light' : 'dark'; try { localStorage.setItem('aegis.theme', t); } catch (e) {} this.setState({ theme: t }); } };
+    if (!S) return { ...E, ...base };
+    const V = s.vals || { dark: {}, light: {} };
+    const hex = v => S.oklchToHex(v || '');
+    const colors = S.tokens.map(([n, role, use]) => ({ name: n, role, use, dv: V.dark[n] || '', lv: V.light[n] || '', dh: hex(V.dark[n]), lh: hex(V.light[n]) }));
+    const pairs = [['--tx on --panel', '--tx', '--panel', 4.5], ['--tx-2 on --panel', '--tx-2', '--panel', 4.5], ['--tx-3 on --panel', '--tx-3', '--panel', 4.5], ['--tx-3 on --panel-2', '--tx-3', '--panel-2', 4.5], ['--tx-2 on --app', '--tx-2', '--app', 4.5], ['--acc-ink on --acc (buttons)', '--acc-ink', '--acc', 4.5], ['--acc-tx on --panel (links)', '--acc-tx', '--panel', 4.5], ['--acc on --panel (focus ring, 3:1)', '--acc', '--panel', 3], ['--ok on --panel (icons, 3:1)', '--ok', '--panel', 3], ['--warn on --panel (icons, 3:1)', '--warn', '--panel', 3], ['--err on --panel (icons, 3:1)', '--err', '--panel', 3], ['--run on --panel (icons, 3:1)', '--run', '--panel', 3]];
+    const contrast = pairs.map(([pair, a, b, need]) => {
+      const f = th => { const x = hex(V[th][a]), y = hex(V[th][b]); if (!/^#[0-9a-f]{6}$/i.test(x) || !/^#[0-9a-f]{6}$/i.test(y)) return [0, false]; const r = S.contrast(x, y); return [r, r >= need]; };
+      const [d, dok] = f('dark'), [l, lok] = f('light');
+      return { pair, d: d ? `${d.toFixed(2)} : 1` : '—', l: l ? `${l.toFixed(2)} : 1` : '—', di: dok ? 'circle-check' : 'circle-x', dc: dok ? 'var(--ok)' : 'var(--err)', dl: dok ? `Passes ${need} : 1` : `Below ${need} : 1`, li: lok ? 'circle-check' : 'circle-x', lc: lok ? 'var(--ok)' : 'var(--err)', ll: lok ? `Passes ${need} : 1` : `Below ${need} : 1` };
+    });
+    const fam = f => f.startsWith('ES') ? 'var(--f-head)' : f.startsWith('Tahoma') ? 'var(--f-ui)' : 'var(--f-body)';
+    const SAMPLE = { 'Display (KPI value)': '1187.84 GB', 'Page title': 'Protected servers', 'Drawer and dialog title': 'Bring server online', 'Brand wordmark': 'Host360 Aegis', 'Table cell': 'Chennai-proxmox-prod · 109 · 4.4×', 'Label and column header': 'Recovery target', 'Caption and meta': 'Last read 21 Oct 2026, 16:04 IST', 'Log line': '16:05:12  Booting sql-prod-02-dr as m1.large…' };
+    const type = S.type.map(([role, font, size, weight, lh, ls]) => ({ role, font, size: `${size} px`, weight: String(weight), lh: `${lh} px`, ls, css: `${weight} ${size}px/${lh}px ${fam(font)}`, fs: font.includes('italic') ? 'italic' : 'normal', sample: SAMPLE[role] || 'This starts a copy of your server at the recovery site.' }));
+    const btnV = [['Primary', 'var(--acc)', 'var(--acc-ink)', 'var(--acc)', 'var(--acc-h)', 'var(--acc-p)', 'Bring online', 'power'], ['Secondary', 'var(--panel)', 'var(--tx)', 'var(--ln-2)', 'var(--hover)', 'var(--hover)', 'Refresh all', 'refresh-cw'], ['Ghost', 'transparent', 'var(--tx)', 'transparent', 'var(--hover)', 'var(--hover)', 'Clear', ''], ['Danger', 'transparent', 'var(--err)', 'transparent', 'var(--err-s)', 'var(--err-s)', 'Destroy…', 'trash-2']];
+    const buttons = btnV.map(([name, bg, fg, bd, hb, ab, label, icon]) => ({ name, cells: STATES.map(st => ({ label: st === 'Loading' ? (name === 'Primary' ? 'Starting…' : label) : label, icon: st === 'Loading' ? 'loader-circle' : icon, spin: st === 'Loading' ? 'true' : 'false', bg: st === 'Hover' ? hb : st === 'Active' ? ab : bg, fg, bd: st === 'Hover' && name === 'Secondary' ? 'var(--ln-2)' : bd, op: st === 'Disabled' ? 0.45 : 1, dis: st === 'Disabled' || st === 'Loading' ? 'true' : undefined, outline: st === 'Focus' ? '2px solid var(--acc)' : 'none', tf: st === 'Active' ? 'translateY(1px)' : 'none' })) }));
+    const inputs = [['Default', 'Chennai-proxmox-dr', 'var(--ln)', 1, 'none', ''], ['Hover', 'Chennai-proxmox-dr', 'var(--ln-2)', 1, 'none', ''], ['Focus', 'Chennai-proxmox-dr', 'var(--acc)', 1, '2px solid var(--acc)', ''], ['Disabled', 'Chennai-proxmox-dr', 'var(--ln)', 0.45, 'none', ''], ['Error', 'Chennai-proxmox-prod', 'var(--err)', 1, 'none', 'A site named Chennai-proxmox-prod already exists.']].map(([state, value, bd, op, outline, err]) => ({ state, value, bd, op, outline, err }));
+    const box = (on, mixed) => ({ bd: on || mixed ? 'var(--acc)' : 'var(--ln-2)', bg: on || mixed ? 'var(--acc)' : 'transparent', icon: on ? 'check' : mixed ? 'minus' : '' });
+    return {
+      ...base,
+      toc: [['#intro', 'Introduction'], ['#colour', 'Colour'], ['#type', 'Type'], ['#space', 'Spacing and layout'], ['#icons', 'Icons'], ['#buttons', 'Buttons'], ['#forms', 'Inputs and choices'], ['#nav', 'Tabs'], ['#table', 'Table'], ['#status', 'Status and progress'], ['#overlays', 'Drawer and dialogs'], ['#feedback', 'Feedback']].map(([href, label]) => ({ href, label })),
+      colors, contrast, type,
+      space: S.space.map(([name, px]) => ({ name, px: `${px} px`, w: `${px * 4}px` })), layout: S.layout.concat(S.motion).map(([k, v]) => ({ k, v })),
+      icons: (window.AEGIS_ICON_NAMES || []).map(n => ({ n })),
+      states: STATES, buttons, inputs,
+      seg: ['All', 'Proxmox VE', 'OpenStack', 'VMware'].map(x => ({ label: x, on: s.seg === x, fg: s.seg === x ? 'var(--tx)' : 'var(--tx-2)', onClick: () => this.setState({ seg: x }) })),
+      checks: [['Unchecked', false, false, 1, 'none'], ['Checked', true, false, 1, 'none'], ['Mixed', false, true, 1, 'none'], ['Focus', true, false, 1, '2px solid var(--acc)'], ['Disabled', false, false, 0.45, 'none']].map(([label, on, mixed, op, outline]) => ({ label, op, outline, ...box(on, mixed) })),
+      radios: [['Off', false, 1], ['On', true, 1], ['Disabled', false, 0.45]].map(([label, on, op]) => ({ label, op, bd: on ? 'var(--acc)' : 'var(--ln-2)', rin: on ? 'var(--panel)' : 'transparent', bg: on ? 'var(--acc)' : 'transparent' })),
+      toggles: [['Off', false, 1], ['On', true, 1], ['Disabled', true, 0.45]].map(([label, on, op]) => ({ label, op, tbg: on ? 'var(--acc)' : 'transparent', tbd: on ? 'var(--acc)' : 'var(--ln-2)', knob: on ? 'var(--acc-ink)' : 'var(--tx-3)', tx: on ? 'translateX(14px)' : 'none' })),
+      tabs: [['Overview', ''], ['Recovery points', '31'], ['Jobs', ''], ['Disks', '2'], ['Settings', '']].map(([label, n]) => ({ label, n, on: s.tab === label, fg: s.tab === label ? 'var(--tx)' : 'var(--tx-2)', onClick: () => this.setState({ tab: label }) })),
+      trows: [
+        { name: 'ad-dc-01', note: '', policy: 'Production daily', size: '60.00 GB', si: 'circle-check', sc: 'var(--ok)', sl: 'Succeeded', bg: 'transparent', ring: 'none' },
+        { name: 'erp-app-01', note: 'Hover', policy: 'Production daily', size: '260.00 GB', si: 'loader-circle', spin: 'true', sc: 'var(--run)', sl: 'Running · 62 %', bg: 'var(--hover)', ring: 'none' },
+        { name: 'erp-db-01', note: 'Selected', policy: 'Database hourly', size: '820.00 GB', si: 'triangle-alert', sc: 'var(--warn)', sl: 'Warning', bg: 'var(--acc-soft)', ring: 'none', sel: true },
+        { name: 'file-srv-03', note: 'Open in drawer', policy: 'Production daily', size: '1.80 TB', si: 'circle-x', sc: 'var(--err)', sl: 'Failed', bg: 'var(--acc-soft)', ring: 'inset 2px 0 0 var(--acc)' },
+        { name: 'gitlab-01', note: 'Expandable', policy: 'Production daily', size: '420.00 GB', si: 'circle-check', sc: 'var(--ok)', sl: 'Succeeded', bg: 'transparent', ring: 'none', exp: true }
+      ].map(r => ({ spin: 'false', ...r, cbd: r.sel ? 'var(--acc)' : 'var(--ln-2)', cbg: r.sel ? 'var(--acc)' : 'transparent', ci: r.sel ? 'check' : '', exp: r.exp ? 'inline-flex' : 'none', chev: s.open ? 'chevron-down' : 'chevron-right', open: !!r.exp && s.open, onToggle: () => this.setState(st => ({ open: !st.open })), detail: [{ k: 'Node', v: 'cmp4' }, { k: 'Repository', v: 'obj-check' }, { k: 'Recovery points', v: '31' }, { k: 'Next backup', v: '22 Oct, 02:00 IST' }] })),
+      pills: [['circle-check', 'Online', 'var(--ok)', 'var(--ok-s)'], ['triangle-alert', 'Unreachable', 'var(--warn)', 'var(--warn-s)'], ['circle-x', 'Failed', 'var(--err)', 'var(--err-s)'], ['loader-circle', 'Running', 'var(--run)', 'var(--run-s)'], ['circle-minus', 'Not read', 'var(--tx-3)', 'var(--panel-2)']].map(([i, l, c, bg]) => ({ i, l, c, bg, spin: i === 'loader-circle' ? 'true' : 'false' })),
+      badges: ['Backup', 'DR', 'Migration', 'Proposed'],
+      progress: [['loader-circle', 'Hashing source', 34, 'var(--run)'], ['circle-check', 'Seal version · done', 100, 'var(--ok)'], ['circle-x', 'Snapshot · failed', 12, 'var(--err)']].map(([i, phase, p, c]) => ({ i, phase, pct: `${p} %`, w: `${p}%`, c, spin: i === 'loader-circle' ? 'true' : 'false' })),
+      stepper: ['Platform', 'Connection', 'Verify', 'Name and review'].map((label, i) => ({ label, bar: i <= 1 ? 'var(--acc)' : 'var(--ln)', fg: i === 1 ? 'var(--tx)' : i < 1 ? 'var(--tx-2)' : 'var(--tx-3)', bd: i <= 1 ? 'var(--acc)' : 'var(--ln-2)', bg: i < 1 ? 'var(--acc)' : 'transparent', nfg: i < 1 ? 'var(--acc-ink)' : i === 1 ? 'var(--acc-tx)' : 'var(--tx-3)', mark: i < 1 ? '✓' : String(i + 1) })),
+      timeline: ['First pass', 'Sync passes', 'Test boot', 'Cutover', 'Commit or roll back'].map((label, i) => ({ label, bd: i <= 2 ? 'var(--acc)' : 'var(--ln-2)', bg: i < 2 ? 'var(--acc)' : 'transparent', fg: i < 2 ? 'var(--acc-ink)' : 'var(--acc-tx)', i: i < 2 ? 'check' : i === 2 ? 'loader-circle' : '', spin: i === 2 ? 'true' : 'false', line: i < 4 ? (i < 1 ? 'var(--acc)' : 'var(--ln)') : 'transparent', tc: i <= 2 ? 'var(--tx)' : 'var(--tx-3)' })),
+      kpis: [['monitor', 'Guests protected', '172', 'of 180', '8 guests have no policy', 'normal', 'var(--tx)'], ['layers', 'Data protected', '1187.84', 'GB', 'Stored in 272.33 GB · 4.4×', 'normal', 'var(--tx)'], ['gauge', 'Within recovery target', '6', 'of 10', '1 behind · 1 failed', 'normal', 'var(--tx)'], ['database', 'Unreachable value', 'Not read', '', 'Could not be read', 'italic', 'var(--tx-3)']].map(([i, label, v, u, sub, fs, vc], n) => ({ i, label, v, u, sub, fs, vc, bl: n ? 'var(--ln)' : 'transparent' })),
+      dialogs: [['Small · 440 px', 'Assign policy', 'For 3 guests. The new schedule starts with the next run.', 'Assign policy', 'var(--acc)'], ['Medium · 600 px', 'Bring server online', 'This starts a copy of your server at the recovery site. Your primary server is not affected.', 'Bring online', 'var(--acc)'], ['Large · 720 px', 'Destroy resources', 'Choose exactly what to remove. Anything left unticked is kept.', 'Destroy selected', 'var(--err)']].map(([size, title, desc, btn, bg]) => ({ size, title, desc, btn, bg })),
+      toasts: [['circle-check', 'var(--ok)', 'Project Base-Project updated', ''], ['info', 'var(--tx-2)', 'Backup of web-frontend-01 started', 'Open Jobs'], ['triangle-alert', 'var(--warn)', 'Cutover of print-srv-02 started. The source is powering off.', '']].map(([i, c, text, action]) => ({ i, c, text, action })),
+      log: [['16:05:02', 'Bring online started: sql-prod-02-dr at production-openstack', 'info'], ['16:05:04', 'Creating 3 volumes from the recovery point on ceph-ssd…', 'info'], ['16:05:09', 'Attaching prod-net…', 'info'], ['16:05:12', 'Firewall policy: Same as primary', 'warn'], ['16:05:20', 'sql-prod-02-dr is online at production-openstack', 'ok']].map(([t, text, lv]) => ({ t, text, i: { info: 'circle-dot', ok: 'circle-check', warn: 'triangle-alert' }[lv], c: { info: 'var(--tx-3)', ok: 'var(--ok)', warn: 'var(--warn)' }[lv] })),
+      menu: [['Base-Project', 'Owner', true], ['Tenant-Kaveri', 'Owner', false], ['All projects', 'System owner', false]].map(([label, meta, on]) => ({ label, meta, check: on ? 'check' : '', bg: on ? 'var(--hover)' : 'transparent' }))
+    };
+  }
+}
+
+</script>
+</body>
+</html>

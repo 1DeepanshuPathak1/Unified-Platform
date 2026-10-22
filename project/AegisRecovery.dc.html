@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="aegis-tokens.css">
+<script src="aegis-icons.js"></script>
+<script src="aegis-ui.js"></script>
+<script src="aegis-data.js"></script>
+</helmet>
+<div style="height:100%;min-height:0;display:flex;flex-direction:column;animation:ae-page 150ms var(--ease)">
+<div style="flex:none;padding:20px 24px 16px;display:flex;align-items:flex-end;gap:16px">
+<div style="flex:1;min-width:0">
+<div style="font:12px/16px var(--f-ui);color:var(--tx-3);margin-bottom:4px">Disaster Recovery</div>
+<h1 style="font:500 24px/32px var(--f-head)">Recovery plans</h1>
+<p style="margin-top:2px;color:var(--tx-2)">Ordered, testable runbooks that bring services online at the recovery site.</p>
+</div>
+<button onClick="{{ createPlan }}" aria-disabled="{{ cfgDis }}" data-tip="{{ cfgWhy }}" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);font-weight:600;white-space:nowrap;opacity:{{ cfgOp }};transition:background-color 100ms" style-hover="background:var(--acc-h)"><ae-icon name="plus"></ae-icon>Create a recovery plan</button>
+</div>
+<div style="flex:1;min-height:0;padding:0 24px 24px;display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px">
+<nav aria-label="Recovery plans" style="min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--ln)">
+<ae-ind mode="rail" style="display:flex;flex-direction:column">
+<sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+<button aria-current="{{ p.current }}" onClick="{{ p.onClick }}" style="display:flex;flex-direction:column;gap:4px;padding:12px 16px;border-bottom:1px solid var(--ln);background:{{ p.bg }};text-align:left;transition:background-color 100ms" style-hover="background:var(--hover)">
+<span style="font-weight:600">{{ p.name }}</span>
+<span style="display:flex;align-items:center;gap:6px;font:12px/16px var(--f-ui);color:var(--tx-2)"><ae-icon name="{{ p.ri }}" spin="{{ p.spin }}" style="color:{{ p.rc }}"></ae-icon>{{ p.ready }}</span>
+<span style="font:12px/16px var(--f-ui);color:var(--tx-3)">{{ p.meta }}</span>
+</button>
+</sc-for>
+</ae-ind>
+</nav>
+<section style="min-height:0;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--ln)">
+<div style="flex:none;padding:16px 16px 0 20px;display:flex;align-items:flex-start;gap:12px">
+<div style="flex:1;min-width:0"><h2 style="font:500 20px/28px var(--f-head)">{{ plan.name }}</h2><p style="margin-top:2px;font:13px/18px var(--f-ui);color:var(--tx-2)">{{ plan.route }}</p></div>
+<div style="display:flex;gap:8px">
+<button onClick="{{ testPlan }}" aria-disabled="{{ testB.dis }}" data-tip="{{ testB.why }}" style="height:32px;padding:0 12px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ln-2);font-weight:600;white-space:nowrap;opacity:{{ testB.op }};transition:background-color 100ms" style-hover="background:var(--hover)"><ae-icon name="flask-conical"></ae-icon>Test on isolated network</button>
+<button onClick="{{ runPlan }}" aria-disabled="{{ runB.dis }}" data-tip="{{ runB.why }}" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);font-weight:600;white-space:nowrap;opacity:{{ runB.op }};transition:background-color 100ms" style-hover="background:var(--acc-h)"><ae-icon name="play"></ae-icon>{{ runB.label }}</button>
+</div>
+</div>
+<ae-ind mode="underline" role="tablist" style="flex:none;display:flex;padding:12px 12px 0;border-bottom:1px solid var(--ln)">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3"><button role="tab" aria-selected="{{ t.on }}" onClick="{{ t.onClick }}" style="height:40px;padding:0 10px;display:flex;align-items:center;gap:6px;font-weight:600;color:{{ t.fg }};transition:color 100ms" style-hover="color:var(--tx)">{{ t.label }}<span style="font:11px var(--f-ui);color:var(--tx-3)">{{ t.n }}</span></button></sc-for>
+</ae-ind>
+<div style="flex:1;min-height:0;overflow:auto;padding:20px">
+<sc-if value="{{ run.on }}" hint-placeholder-val="{{ false }}">
+<div style="margin-bottom:20px;border:1px solid var(--ln-2);background:var(--panel-2);animation:ae-fade 150ms var(--ease)">
+<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--ln)"><ae-icon name="{{ run.i }}" spin="{{ run.spin }}" style="color:{{ run.c }}"></ae-icon><span style="flex:1;min-width:0"><span style="display:block;font-weight:600">{{ run.title }}</span><span style="display:block;font:12px/16px var(--f-ui);color:var(--tx-2)">{{ run.sub }}</span></span><sc-if value="{{ run.waiting }}" hint-placeholder-val="{{ false }}"><button onClick="{{ markDone }}" style="height:30px;padding:0 12px;background:var(--acc);color:var(--acc-ink);font-weight:600" style-hover="background:var(--acc-h)">Mark manual step done</button></sc-if><button onClick="{{ stopRun }}" style="height:30px;padding:0 12px;border:1px solid var(--ln-2);font-weight:600" style-hover="background:var(--hover)">{{ run.stopLabel }}</button></div>
+<div style="height:3px;background:var(--ln)"><div style="height:3px;width:{{ run.pctW }};background:{{ run.c }};transition:width 600ms linear"></div></div>
+<div ref="{{ logRef }}" role="log" aria-label="Test log" style="max-height:140px;overflow:auto;padding:8px 14px;font:12px/20px var(--f-ui);font-variant-numeric:tabular-nums">
+<sc-for list="{{ run.log }}" as="l" hint-placeholder-count="3"><div style="display:grid;grid-template-columns:64px 16px minmax(0,1fr);gap:8px;align-items:center;animation:ae-line 150ms var(--ease)"><span style="color:var(--tx-3)">{{ l.t }}</span><ae-icon name="{{ l.i }}" style="color:{{ l.c }}"></ae-icon><span>{{ l.text }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ tab.steps }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start;animation:ae-fade 150ms var(--ease)">
+<ol style="list-style:none;padding:0;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ steps }}" as="st" hint-placeholder-count="3">
+<li style="border:1px solid {{ st.bd }};background:var(--panel);transition:border-color 150ms">
+<div style="display:flex;align-items:center;gap:10px;height:44px;padding:0 8px 0 10px;border-bottom:1px solid var(--ln);background:var(--panel-2)">
+<ae-icon name="grip-vertical" style="color:var(--tx-3);cursor:grab"></ae-icon>
+<span style="font:700 12px var(--f-ui);color:var(--tx-2);white-space:nowrap">Step {{ st.n }}</span>
+<input value="{{ st.name }}" onInput="{{ st.onName }}" aria-label="Step name" style="flex:1;min-width:0;height:30px;padding:0 8px;background:transparent;border:1px solid transparent;font:600 14px var(--f-body)" style-hover="border-color:var(--ln)" style-focus="border-color:var(--acc);background:var(--panel)">
+<span style="font:12px var(--f-ui);color:var(--tx-3);white-space:nowrap">Actions start together</span>
+<button onClick="{{ st.up }}" aria-label="Move step up" aria-disabled="{{ st.upDis }}" style="width:28px;height:28px;display:grid;place-items:center;color:var(--tx-2);opacity:{{ st.upOp }}" style-hover="background:var(--hover)"><ae-icon name="chevron-up"></ae-icon></button>
+<button onClick="{{ st.down }}" aria-label="Move step down" aria-disabled="{{ st.downDis }}" style="width:28px;height:28px;display:grid;place-items:center;color:var(--tx-2);opacity:{{ st.downOp }}" style-hover="background:var(--hover)"><ae-icon name="chevron-down"></ae-icon></button>
+<button onClick="{{ st.remove }}" aria-label="Remove step" style="width:28px;height:28px;display:grid;place-items:center;color:var(--tx-3)" style-hover="background:var(--err-s);color:var(--err)"><ae-icon name="trash-2"></ae-icon></button>
+</div>
+<ul style="list-style:none;padding:4px 0">
+<sc-for list="{{ st.actions }}" as="ac" hint-placeholder-count="2">
+<li style="display:grid;grid-template-columns:20px minmax(0,1fr) auto 28px;gap:10px;align-items:center;min-height:40px;padding:6px 8px 6px 12px;background:{{ ac.bg }};transition:background-color 150ms">
+<ae-icon name="{{ ac.icon }}" spin="{{ ac.spin }}" style="color:{{ ac.ic }}"></ae-icon>
+<span style="min-width:0"><span style="display:block;font-weight:600">{{ ac.title }}</span><span style="display:block;font-size:13px;line-height:18px;color:var(--tx-2);text-wrap:pretty">{{ ac.detail }}</span></span>
+<span style="font:12px var(--f-ui);color:{{ ac.sc }};white-space:nowrap">{{ ac.state }}</span>
+<button onClick="{{ ac.remove }}" aria-label="Remove action" style="width:28px;height:28px;display:grid;place-items:center;color:var(--tx-3)" style-hover="background:var(--hover);color:var(--tx)"><ae-icon name="x"></ae-icon></button>
+</li>
+</sc-for>
+</ul>
+<div style="position:relative;padding:4px 8px 8px">
+<button onClick="{{ st.openAdd }}" aria-expanded="{{ st.addOpen }}" style="height:30px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;font:600 13px var(--f-body);color:var(--acc-tx)" style-hover="background:var(--hover)"><ae-icon name="plus"></ae-icon>Add action</button>
+<sc-if value="{{ st.addOpen }}" hint-placeholder-val="{{ false }}">
+<div role="menu" style="position:absolute;left:8px;top:38px;z-index:5;width:300px;padding:4px 0;background:var(--overlay);border:1px solid var(--ln-2);box-shadow:var(--sh-menu);animation:ae-pop 140ms var(--ease)">
+<sc-for list="{{ st.kinds }}" as="kd" hint-placeholder-count="6"><button role="menuitem" onClick="{{ kd.onClick }}" style="display:flex;align-items:center;gap:10px;width:100%;height:36px;padding:0 12px" style-hover="background:var(--hover)"><ae-icon name="{{ kd.icon }}" style="color:var(--tx-2)"></ae-icon>{{ kd.label }}</button></sc-for>
+</div>
+</sc-if>
+</div>
+</li>
+</sc-for>
+<li><button onClick="{{ addStep }}" style="width:100%;height:44px;display:flex;align-items:center;justify-content:center;gap:8px;border:1px dashed var(--ln-2);color:var(--tx-2);font-weight:600;transition:border-color 100ms,color 100ms" style-hover="border-color:var(--acc);color:var(--tx)"><ae-icon name="plus"></ae-icon>Add step</button></li>
+</ol>
+<aside style="display:flex;flex-direction:column;gap:16px">
+<section><h3 style="font:600 14px/20px var(--f-body);margin-bottom:6px">Boot order</h3><ol style="list-style:none;padding:0;border:1px solid var(--ln)"><sc-for list="{{ boot }}" as="b" hint-placeholder-count="4"><li style="display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-bottom:1px solid var(--ln);font:13px var(--f-ui)"><span style="width:18px;color:var(--tx-3);font-variant-numeric:tabular-nums">{{ b.n }}</span><span style="flex:1">{{ b.name }}</span><span style="color:var(--tx-3)">Step {{ b.step }}</span></li></sc-for></ol></section>
+<section><h3 style="font:600 14px/20px var(--f-body);margin-bottom:6px">Mapping used</h3><a href="#/dr/mappings" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--ln);font:13px var(--f-ui);transition:border-color 100ms" style-hover="border-color:var(--acc)"><ae-icon name="arrow-left-right" style="color:var(--tx-3)"></ae-icon>{{ plan.route }}</a></section>
+<section style="display:flex;flex-direction:column;gap:8px"><h3 style="font:600 14px/20px var(--f-body)">Approval before it runs</h3>
+<button role="switch" aria-checked="{{ appr.on }}" onClick="{{ toggleAppr }}" style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:18px;padding:2px;display:flex;background:{{ appr.tbg }};border:1px solid {{ appr.tbd }};transition:background-color 120ms"><span style="width:12px;height:12px;background:{{ appr.knob }};transform:{{ appr.tx }};transition:transform 120ms var(--ease)"></span></span>{{ appr.label }}</button>
+<span style="font-size:13px;line-height:18px;color:var(--tx-2)">{{ appr.hint }}</span></section>
+<section style="display:flex;flex-direction:column;gap:6px"><h3 style="font:600 14px/20px var(--f-body)">Test mode</h3><span style="display:flex;align-items:center;gap:8px;font:13px var(--f-ui)"><ae-icon name="circle-check" style="color:var(--ok)"></ae-icon>{{ plan.testNet }}</span><span style="font-size:13px;line-height:18px;color:var(--tx-2)">Tests start the servers on this network with no route to production. Primary servers keep running.</span></section>
+<button onClick="{{ savePlan }}" aria-disabled="{{ cfgDis }}" data-tip="{{ cfgWhy }}" style="height:32px;padding:0 14px;background:var(--acc);color:var(--acc-ink);font-weight:600;opacity:{{ cfgOp }}" style-hover="background:var(--acc-h)">Save plan</button>
+</aside>
+</div>
+</sc-if>
+
+<sc-if value="{{ tab.ready }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px;animation:ae-fade 150ms var(--ease)">
+<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--ln);background:var(--panel-2)"><ae-icon name="{{ rep.i }}" size="20" style="color:{{ rep.c }}"></ae-icon><span style="flex:1"><span style="display:block;font-weight:600">{{ rep.title }}</span><span style="display:block;font:12px/16px var(--f-ui);color:var(--tx-2)">{{ rep.sub }}</span></span>
+<button onClick="{{ checkNow }}" style="height:30px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln-2);font-weight:600" style-hover="background:var(--hover)"><ae-icon name="{{ rep.ci }}" spin="{{ rep.cspin }}"></ae-icon>Run check now</button>
+<button onClick="{{ downloadReport }}" style="height:30px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--ln-2);font-weight:600" style-hover="background:var(--hover)"><ae-icon name="download"></ae-icon>Report (PDF)</button></div>
+<div role="table" aria-label="Readiness checks" style="font:13px/18px var(--f-ui)">
+<div role="row" style="display:grid;grid-template-columns:20px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.6fr);gap:12px;align-items:center;height:36px;border-bottom:1px solid var(--ln);font-size:12px;color:var(--tx-2)"><span></span><span>Check</span><span>Object</span><span>Result</span></div>
+<sc-for list="{{ rep.rows }}" as="r" hint-placeholder-count="8"><div role="row" style="display:grid;grid-template-columns:20px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.6fr);gap:12px;align-items:center;min-height:40px;padding:6px 0;border-bottom:1px solid var(--ln)"><ae-icon name="{{ r.i }}" style="color:{{ r.c }}"></ae-icon><span>{{ r.check }}</span><span style="color:var(--tx-2)">{{ r.obj }}</span><span style="color:{{ r.tc }}">{{ r.result }}</span></div></sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ tab.runs }}" hint-placeholder-val="{{ false }}">
+<div role="table" aria-label="Runs" style="font:13px/18px var(--f-ui);animation:ae-fade 150ms var(--ease)">
+<div role="row" style="display:grid;grid-template-columns:minmax(0,1.2fr) 100px 140px 120px minmax(0,1fr);gap:12px;align-items:center;height:36px;border-bottom:1px solid var(--ln);font-size:12px;color:var(--tx-2)"><span>Started (IST)</span><span>Kind</span><span>Result</span><span style="text-align:right">Duration</span><span>By</span></div>
+<sc-for list="{{ runs }}" as="r" hint-placeholder-count="3"><div role="row" style="display:grid;grid-template-columns:minmax(0,1.2fr) 100px 140px 120px minmax(0,1fr);gap:12px;align-items:center;height:36px;border-bottom:1px solid var(--ln)"><span>{{ r.t }}</span><span style="color:var(--tx-2)">{{ r.kind }}</span><span style="display:flex;align-items:center;gap:6px"><ae-icon name="{{ r.i }}" style="color:{{ r.c }}"></ae-icon>{{ r.l }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ r.dur }}</span><span style="color:var(--tx-2)">{{ r.by }}</span></div></sc-for>
+<sc-if value="{{ noRuns }}" hint-placeholder-val="{{ false }}"><p style="padding:16px 0;color:var(--tx-2);font-family:var(--f-body)">This plan has never run. Test it on the isolated network first.</p></sc-if>
+</div>
+</sc-if>
+</div>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const KINDS = { failover: ['zap', 'Fail over a server'], start: ['power', 'Start a server'], ping: ['wifi', 'Check: ping an address'], port: ['plug', 'Check: connect to a port'], manual: ['hand', 'Manual step'], wait: ['timer', 'Wait'] };
+const LI = { info: ['circle-dot', 'var(--tx-3)'], ok: ['circle-check', 'var(--ok)'], warn: ['triangle-alert', 'var(--warn)'], err: ['circle-x', 'var(--err)'] };
+const desc = (a, testNet) => ({
+  failover: [`Fail over ${a.target}`, `Starts ${a.target} at the recovery site from its newest point${testNet ? `, on ${testNet} when testing` : ''}.`],
+  start: [`Start ${a.target}`, 'Powers on a server that already runs at the recovery site.'],
+  ping: [`Ping ${a.target}`, 'Waits up to 120 s for an answer.'],
+  port: [`Connect to ${a.target} on port ${a.port}`, 'Waits up to 120 s for the port to accept a connection.'],
+  manual: ['Manual step', a.text],
+  wait: [`Wait ${a.secs} s`, 'Gives services time to settle before the next step.']
+}[a.k]);
+
+class Component extends DCLogic {
+  state = { sel: 'core', tab: 'Steps', edits: {}, add: null, appr: {}, run: null, checking: false, checked: {} };
+  logRef = React.createRef();
+  componentDidMount() { const c = this.props.ctx; if (c && c.openId) this.setState({ sel: c.openId }); }
+  componentDidUpdate() { const el = this.logRef.current; if (el) el.scrollTop = el.scrollHeight; }
+  componentWillUnmount() { clearInterval(this.ti); }
+  steps(id) { const A = window.AEGIS; return this.state.edits[id] || JSON.parse(JSON.stringify(A.recPlans.find(p => p.id === id).steps)); }
+  setSteps(id, fn) { this.setState(s => ({ edits: { ...s.edits, [id]: fn(this.steps(id)) } })); }
+
+  startRun(test) {
+    const ctx = this.props.ctx; const A = window.AEGIS;
+    const plan = A.recPlans.find(p => p.id === this.state.sel);
+    const steps = this.steps(plan.id);
+    const flat = []; steps.forEach((st, si) => st.actions.forEach((a, ai) => flat.push({ si, ai, a, st })));
+    const net = plan.to === 'production-openstack' ? 'dr-test-isolated' : 'vmbr99';
+    this.setState({ run: { plan: plan.id, test, i: 0, flat: flat.length, done: false, waiting: false, failed: false, started: ctx.hms(), log: [{ t: ctx.hms(), text: `${test ? 'Test' : 'Run'} of ${plan.name} started${test ? ` on ${net}` : ''}`, lv: 'info' }] } });
+    clearInterval(this.ti);
+    this.ti = setInterval(() => {
+      const r = this.state.run; if (!r || r.done || r.waiting) return;
+      const it = flat[r.i];
+      if (!it) { clearInterval(this.ti); this.setState(s => ({ run: { ...s.run, done: true, log: s.run.log.concat([{ t: ctx.hms(), text: `${test ? 'Test' : 'Run'} passed: every step finished`, lv: 'ok' }]) } })); ctx.toast(`${test ? 'Test' : 'Run'} of ${plan.name} passed`, 'ok'); return; }
+      const [title] = desc(it.a, test ? net : '');
+      if (it.a.k === 'manual') { this.setState(s => ({ run: { ...s.run, waiting: true, log: s.run.log.concat([{ t: ctx.hms(), text: `Step ${it.si + 1} waits for a person: ${it.a.text}`, lv: 'warn' }]) } })); return; }
+      this.setState(s => ({ run: { ...s.run, i: s.run.i + 1, log: s.run.log.concat([{ t: ctx.hms(), text: `Step ${it.si + 1} · ${title}: done`, lv: 'ok' }]) } }));
+    }, 1100);
+  }
+
+  renderVals() {
+    const A = window.AEGIS; const ctx = this.props.ctx;
+    const E = { plans: [], tabs: [], steps: [], boot: [], plan: {}, run: { log: [] }, rep: { rows: [] }, runs: [], appr: {}, testB: {}, runB: {}, tab: {} };
+    if (!A || !ctx) return E;
+    const s = this.state;
+    const cfg = ctx.can('configure', 'Editing a recovery plan');
+    const op = ctx.can('operate', 'Running a recovery plan');
+    const plan = A.recPlans.find(p => p.id === s.sel) || A.recPlans[0];
+    const steps = this.steps(plan.id);
+    const testNet = plan.to === 'production-openstack' ? 'dr-test-isolated' : (plan.to === 'region-2-os' ? 'test-isolated (region-2-os)' : 'vmbr99');
+    const run = s.run && s.run.plan === plan.id ? s.run : null;
+    const flat = []; steps.forEach((st, si) => st.actions.forEach((a, ai) => flat.push(`${si}.${ai}`)));
+    const apprOn = s.appr[plan.id] != null ? s.appr[plan.id] : !!plan.approval;
+    const plans = A.recPlans.map(p => { const on = p.id === plan.id; const running = s.run && s.run.plan === p.id && !s.run.done; return { name: p.name, current: on ? 'page' : undefined, bg: on ? 'var(--acc-soft)' : 'transparent', onClick: () => this.setState({ sel: p.id, add: null }),
+      ri: running ? 'loader-circle' : p.ready === 'ready' ? 'circle-check' : p.ready === 'issues' ? 'triangle-alert' : 'circle-minus', spin: running ? 'true' : 'false', rc: running ? 'var(--run)' : p.ready === 'ready' ? 'var(--ok)' : p.ready === 'issues' ? 'var(--warn)' : 'var(--tx-3)',
+      ready: running ? 'Test running' : p.ready === 'ready' ? 'Ready' : p.ready === 'issues' ? `${p.issues} readiness issues` : 'Not checked: recovery site not read', meta: `${p.servers.length} servers · ${p.lastTest ? 'tested ' + p.lastTest.t.replace(' 2026', '').replace(' IST', '') : 'never tested'}` }; });
+    const stepsV = steps.map((st, si) => ({
+      n: String(si + 1), name: st.name, bd: run && !run.done && flat[run.i] && flat[run.i].startsWith(si + '.') ? 'var(--acc)' : 'var(--ln)',
+      onName: e => { const v = e.target.value; this.setSteps(plan.id, ss => { ss[si].name = v; return ss; }); },
+      up: () => si > 0 && this.setSteps(plan.id, ss => { [ss[si - 1], ss[si]] = [ss[si], ss[si - 1]]; return ss; }), down: () => si < steps.length - 1 && this.setSteps(plan.id, ss => { [ss[si + 1], ss[si]] = [ss[si], ss[si + 1]]; return ss; }),
+      upDis: si === 0 ? 'true' : undefined, upOp: si === 0 ? 0.35 : 1, downDis: si === steps.length - 1 ? 'true' : undefined, downOp: si === steps.length - 1 ? 0.35 : 1,
+      remove: () => this.setSteps(plan.id, ss => ss.filter((_, i) => i !== si)),
+      actions: st.actions.map((a, ai) => {
+        const key = `${si}.${ai}`; const idx = flat.indexOf(key);
+        const done = run && idx < run.i; const cur = run && !run.done && idx === run.i;
+        const [title, detail] = desc(a, testNet);
+        return { title, detail, icon: done ? 'circle-check' : cur ? (run.waiting ? 'hand' : 'loader-circle') : KINDS[a.k][0], spin: cur && !run.waiting ? 'true' : 'false', ic: done ? 'var(--ok)' : cur ? (run.waiting ? 'var(--warn)' : 'var(--run)') : 'var(--tx-2)', bg: cur ? 'var(--acc-soft)' : 'transparent',
+          state: done ? 'Done' : cur ? (run.waiting ? 'Waiting for a person' : 'Running') : (run && !run.done ? 'Queued' : ''), sc: done ? 'var(--ok)' : 'var(--tx-3)',
+          remove: () => this.setSteps(plan.id, ss => { ss[si].actions = ss[si].actions.filter((_, i) => i !== ai); return ss; }) };
+      }),
+      addOpen: s.add === si, openAdd: () => this.setState(st2 => ({ add: st2.add === si ? null : si })),
+      kinds: Object.entries(KINDS).map(([k, [icon, label]]) => ({ icon, label, onClick: () => { const def = { failover: { k, target: plan.servers[0] }, start: { k, target: plan.servers[0] }, ping: { k, target: '10.50.0.31' }, port: { k, target: plan.servers[0], port: 443 }, manual: { k, text: 'Confirm with the service owner before continuing.' }, wait: { k, secs: 60 } }[k]; this.setSteps(plan.id, ss => { ss[si].actions.push(def); return ss; }); this.setState({ add: null }); } }))
+    }));
+    const boot = []; steps.forEach((st, si) => st.actions.forEach(a => { if (a.k === 'failover' || a.k === 'start') boot.push({ n: String(boot.length + 1), name: a.target, step: String(si + 1) }); }));
+    const reportRows = plan.ready === 'unknown' ? [{ i: 'triangle-alert', c: 'var(--warn)', check: 'Recovery site', obj: plan.to, result: 'Could not be read: region-2-os did not answer within 30 s. Nothing else was checked.', tc: 'var(--tx)' }] : [].concat(
+      plan.servers.map(n => { const x = A.drServers.find(d => d.name === n); const ok = x && x.ageMin != null && x.ageMin <= (x.target === '15 min' ? 15 : 1440) && x.state !== 'failed'; return { i: ok ? 'circle-check' : (x && x.state === 'failed' ? 'circle-x' : 'triangle-alert'), c: ok ? 'var(--ok)' : (x && x.state === 'failed' ? 'var(--err)' : 'var(--warn)'), check: 'Newest point within target', obj: n, result: x ? (ok ? `${x.age} old, target ${x.target}` : x.state === 'failed' ? `Last sync failed ${x.age} ago` : `${x.age} old, target ${x.target}`) : '—', tc: ok ? 'var(--tx-2)' : 'var(--tx)' }; }),
+      [{ i: 'circle-check', c: 'var(--ok)', check: 'Mapping complete', obj: `${plan.from} → ${plan.to}`, result: 'Networks, storage and sizes are mapped for every server', tc: 'var(--tx-2)' },
+        { i: 'circle-check', c: 'var(--ok)', check: 'Test network isolated', obj: testNet, result: 'No router and no route to production', tc: 'var(--tx-2)' },
+        { i: 'circle-check', c: 'var(--ok)', check: 'Quota at recovery site', obj: plan.to, result: `Needs ${plan.servers.length * 8} vCPU and ${plan.servers.length * 24} GB; ${96} vCPU and 512 GB free`, tc: 'var(--tx-2)' },
+        { i: 'circle-check', c: 'var(--ok)', check: 'Credentials valid', obj: plan.to, result: 'Signed in at 06:00 IST', tc: 'var(--tx-2)' },
+        { i: apprOn ? 'circle-check' : 'circle-minus', c: apprOn ? 'var(--ok)' : 'var(--tx-3)', check: 'Approvers available', obj: 'Base-Project', result: apprOn ? '2 people can approve: Priya Raman, Arun Kumar' : 'No approval required', tc: 'var(--tx-2)' }]);
+    const issues = reportRows.filter(r => r.c === 'var(--warn)' || r.c === 'var(--err)').length;
+    const checked = s.checked[plan.id];
+    const runs = plan.lastTest ? [{ t: plan.lastTest.t.replace(' IST', ''), kind: 'Test', i: 'circle-check', c: 'var(--ok)', l: 'Passed', dur: plan.lastTest.dur, by: 'priya.raman' }, { t: '04 Oct 2026, 21:00', kind: 'Test', i: 'triangle-alert', c: 'var(--warn)', l: 'Passed with warnings', dur: '24 min 02 s', by: 'arun.kumar' }] : [];
+    const total = flat.length;
+    const busy = !!(run && !run.done);
+    const g = (ok, why, label) => ({ dis: ok ? undefined : 'true', why: ok ? undefined : why, op: ok ? 1 : 0.45, label });
+    return {
+      cfgDis: cfg.dis, cfgWhy: cfg.why, cfgOp: cfg.op,
+      createPlan: () => { if (cfg.ok) ctx.toast('Recovery plan Untitled plan created. Add its first step.', 'ok'); },
+      plans, plan: { name: plan.name, route: `${plan.from} → ${plan.to} · ${plan.servers.length} servers`, testNet },
+      testB: g(op.ok && !busy && plan.ready !== 'unknown', !op.ok ? op.why : busy ? 'A run is in progress.' : `${plan.to} could not be read.`),
+      runB: g(op.ok && !busy && plan.ready !== 'unknown', !op.ok ? op.why : busy ? 'A run is in progress.' : `${plan.to} could not be read.`, apprOn ? 'Request approval to run' : 'Run plan'),
+      testPlan: () => { if (op.ok && !busy && plan.ready !== 'unknown') { this.setState({ tab: 'Steps' }); this.startRun(true); } },
+      runPlan: () => { if (!(op.ok && !busy && plan.ready !== 'unknown')) return; if (apprOn) ctx.toast(`Approval requested for ${plan.name}. Priya Raman and Arun Kumar were notified.`, 'info'); else { this.setState({ tab: 'Steps' }); this.startRun(false); } },
+      tabs: [['Steps', String(steps.length)], ['Readiness', plan.ready === 'unknown' ? '' : String(issues)], ['Runs', String(runs.length)]].map(([t, n]) => ({ label: t === 'Readiness' ? 'Readiness report' : t, n, on: s.tab === t, fg: s.tab === t ? 'var(--tx)' : 'var(--tx-2)', onClick: () => this.setState({ tab: t }) })),
+      tab: { steps: s.tab === 'Steps', ready: s.tab === 'Readiness', runs: s.tab === 'Runs' },
+      steps: stepsV, boot, addStep: () => this.setSteps(plan.id, ss => ss.concat([{ name: 'New step', actions: [] }])),
+      appr: { on: apprOn, label: apprOn ? 'An Owner or Admin approves each run' : 'Runs without approval', hint: apprOn ? 'The person who requests a run cannot approve it. Tests on the isolated network never need approval.' : 'Anyone with the Operator role can run this plan.', tbg: apprOn ? 'var(--acc)' : 'transparent', tbd: apprOn ? 'var(--acc)' : 'var(--ln-2)', knob: apprOn ? 'var(--acc-ink)' : 'var(--tx-3)', tx: apprOn ? 'translateX(14px)' : 'none' },
+      toggleAppr: () => { if (cfg.ok) this.setState(st => ({ appr: { ...st.appr, [plan.id]: !apprOn } })); },
+      savePlan: () => { if (cfg.ok) ctx.toast(`Recovery plan ${plan.name} saved`, 'ok'); },
+      run: run ? { on: true, title: run.done ? `${run.test ? 'Test' : 'Run'} passed` : run.waiting ? 'Waiting for a manual step' : `${run.test ? 'Test' : 'Run'} in progress · action ${Math.min(run.i + 1, total)} of ${total}`, sub: `${run.test ? `On ${testNet}. Primary servers keep running.` : 'At the recovery site.'} Started ${run.started} IST`,
+        i: run.done ? 'circle-check' : run.waiting ? 'hand' : 'loader-circle', spin: run.done || run.waiting ? 'false' : 'true', c: run.done ? 'var(--ok)' : run.waiting ? 'var(--warn)' : 'var(--run)', waiting: run.waiting, pctW: `${Math.round(run.i / Math.max(1, total) * 100)}%`, stopLabel: run.done ? (run.test ? 'Clean up test servers' : 'Close') : 'Stop',
+        log: run.log.map(l => ({ ...l, i: LI[l.lv][0], c: LI[l.lv][1] })) } : { on: false, log: [] },
+      markDone: () => this.setState(st => ({ run: { ...st.run, waiting: false, i: st.run.i + 1, log: st.run.log.concat([{ t: ctx.hms(), text: 'Manual step marked done by priya.raman', lv: 'ok' }]) } })),
+      stopRun: () => { clearInterval(this.ti); const r = s.run; if (r && r.done && r.test) ctx.toast(`Test servers of ${plan.name} removed from ${testNet}`, 'ok'); else if (r && !r.done) ctx.toast(`${r.test ? 'Test' : 'Run'} of ${plan.name} stopped`, 'warn'); this.setState({ run: null }); },
+      logRef: this.logRef,
+      rep: { i: plan.ready === 'unknown' ? 'triangle-alert' : issues ? 'triangle-alert' : 'circle-check', c: plan.ready === 'unknown' || issues ? 'var(--warn)' : 'var(--ok)', title: plan.ready === 'unknown' ? 'Readiness could not be checked' : issues ? `Not ready: ${issues} ${issues === 1 ? 'issue' : 'issues'}` : 'Ready', sub: `Daily check ${checked ? 'run now at ' + checked : 'at 21 Oct 2026, 06:00 IST'} · runs every day at 06:00 IST`, rows: reportRows, ci: s.checking ? 'loader-circle' : 'refresh-cw', cspin: s.checking ? 'true' : 'false' },
+      checkNow: () => { this.setState({ checking: true }); setTimeout(() => { this.setState(st => ({ checking: false, checked: { ...st.checked, [plan.id]: ctx.now() } })); ctx.toast(`Readiness check of ${plan.name} finished`, 'ok'); }, 1400); },
+      downloadReport: () => ctx.toast(`Readiness report for ${plan.name} downloaded`, 'ok'),
+      runs, noRuns: !runs.length
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="aegis-tokens.css">
+<script src="aegis-icons.js"></script>
+<script src="aegis-ui.js"></script>
+<script src="aegis-data.js"></script>
+</helmet>
+<div style="height:100%;min-height:0;display:flex;flex-direction:column;position:relative;animation:ae-page 150ms var(--ease)">
+<div style="flex:none;padding:20px 24px 0;display:flex;align-items:flex-end;gap:16px">
+<div style="flex:1;min-width:0">
+<div style="font:12px/16px var(--f-ui);color:var(--tx-3);margin-bottom:4px">Administration</div>
+<h1 style="font:500 24px/32px var(--f-head)">Access</h1>
+<p style="margin-top:2px;color:var(--tx-2)">People, projects and one-time restore exceptions.</p>
+</div>
+<button onClick="{{ primary.onClick }}" aria-disabled="{{ primary.dis }}" data-tip="{{ primary.why }}" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);font-weight:600;white-space:nowrap;opacity:{{ primary.op }};transition:background-color 100ms" style-hover="background:var(--acc-h)"><ae-icon name="plus"></ae-icon>{{ primary.label }}</button>
+</div>
+<ae-ind mode="underline" role="tablist" style="flex:none;display:flex;margin:12px 24px 16px;border-bottom:1px solid var(--ln)">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3"><button role="tab" aria-selected="{{ t.on }}" onClick="{{ t.onClick }}" style="height:40px;padding:0 12px;display:flex;align-items:center;gap:6px;font-weight:600;color:{{ t.fg }};transition:color 100ms" style-hover="color:var(--tx)">{{ t.label }}<span style="font:11px var(--f-ui);color:var(--tx-3)">{{ t.n }}</span></button></sc-for>
+</ae-ind>
+
+<sc-if value="{{ tab.people }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1;min-height:0;padding:0 24px 24px;display:flex;flex-direction:column">
+<dc-import name="AegisTable" cols="{{ pcols }}" rows="{{ prows }}" on-row="{{ openPerson }}" active="{{ active }}" state="{{ ui }}" label="People" unit="{{ punit }}" sort="name" hint-size="100%,360px" style="flex:1;min-height:0"></dc-import>
+</div>
+</sc-if>
+
+<sc-if value="{{ tab.projects }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;overflow:auto;padding:0 24px 24px;display:flex;flex-direction:column;gap:16px;animation:ae-fade 150ms var(--ease)">
+<sc-for list="{{ projects }}" as="pj" hint-placeholder-count="2">
+<section style="background:var(--panel);border:1px solid var(--ln)">
+<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--ln)"><ae-icon name="box" size="20" style="color:var(--tx-3)"></ae-icon><h2 style="flex:1;font:500 18px/24px var(--f-head)">{{ pj.name }}</h2><span style="font:12px var(--f-ui);color:var(--tx-3)">{{ pj.people }}</span></div>
+<div style="display:grid;grid-template-columns:160px minmax(0,1fr);font:13px/18px var(--f-ui)">
+<span style="padding:12px 16px;color:var(--tx-3);border-bottom:1px solid var(--ln)">Sites</span><span style="padding:8px 16px 8px 0;border-bottom:1px solid var(--ln);display:flex;flex-wrap:wrap;gap:6px;align-items:center"><sc-for list="{{ pj.sites }}" as="x"><span style="height:24px;padding:0 8px;border:1px solid var(--ln-2);line-height:22px;color:var(--tx-2)">{{ x }}</span></sc-for><sc-if value="{{ pj.noSites }}"><span style="color:var(--tx-3)">No sites yet</span></sc-if></span>
+<span style="padding:12px 16px;color:var(--tx-3);border-bottom:1px solid var(--ln)">Repositories</span><span style="padding:8px 16px 8px 0;border-bottom:1px solid var(--ln);display:flex;flex-wrap:wrap;gap:6px;align-items:center"><sc-for list="{{ pj.repos }}" as="x"><span style="height:24px;padding:0 8px;border:1px solid var(--ln-2);line-height:22px;color:var(--tx-2)">{{ x }}</span></sc-for><sc-if value="{{ pj.noRepos }}"><span style="color:var(--tx-3)">No repositories yet</span></sc-if></span>
+<span style="padding:12px 16px;color:var(--tx-3)">Data reduction</span><span style="padding:12px 16px 12px 0;font-variant-numeric:tabular-nums;color:{{ pj.lc }}">{{ pj.line }}</span>
+</div>
+</section>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{ tab.exc }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;min-height:0;padding:0 24px 24px;display:flex;flex-direction:column;gap:12px;animation:ae-fade 150ms var(--ease)">
+<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--panel-2);border:1px solid var(--ln);font-size:13px;line-height:18px;color:var(--tx-2)"><ae-icon name="info" style="margin-top:1px"></ae-icon><span>A restore exception lets one person restore something their role does not allow. One person requests it, a different Owner or Admin approves it, it can be used once, and it expires 24 hours after the request. Every step is written to Audit.</span></div>
+<div role="table" aria-label="Restore exceptions" style="flex:1;min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--ln);font:13px/18px var(--f-ui)">
+<div role="row" style="position:sticky;top:0;display:grid;grid-template-columns:120px minmax(0,1.6fr) minmax(0,1.6fr) 190px 150px 220px;gap:12px;align-items:center;height:36px;padding:0 12px;background:var(--panel-2);border-bottom:1px solid var(--ln);font-size:12px;color:var(--tx-2)"><span>Requested by</span><span>What</span><span>Reason</span><span>Status</span><span>Expires (IST)</span><span></span></div>
+<sc-for list="{{ exc }}" as="e" hint-placeholder-count="4">
+<div role="row" style="display:grid;grid-template-columns:120px minmax(0,1.6fr) minmax(0,1.6fr) 190px 150px 220px;gap:12px;align-items:center;min-height:52px;padding:6px 12px;border-bottom:1px solid var(--ln);animation:ae-fade 150ms var(--ease)">
+<span>{{ e.who }}</span>
+<span style="min-width:0"><span style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.what }}</span><span style="display:block;font-size:12px;color:var(--tx-3)">Point {{ e.point }}</span></span>
+<span data-tip="{{ e.reason }}" style="color:var(--tx-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ e.reason }}</span>
+<span style="display:flex;align-items:center;gap:6px"><ae-icon name="{{ e.i }}" style="color:{{ e.c }}"></ae-icon><span>{{ e.l }}</span></span>
+<span style="color:var(--tx-2)">{{ e.exp }}</span>
+<span style="display:flex;gap:6px;justify-content:flex-end">
+<sc-if value="{{ e.pending }}"><button onClick="{{ e.onReject }}" aria-disabled="{{ e.dis }}" data-tip="{{ e.why }}" style="height:28px;padding:0 10px;border:1px solid var(--ln-2);font:600 13px var(--f-body);opacity:{{ e.op }}" style-hover="background:var(--hover)">Reject</button><button onClick="{{ e.onApprove }}" aria-disabled="{{ e.dis }}" data-tip="{{ e.why }}" style="height:28px;padding:0 10px;background:{{ e.abg }};color:var(--acc-ink);font:600 13px var(--f-body);opacity:{{ e.op }};transition:background-color 120ms">{{ e.aLabel }}</button></sc-if>
+<sc-if value="{{ e.byLine }}"><span style="font-size:12px;color:var(--tx-3)">{{ e.byLine }}</span></sc-if>
+</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ dOpen }}" hint-placeholder-val="{{ false }}">
+<aside role="dialog" aria-label="Person" style="position:absolute;top:0;right:0;bottom:0;width:520px;max-width:100%;z-index:20;display:flex;flex-direction:column;background:var(--overlay);border-left:1px solid var(--ln-2);box-shadow:var(--sh-over);animation:ae-drawer 150ms var(--ease)">
+<div style="padding:20px 16px 16px 24px;display:flex;gap:12px;border-bottom:1px solid var(--ln)"><div style="flex:1;min-width:0"><div style="font:12px/16px var(--f-ui);color:var(--tx-3)">Person</div><h2 style="margin-top:2px;font:500 20px/28px var(--f-head)">{{ p.name }}</h2><div style="margin-top:4px;font:13px var(--f-ui);color:var(--tx-2)">{{ p.email }} · last sign-in {{ p.last }}</div></div><button onClick="{{ closeDrawer }}" aria-label="Close" style="width:32px;height:32px;display:grid;place-items:center;color:var(--tx-2)" style-hover="background:var(--hover)"><ae-icon name="x" size="20"></ae-icon></button></div>
+<div style="flex:1;overflow:auto;padding:20px 24px;display:flex;flex-direction:column;gap:12px">
+<h3 style="font:600 15px/22px var(--f-body)">Roles in each project</h3>
+<sc-for list="{{ p.roles }}" as="r" hint-placeholder-count="2"><div style="display:grid;grid-template-columns:minmax(0,1fr) 160px;gap:12px;align-items:center;min-height:40px;border-bottom:1px solid var(--ln)"><span style="display:flex;align-items:center;gap:8px"><ae-icon name="box" style="color:var(--tx-3)"></ae-icon>{{ r.project }}</span><select onChange="{{ r.onChange }}" aria-label="Role in {{ r.project }}" style="height:32px;padding:0 8px;background:var(--panel-2);border:1px solid var(--ln);font:14px var(--f-body)"><sc-for list="{{ r.opts }}" as="o"><option value="{{ o.v }}" selected="{{ o.sel }}">{{ o.v }}</option></sc-for></select></div></sc-for>
+<p style="font-size:13px;line-height:18px;color:var(--tx-2)">Owner and Admin can change everything. Operator runs jobs. Restore can only restore. Viewer can only look.</p>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--ln)"><button onClick="{{ closeDrawer }}" style="height:32px;padding:0 12px;font-weight:600" style-hover="background:var(--hover)">Cancel</button><button onClick="{{ saveRoles }}" aria-disabled="{{ admDis }}" data-tip="{{ admWhy }}" style="height:32px;padding:0 14px;background:var(--acc);color:var(--acc-ink);font-weight:600;opacity:{{ admOp }}" style-hover="background:var(--acc-h)">Save roles</button></div>
+</aside>
+</sc-if>
+
+<sc-if value="{{ dlgOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:24px;background:var(--scrim);animation:ae-fade 120ms var(--ease)">
+<div role="dialog" aria-modal="true" aria-labelledby="ac-title" style="width:440px;max-width:100%;display:flex;flex-direction:column;background:var(--overlay);border:1px solid var(--ln-2);box-shadow:var(--sh-over);animation:ae-dialog 150ms var(--ease)">
+<div style="padding:20px 24px 0"><h2 id="ac-title" style="font:500 20px/28px var(--f-head)">{{ dlg.title }}</h2><p style="margin-top:4px;color:var(--tx-2)">{{ dlg.desc }}</p></div>
+<div style="padding:16px 24px;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ dlg.fields }}" as="f" hint-placeholder-count="3"><div style="display:flex;flex-direction:column;gap:6px"><label for="{{ f.id }}" style="font:12px/16px var(--f-ui);color:var(--tx-2)">{{ f.label }}</label><sc-if value="{{ f.isSelect }}"><select id="{{ f.id }}" value="{{ f.value }}" onChange="{{ f.onChange }}" style="height:36px;padding:0 8px;background:var(--panel-2);border:1px solid var(--ln);font:14px var(--f-body)"><sc-for list="{{ f.options }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select></sc-if><sc-if value="{{ f.isInput }}"><input id="{{ f.id }}" value="{{ f.value }}" onInput="{{ f.onChange }}" style="height:36px;padding:0 10px;background:var(--panel-2);border:1px solid var(--ln);font:14px var(--f-body)" style-focus="border-color:var(--acc)"></sc-if></div></sc-for>
+</div>
+<div style="display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--ln)"><button onClick="{{ closeDlg }}" style="height:32px;padding:0 12px;font-weight:600" style-hover="background:var(--hover)">Cancel</button><button onClick="{{ confirmDlg }}" style="height:32px;padding:0 14px;background:var(--acc);color:var(--acc-ink);font-weight:600" style-hover="background:var(--acc-h)">{{ dlg.btn }}</button></div>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const EXS = { pending: ['clock', 'Pending approval', 'var(--warn)'], approved: ['circle-check', 'Approved · single use', 'var(--ok)'], used: ['check', 'Used', 'var(--tx-3)'], expired: ['circle-minus', 'Expired', 'var(--tx-3)'], rejected: ['ban', 'Rejected', 'var(--tx-3)'] };
+const ROLES = ['Owner', 'Admin', 'Operator', 'Restore', 'Viewer'];
+class Component extends DCLogic {
+  state = { tab: 'People', drawer: null, roles: {}, ex: {}, armed: null, dlg: null, extraPeople: [], extraEx: [] };
+  renderVals() {
+    const A = window.AEGIS; const ctx = this.props.ctx;
+    if (!A || !ctx) return { tabs: [], tab: {}, pcols: [], prows: [], projects: [], exc: [], p: { roles: [] }, primary: {}, roleOpts: [], dlg: { fields: [] } };
+    const s = this.state;
+    const adm = ctx.can('admin', 'Managing access');
+    const rs = ctx.can('restore', 'Requesting a restore exception');
+    const people = A.people.concat(s.extraPeople).map(p => ({ ...p, roles: s.roles[p.id] || p.roles }));
+    const prows = people.map(p => ({ id: p.id, name: p.name, email: p.email, roles: p.roles.map(([pj, r]) => `${pj} · ${r}`), mfa: { t: 'status', i: p.mfa ? 'circle-check' : 'triangle-alert', c: p.mfa ? 'ok' : 'warn', l: p.mfa ? 'On' : 'Off', s: p.mfa ? 1 : 0 }, last: { v: p.last.replace(' 2026', '').replace(' IST', ''), s: p.last } }));
+    const pcols = [{ k: 'name', label: 'Name', w: 'minmax(150px,1.2fr)' }, { k: 'email', label: 'Email', w: 'minmax(200px,1.6fr)', dim: true }, { k: 'roles', label: 'Roles', w: 'minmax(260px,2fr)', nosort: true }, { k: 'mfa', label: 'Two-factor', w: '110px' }, { k: 'last', label: 'Last sign-in (IST)', w: '150px', dim: true }];
+    const exList = A.exceptions.concat(s.extraEx).map(e => ({ ...e, status: s.ex[e.id] ? s.ex[e.id].status : e.status, by: s.ex[e.id] ? s.ex[e.id].by : e.by }));
+    const exc = exList.map(e => { const st = EXS[e.status]; const own = e.who === 'Priya Raman'; const ok = adm.ok && !own; const armed = s.armed === e.id;
+      return { who: e.who, what: e.what, point: e.point.replace(' 2026', '').replace(' IST', ''), reason: e.reason, i: st[0], c: st[2], l: st[1], exp: e.status === 'pending' || e.status === 'approved' ? e.expires.replace(' 2026', '').replace(' IST', '') : '—', pending: e.status === 'pending',
+        dis: ok ? undefined : 'true', why: !adm.ok ? adm.why : own ? 'You requested this. A different Owner or Admin must approve it.' : undefined, op: ok ? 1 : 0.45, aLabel: armed ? 'Confirm approval' : 'Approve', abg: armed ? 'var(--acc-p)' : 'var(--acc)',
+        byLine: e.status === 'approved' ? `Approved by ${e.by}` : e.status === 'used' ? `Used ${e.used ? e.used.replace(' 2026', '').replace(' IST', '') : ''}` : e.status === 'rejected' ? `Rejected by ${e.by}` : e.status === 'expired' ? 'Not used in 24 h' : '',
+        onApprove: () => { if (!ok) return; if (!armed) { this.setState({ armed: e.id }); clearTimeout(this.at); this.at = setTimeout(() => this.setState({ armed: null }), 5000); return; } this.setState(st => ({ armed: null, ex: { ...st.ex, [e.id]: { status: 'approved', by: 'Priya Raman' } } })); ctx.toast(`Restore exception for ${e.who} approved. It can be used once until ${e.expires}.`, 'ok'); },
+        onReject: () => { if (!ok) return; this.setState(st => ({ ex: { ...st.ex, [e.id]: { status: 'rejected', by: 'Priya Raman' } } })); ctx.toast(`Restore exception for ${e.who} rejected`, 'ok'); } }; });
+    const projects = A.projects.map(p => ({ name: p.name, people: `${p.people} people`, sites: p.sites, repos: p.repos, noSites: !p.sites.length, noRepos: !p.repos.length, line: p.line || 'No recovery points yet', lc: p.line ? 'var(--tx)' : 'var(--tx-3)' }));
+    const dp = s.drawer && people.find(x => x.id === s.drawer);
+    const tabsDef = [['People', people.length], ['Projects', A.projects.length], ['Restore exceptions', exList.filter(e => e.status === 'pending').length]];
+    const primary = s.tab === 'People' ? { label: 'Invite a person', ok: adm.ok, why: adm.why, run: () => this.setState({ dlg: { kind: 'invite', f: { email: '', project: 'Base-Project', role: 'Viewer' } } }) } : s.tab === 'Projects' ? { label: 'Create a project', ok: adm.ok, why: adm.why, run: () => ctx.toast('Project Tenant-New created. Add its sites next.', 'ok') } : { label: 'Request a restore exception', ok: true, why: undefined, run: () => this.setState({ dlg: { kind: 'req', f: { guest: 'web-frontend-01', type: 'Files', reason: '' } } }) };
+    const G = s.dlg;
+    const set = k => e => { const v = e.target.value; this.setState(st => ({ dlg: { ...st.dlg, f: { ...st.dlg.f, [k]: v } } })); };
+    const dlg = !G ? { fields: [] } : G.kind === 'invite' ? { title: 'Invite a person', desc: 'They get an email with a sign-in link that works for 72 hours.', btn: 'Send invitation', fields: [{ id: 'iv-e', label: 'Email', value: G.f.email, isInput: true, onChange: set('email') }, { id: 'iv-p', label: 'Project', value: G.f.project, isSelect: true, options: A.projects.map(p => p.name), onChange: set('project') }, { id: 'iv-r', label: 'Role', value: G.f.role, isSelect: true, options: ROLES, onChange: set('role') }] }
+      : { title: 'Request a restore exception', desc: 'A different Owner or Admin approves it. It can be used once and expires after 24 hours.', btn: 'Send request', fields: [{ id: 'rq-g', label: 'Guest', value: G.f.guest, isSelect: true, options: A.guests.map(g => g.name), onChange: set('guest') }, { id: 'rq-t', label: 'Restore', value: G.f.type, isSelect: true, options: ['Files', 'Disks', 'Whole VM'], onChange: set('type') }, { id: 'rq-r', label: 'Reason', value: G.f.reason, isInput: true, onChange: set('reason') }] };
+    return {
+      ui: ctx.ui, punit: ['person', 'people'], tabs: tabsDef.map(([t, n]) => ({ label: t, n: String(n), on: s.tab === t, fg: s.tab === t ? 'var(--tx)' : 'var(--tx-2)', onClick: () => this.setState({ tab: t, drawer: null }) })),
+      tab: { people: s.tab === 'People', projects: s.tab === 'Projects', exc: s.tab === 'Restore exceptions' },
+      primary: { label: primary.label, dis: primary.ok ? undefined : 'true', why: primary.why, op: primary.ok ? 1 : 0.45, onClick: () => { if (primary.ok) primary.run(); } },
+      pcols, prows, active: s.drawer || '', openPerson: id => this.setState({ drawer: id }), projects, exc,
+      dOpen: !!dp, p: dp ? { name: dp.name, email: dp.email, last: dp.last, roles: dp.roles.map(([pj, r], i) => ({ project: pj, role: r, opts: ROLES.map(x => ({ v: x, sel: x === r })), onChange: e => { if (!adm.ok) return; const v = e.target.value; this.setState(st => { const cur = (st.roles[dp.id] || dp.roles).map(x => x.slice()); cur[i][1] = v; return { roles: { ...st.roles, [dp.id]: cur } }; }); } })) } : { roles: [] },
+      roleOpts: ROLES, admDis: adm.dis, admWhy: adm.why, admOp: adm.op,
+      closeDrawer: () => this.setState({ drawer: null }), saveRoles: () => { if (adm.ok && dp) { this.setState({ drawer: null }); ctx.toast(`Roles for ${dp.name} updated`, 'ok'); } },
+      dlgOpen: !!G, dlg, closeDlg: () => this.setState({ dlg: null }),
+      confirmDlg: () => {
+        if (G.kind === 'invite') { const email = G.f.email || 'new.person@host360.ai'; this.setState(st => ({ dlg: null, extraPeople: st.extraPeople.concat([{ id: 'np' + Date.now(), name: email.split('@')[0], email, roles: [[G.f.project, G.f.role]], last: 'Invited, not signed in yet', mfa: false }]) })); ctx.toast(`Invitation sent to ${email}`, 'ok'); }
+        else { this.setState(st => ({ dlg: null, extraEx: st.extraEx.concat([{ id: 'nx' + Date.now(), who: 'Priya Raman', what: `${G.f.type} from ${G.f.guest}`, point: ctx.now(), reason: G.f.reason || 'No reason given', status: 'pending', requested: ctx.now(), expires: '22 Oct 2026, 16:05 IST' }]) })); ctx.toast(`Restore exception for ${G.f.guest} requested`, 'ok'); }
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

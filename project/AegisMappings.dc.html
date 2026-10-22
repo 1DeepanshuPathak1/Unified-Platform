@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="aegis-tokens.css">
+<script src="aegis-icons.js"></script>
+<script src="aegis-ui.js"></script>
+<script src="aegis-data.js"></script>
+</helmet>
+<div style="height:100%;min-height:0;display:flex;flex-direction:column;animation:ae-page 150ms var(--ease)">
+<div style="flex:none;padding:20px 24px 16px;display:flex;align-items:flex-end;gap:16px">
+<div style="flex:1;min-width:0"><div style="font:12px/16px var(--f-ui);color:var(--tx-3);margin-bottom:4px">Infrastructure</div><h1 style="font:500 24px/32px var(--f-head)">Mappings</h1><p style="margin-top:2px;color:var(--tx-2)">How networks, storage and sizes translate from one site to another.</p></div>
+<button onClick="{{ addMap }}" aria-disabled="{{ cfgDis }}" data-tip="{{ cfgWhy }}" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);font-weight:600;opacity:{{ cfgOp }}" style-hover="background:var(--acc-h)"><ae-icon name="plus"></ae-icon>Add a mapping</button>
+</div>
+<div style="flex:1;min-height:0;padding:0 24px 24px;display:grid;grid-template-columns:320px minmax(0,1fr);gap:16px">
+<nav aria-label="Site pairs" style="overflow:auto;background:var(--panel);border:1px solid var(--ln)">
+<ae-ind mode="rail" style="display:flex;flex-direction:column">
+<sc-for list="{{ pairs }}" as="p" hint-placeholder-count="3"><button aria-current="{{ p.current }}" onClick="{{ p.onClick }}" style="display:flex;flex-direction:column;gap:4px;padding:12px 16px;border-bottom:1px solid var(--ln);background:{{ p.bg }};text-align:left;transition:background-color 100ms" style-hover="background:var(--hover)"><span style="display:flex;align-items:center;gap:6px;font-weight:600;flex-wrap:wrap">{{ p.from }}<ae-icon name="arrow-right" style="color:var(--tx-3)"></ae-icon>{{ p.to }}</span><span style="font:12px/16px var(--f-ui);color:var(--tx-3)">{{ p.kind }} · used by {{ p.n }}</span></button></sc-for>
+</ae-ind>
+</nav>
+<section style="min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--ln);animation:ae-fade 150ms var(--ease)">
+<div style="padding:16px 20px;border-bottom:1px solid var(--ln);display:flex;align-items:center;gap:12px"><h2 style="flex:1;font:500 20px/28px var(--f-head)">{{ m.title }}</h2><button onClick="{{ save }}" aria-disabled="{{ cfgDis }}" data-tip="{{ cfgWhy }}" style="height:32px;padding:0 14px;background:var(--acc);color:var(--acc-ink);font-weight:600;opacity:{{ cfgOp }}" style-hover="background:var(--acc-h)">Save mapping</button></div>
+<sc-for list="{{ m.groups }}" as="g" hint-placeholder-count="3">
+<div style="padding:16px 20px;border-bottom:1px solid var(--ln)">
+<h3 style="font:600 15px/22px var(--f-body);margin-bottom:8px">{{ g.title }}</h3>
+<div role="table" style="font:13px/18px var(--f-ui)">
+<div role="row" style="display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);gap:12px;align-items:center;height:32px;font-size:12px;color:var(--tx-2);border-bottom:1px solid var(--ln)"><span>{{ m.from }}</span><span></span><span>{{ m.to }}</span></div>
+<sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3"><div role="row" style="display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);gap:12px;align-items:center;min-height:44px;border-bottom:1px solid var(--ln)"><span>{{ r.a }}</span><ae-icon name="arrow-right" style="color:var(--tx-3)"></ae-icon><select onChange="{{ r.onChange }}" aria-label="Maps to" style="height:32px;padding:0 8px;background:var(--panel-2);border:1px solid var(--ln);font:14px var(--f-body)"><sc-for list="{{ r.options }}" as="o"><option value="{{ o.v }}" selected="{{ o.sel }}">{{ o.v }}</option></sc-for></select></div></sc-for>
+</div>
+</div>
+</sc-for>
+<div style="padding:16px 20px;border-bottom:1px solid var(--ln);display:flex;flex-direction:column;gap:8px">
+<h3 style="font:600 15px/22px var(--f-body)">Test network</h3>
+<span style="display:flex;align-items:center;gap:8px;font:13px var(--f-ui)"><ae-icon name="circle-check" style="color:var(--ok)"></ae-icon>{{ m.test }} · isolated, no route to production</span>
+<span style="font-size:13px;line-height:18px;color:var(--tx-2)">Test boots and recovery plan tests start servers here, so a clone never holds a production address on a production network.</span>
+</div>
+<div style="padding:16px 20px">
+<h3 style="font:600 15px/22px var(--f-body);margin-bottom:8px">Used by</h3>
+<sc-for list="{{ m.used }}" as="u" hint-placeholder-count="3"><a href="{{ u.href }}" style="display:flex;align-items:center;gap:10px;min-height:36px;border-bottom:1px solid var(--ln);font:13px var(--f-ui);transition:background-color 100ms" style-hover="background:var(--hover)"><ae-icon name="{{ u.i }}" style="color:var(--tx-3)"></ae-icon><span style="flex:1">{{ u.name }}</span><span style="color:var(--tx-3)">{{ u.kind }}</span></a></sc-for>
+</div>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const OPTS = { 'production-openstack': { net: ['prod-net', 'app-net', 'mgmt-net', 'dr-test-isolated'], stor: ['ceph-ssd', 'standard'], size: ['m1.medium', 'm1.large', 'm1.xlarge', 'm1.2xlarge', 'm1.4xlarge'] }, 'Chennai-proxmox-prod': { net: ['vmbr0 (VLAN 10)', 'vmbr20 (VLAN 20)', 'vmbr1', 'vmbr99 (VLAN 99, isolated)'], stor: ['ceph-vm', 'local-lvm'], size: ['Cores and memory copied 1:1'] } };
+const ICON = { 'Recovery plan': 'list-ordered', 'Protection plan': 'calendar-clock', Migration: 'forward', 'Migration plan': 'route', 'Protected server': 'server' };
+const HREF = { 'Recovery plan': '#/dr/recovery', 'Protection plan': '#/dr/plans', Migration: '#/mig/servers', 'Migration plan': '#/mig/plans', 'Protected server': '#/dr/servers' };
+class Component extends DCLogic {
+  state = { sel: 'm1', ed: {} };
+  renderVals() {
+    const A = window.AEGIS; const ctx = this.props.ctx;
+    if (!A || !ctx) return { pairs: [], m: { groups: [], used: [] } };
+    const s = this.state; const cfg = ctx.can('configure', 'Editing a mapping');
+    const mp = A.mappings.find(x => x.id === s.sel);
+    const o = OPTS[mp.to];
+    const grp = (key, title, rows, opts) => ({ title, rows: rows.map(([a, b], i) => { const k = `${mp.id}.${key}.${i}`; const v = s.ed[k] || b; return { a, b: v, options: (opts.includes(v) ? opts : [v].concat(opts)).map(x => ({ v: x, sel: x === v })), onChange: e => { if (!cfg.ok) return; const val = e.target.value; this.setState(st => ({ ed: { ...st.ed, [k]: val } })); } }; }) });
+    return {
+      cfgDis: cfg.dis, cfgWhy: cfg.why, cfgOp: cfg.op,
+      addMap: () => { if (cfg.ok) ctx.toast('Choose a source and a destination site to start a mapping', 'info'); },
+      pairs: A.mappings.map(x => ({ from: x.from, to: x.to, kind: x.kind, n: `${x.usedBy.length}`, current: x.id === s.sel ? 'page' : undefined, bg: x.id === s.sel ? 'var(--acc-soft)' : 'transparent', onClick: () => this.setState({ sel: x.id }) })),
+      m: { title: `${mp.from} → ${mp.to}`, from: mp.from, to: mp.to, test: mp.test,
+        groups: [grp('n', 'Networks', mp.nets, o.net), grp('s', mp.to.includes('openstack') ? 'Volume types' : 'Storages', mp.stor, o.stor), grp('z', mp.to.includes('openstack') ? 'Flavors' : 'Cores and memory', mp.sizes, o.size)],
+        used: mp.usedBy.map(([kind, name]) => ({ kind, name, i: ICON[kind], href: HREF[kind] })) },
+      save: () => { if (cfg.ok) ctx.toast(`Mapping ${mp.from} → ${mp.to} saved`, 'ok'); }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

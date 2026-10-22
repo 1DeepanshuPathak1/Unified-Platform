@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="aegis-tokens.css">
+<script src="aegis-icons.js"></script>
+<script src="aegis-ui.js"></script>
+<script src="aegis-data.js"></script>
+</helmet>
+<div style="height:100%;min-height:0;overflow:auto;animation:ae-page 150ms var(--ease)">
+<div style="padding:20px 24px 16px">
+<div style="font:12px/16px var(--f-ui);color:var(--tx-3);margin-bottom:4px">Backup &amp; Recovery</div>
+<h1 style="font:500 24px/32px var(--f-head)">Restore</h1>
+<p style="margin-top:2px;color:var(--tx-2)">Bring back a whole VM, single disks or files from a recovery point.</p>
+</div>
+<div style="padding:0 24px 24px;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:16px">
+<section style="background:var(--panel);border:1px solid var(--ln)">
+<div style="display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;border-bottom:1px solid var(--ln)"><span style="width:20px;height:20px;display:grid;place-items:center;border:1px solid var(--acc);color:var(--acc-tx);font:700 11px var(--f-ui)">1</span><h2 style="flex:1;font:600 15px/22px var(--f-body)">Recovery point</h2>
+<label style="display:flex;align-items:center;gap:8px;font:12px var(--f-ui);color:var(--tx-2)">Guest<select onChange="{{ setGuest }}" style="height:32px;padding:0 8px;background:var(--panel-2);border:1px solid var(--ln);font:14px var(--f-body);color:var(--tx)"><sc-for list="{{ guests }}" as="g"><option value="{{ g.v }}" selected="{{ g.sel }}">{{ g.v }}</option></sc-for></select></label></div>
+<div role="radiogroup" aria-label="Recovery point" style="max-height:260px;overflow:auto">
+<sc-for list="{{ points }}" as="p" hint-placeholder-count="6"><button role="radio" aria-checked="{{ p.on }}" onClick="{{ p.onClick }}" style="display:grid;grid-template-columns:16px minmax(0,1.3fr) 110px 90px minmax(0,1fr);gap:12px;align-items:center;width:100%;height:40px;padding:0 16px;border-bottom:1px solid var(--ln);background:{{ p.bg }};font:13px var(--f-ui);text-align:left;transition:background-color 100ms" style-hover="background:var(--hover)"><span style="width:16px;height:16px;border-radius:50%;border:1px solid {{ p.rbd }};box-shadow:inset 0 0 0 4px {{ p.rin }};background:{{ p.rbg }};transition:all 100ms"></span><span>{{ p.t }}</span><span style="color:var(--tx-2)">{{ p.type }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ p.size }}</span><span style="display:flex;align-items:center;gap:8px;color:var(--tx-2)"><ae-icon name="{{ p.lockI }}" data-tip="{{ p.lockTip }}"></ae-icon><ae-icon name="{{ p.encI }}" data-tip="Encrypted with AES-256"></ae-icon><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.repo }}</span></span></button></sc-for>
+</div>
+</section>
+
+<section style="background:var(--panel);border:1px solid var(--ln)">
+<div style="display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;border-bottom:1px solid var(--ln)"><span style="width:20px;height:20px;display:grid;place-items:center;border:1px solid var(--acc);color:var(--acc-tx);font:700 11px var(--f-ui)">2</span><h2 style="flex:1;font:600 15px/22px var(--f-body)">What to restore</h2>
+<ae-ind mode="fill" role="radiogroup" aria-label="Restore type" style="display:flex;border:1px solid var(--ln-2)"><sc-for list="{{ kinds }}" as="k"><button role="radio" aria-checked="{{ k.on }}" onClick="{{ k.onClick }}" style="height:30px;padding:0 14px;display:flex;align-items:center;gap:6px;font:13px var(--f-ui);color:{{ k.fg }};transition:color 100ms"><ae-icon name="{{ k.icon }}"></ae-icon>{{ k.label }}</button></sc-for></ae-ind></div>
+<sc-if value="{{ isVm }}" hint-placeholder-val="{{ true }}"><p style="padding:16px;color:var(--tx-2);animation:ae-fade 150ms var(--ease)">{{ vmLine }}</p></sc-if>
+<sc-if value="{{ isDisks }}" hint-placeholder-val="{{ false }}"><div style="animation:ae-fade 150ms var(--ease)"><sc-for list="{{ disks }}" as="d" hint-placeholder-count="2"><button role="checkbox" aria-checked="{{ d.on }}" onClick="{{ d.onClick }}" style="display:grid;grid-template-columns:16px 96px 96px minmax(0,1fr);gap:12px;align-items:center;width:100%;height:40px;padding:0 16px;border-bottom:1px solid var(--ln);font:13px var(--f-ui);background:{{ d.bg }}" style-hover="background:var(--hover)"><span style="width:16px;height:16px;display:grid;place-items:center;border:1px solid {{ d.bd }};background:{{ d.cbg }};color:var(--acc-ink)"><ae-icon name="{{ d.icon }}" size="12"></ae-icon></span><span style="text-align:left">{{ d.name }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ d.size }}</span><span style="color:var(--tx-2);text-align:left">{{ d.storage }}</span></button></sc-for></div></sc-if>
+<sc-if value="{{ isFiles }}" hint-placeholder-val="{{ false }}">
+<div style="animation:ae-fade 150ms var(--ease)">
+<div style="display:flex;align-items:center;gap:6px;height:40px;padding:0 16px;border-bottom:1px solid var(--ln);font:13px var(--f-ui);color:var(--tx-2)"><ae-icon name="hard-drive" style="color:var(--tx-3)"></ae-icon><sc-for list="{{ crumbs }}" as="c"><button onClick="{{ c.onClick }}" style="padding:0 4px;color:{{ c.fg }}" style-hover="color:var(--tx)">{{ c.label }}</button><ae-icon name="{{ c.sep }}" style="color:var(--tx-3)"></ae-icon></sc-for></div>
+<sc-for list="{{ files }}" as="f" hint-placeholder-count="6"><div style="display:grid;grid-template-columns:16px 20px minmax(0,1fr) 96px 140px;gap:12px;align-items:center;height:36px;padding:0 16px;border-bottom:1px solid var(--ln);font:13px var(--f-ui);background:{{ f.bg }}"><button role="checkbox" aria-checked="{{ f.on }}" aria-label="Select {{ f.name }}" onClick="{{ f.onToggle }}" style="width:16px;height:16px;display:grid;place-items:center;border:1px solid {{ f.bd }};background:{{ f.cbg }};color:var(--acc-ink)"><ae-icon name="{{ f.icon2 }}" size="12"></ae-icon></button><ae-icon name="{{ f.icon }}" style="color:var(--tx-3)"></ae-icon><button onClick="{{ f.onOpen }}" style="text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:{{ f.nc }}" style-hover="color:var(--acc-tx)">{{ f.name }}</button><span style="text-align:right;color:var(--tx-2);font-variant-numeric:tabular-nums">{{ f.size }}</span><span style="color:var(--tx-3)">{{ f.mod }}</span></div></sc-for>
+</div>
+</sc-if>
+</section>
+
+<section style="background:var(--panel);border:1px solid var(--ln)">
+<div style="display:flex;align-items:center;gap:10px;height:48px;padding:0 16px;border-bottom:1px solid var(--ln)"><span style="width:20px;height:20px;display:grid;place-items:center;border:1px solid var(--acc);color:var(--acc-tx);font:700 11px var(--f-ui)">3</span><h2 style="flex:1;font:600 15px/22px var(--f-body)">Where to</h2></div>
+<div role="radiogroup" aria-label="Target" style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ targets }}" as="t" hint-placeholder-count="3"><button role="radio" aria-checked="{{ t.on }}" onClick="{{ t.onClick }}" style="display:grid;grid-template-columns:16px minmax(0,1fr);gap:12px;align-items:center;padding:10px 14px;border:1px solid {{ t.bd }};background:{{ t.bg }};text-align:left;transition:border-color 100ms,background-color 100ms"><span style="width:16px;height:16px;border-radius:50%;border:1px solid {{ t.rbd }};box-shadow:inset 0 0 0 4px {{ t.rin }};background:{{ t.rbg }}"></span><span><span style="display:block;font-weight:600">{{ t.label }}</span><span style="display:block;font-size:13px;line-height:18px;color:var(--tx-2)">{{ t.desc }}</span></span></button></sc-for>
+<sc-if value="{{ showSite }}" hint-placeholder-val="{{ false }}"><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:4px 0 0 28px;animation:ae-fade 150ms var(--ease)"><sc-for list="{{ siteFields }}" as="f"><label style="display:flex;flex-direction:column;gap:6px;font:12px/16px var(--f-ui);color:var(--tx-2)">{{ f.label }}<select value="{{ f.value }}" onChange="{{ f.onChange }}" style="height:36px;padding:0 8px;background:var(--panel-2);border:1px solid var(--ln);font:14px var(--f-body);color:var(--tx)"><sc-for list="{{ f.options }}" as="o"><option value="{{ o }}">{{ o }}</option></sc-for></select></label></sc-for></div></sc-if>
+<sc-if value="{{ refused }}" hint-placeholder-val="{{ false }}"><div role="alert" style="display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--err-s);border:1px solid var(--ln-2);animation:ae-fade 150ms var(--ease)"><ae-icon name="ban" style="color:var(--err);margin-top:2px"></ae-icon><span><strong style="display:block;font-weight:600">File restore is not possible here</strong>{{ refusal }}</span></div></sc-if>
+</div>
+</section>
+</div>
+
+<aside style="position:sticky;top:0;background:var(--panel);border:1px solid var(--ln)">
+<div style="padding:14px 16px;border-bottom:1px solid var(--ln)"><h2 style="font:600 15px/22px var(--f-body)">Summary</h2></div>
+<dl style="display:grid;grid-template-columns:110px minmax(0,1fr);padding:0 16px;font:13px/18px var(--f-ui)"><sc-for list="{{ summary }}" as="s" hint-placeholder-count="5"><dt style="padding:8px 0;border-bottom:1px solid var(--ln);color:var(--tx-3)">{{ s.k }}</dt><dd style="padding:8px 0;border-bottom:1px solid var(--ln);overflow-wrap:anywhere">{{ s.v }}</dd></sc-for></dl>
+<div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+<button onClick="{{ start }}" aria-disabled="{{ startDis }}" data-tip="{{ startWhy }}" style="height:36px;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--acc);color:var(--acc-ink);font-weight:600;opacity:{{ startOp }};transition:background-color 100ms" style-hover="background:var(--acc-h)"><ae-icon name="rotate-ccw"></ae-icon>{{ startLabel }}</button>
+<sc-if value="{{ roleBlocked }}" hint-placeholder-val="{{ false }}"><a href="#/backup/access" style="font:600 13px var(--f-body);color:var(--acc-tx)">Request a restore exception</a></sc-if>
+<sc-if value="{{ job.on }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:8px;animation:ae-fade 150ms var(--ease)"><div style="display:flex;justify-content:space-between;font:13px var(--f-ui)"><span style="display:flex;align-items:center;gap:6px"><ae-icon name="{{ job.i }}" spin="{{ job.spin }}" style="color:{{ job.c }}"></ae-icon>{{ job.phase }}</span><span style="font-variant-numeric:tabular-nums">{{ job.pct }}</span></div><div style="height:4px;background:var(--ln)"><div style="height:4px;width:{{ job.w }};background:{{ job.c }};transition:width 900ms linear"></div></div>
+<div ref="{{ logRef }}" role="log" aria-label="Restore log" style="max-height:160px;overflow:auto;padding:6px 10px;background:var(--panel-2);border:1px solid var(--ln);font:12px/20px var(--f-ui)"><sc-for list="{{ job.log }}" as="l"><div style="display:grid;grid-template-columns:60px minmax(0,1fr);gap:8px;animation:ae-line 150ms var(--ease)"><span style="color:var(--tx-3)">{{ l.t }}</span><span>{{ l.text }}</span></div></sc-for></div>
+<span style="font:12px/16px var(--f-ui);color:var(--tx-3)">The restore keeps running if you leave this page. It is listed under running jobs.</span></div>
+</sc-if>
+</div>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const pad = n => String(n).padStart(2, '0');
+const TREE_L = { '/': [['etc', 'd'], ['home', 'd'], ['srv', 'd'], ['var', 'd']], '/srv': [['www', 'd'], ['invoices', 'd'], ['backup.sh', 'f', '2.10 KB']], '/srv/invoices': [['2026-09', 'd'], ['2026-10', 'd'], ['index.csv', 'f', '412.00 KB']], '/srv/invoices/2026-10': [['INV-10231.pdf', 'f', '182.40 KB'], ['INV-10232.pdf', 'f', '176.10 KB'], ['INV-10233.pdf', 'f', '201.90 KB']], '/etc': [['nginx', 'd'], ['hosts', 'f', '0.40 KB']], '/home': [['deploy', 'd']], '/var': [['log', 'd']] };
+const TREE_W = { '/': [['C:', 'd'], ['D:', 'd']], '/C:': [['Users', 'd'], ['inetpub', 'd'], ['ProgramData', 'd']], '/D:': [['Shares', 'd'], ['SQLBackup', 'd']], '/D:/Shares': [['Finance', 'd'], ['HR', 'd']], '/D:/Shares/Finance': [['Q3-close.xlsx', 'f', '2.40 MB'], ['Invoices-Oct.zip', 'f', '48.20 MB']] };
+class Component extends DCLogic {
+  state = { guest: 'web-frontend-01', point: 0, kind: 'Files', target: 'orig', site: 'Chennai_Lab_Proxmox', path: '/', picked: {}, disks: {}, jobId: null };
+  logRef = React.createRef();
+  componentDidMount() { const c = this.props.ctx; if (c && c.openId) { const [g, t] = c.openId.split('|'); const G = window.AEGIS && window.AEGIS.guests.find(x => x.id === g); if (G) this.setState({ guest: G.name, kind: 'Whole VM', point: 0, pointT: t || null }); } }
+  componentDidUpdate() { const el = this.logRef.current; if (el) el.scrollTop = el.scrollHeight; }
+  renderVals() {
+    const A = window.AEGIS; const ctx = this.props.ctx;
+    if (!A || !ctx) return { guests: [], points: [], kinds: [], disks: [], crumbs: [], files: [], targets: [], siteFields: [], summary: [], job: { log: [] } };
+    const s = this.state; const rs = ctx.can('restore', 'Restoring');
+    const g = A.guests.find(x => x.name === s.guest);
+    const pol = A.policies.find(p => p.name === g.policy);
+    const base = /(\d+) (\w+) (\d+), (\d+):(\d+)/.exec(g.last.t);
+    const lastD = new Date(+base[3], MON.indexOf(base[2]), +base[1], +base[4], +base[5]);
+    const step = pol.schedule.startsWith('Every hour') ? 36e5 : pol.schedule.startsWith('Sundays') ? 6048e5 : 864e5;
+    const off = g.last.r === 'err' ? 1 : 0;
+    const pts = Array.from({ length: Math.min(8, g.points) }, (_, i) => { const d = new Date(lastD.getTime() - (i + off) * step); return { t: `${pad(d.getDate())} ${MON[d.getMonth()]} 2026, ${pad(d.getHours())}:${pad(d.getMinutes())}`, type: i === Math.min(8, g.points) - 1 ? 'Full' : 'Incremental', size: `${(g.size * (i === 7 ? 0.23 : 0.02 + i * 0.003)).toFixed(2)} GB` }; });
+    let pIdx = s.point; if (s.pointT) { const k = pts.findIndex(p => p.t === s.pointT); if (k >= 0) pIdx = k; }
+    const win = /Windows/.test(g.os);
+    const tree = win ? TREE_W : TREE_L;
+    const entries = tree[s.path] || [];
+    const crumbParts = s.path === '/' ? [] : s.path.slice(1).split('/');
+    const crossSite = s.target === 'site';
+    const refused = s.kind === 'Files' && crossSite;
+    const pickedN = Object.values(s.picked).filter(Boolean).length;
+    const diskN = g.disks.filter(([n]) => s.disks[n] !== false).length;
+    const job = s.jobId && ctx.jobs.find(j => j.id === s.jobId);
+    const canStart = rs.ok && !refused && !(s.kind === 'Files' && !pickedN) && !(s.kind === 'Disks' && !diskN) && !(job && job.status === 'run');
+    const why = !rs.ok ? rs.why : refused ? 'Files go only into the VM their recovery point came from.' : (s.kind === 'Files' && !pickedN) ? 'Select files or folders first.' : (s.kind === 'Disks' && !diskN) ? 'Select at least one disk.' : (job && job.status === 'run') ? 'A restore is already running.' : undefined;
+    const radio = on => ({ bd: on ? 'var(--acc)' : 'var(--ln)', bg: on ? 'var(--acc-soft)' : 'transparent', rbd: on ? 'var(--acc)' : 'var(--ln-2)', rin: on ? 'var(--panel)' : 'transparent', rbg: on ? 'var(--acc)' : 'transparent' });
+    const targets = [
+      { id: 'orig', label: s.kind === 'Files' ? `Into ${g.name}, original folders` : 'Original location', desc: s.kind === 'Files' ? 'Existing files with the same name are renamed with a .restored suffix.' : `Replaces ${g.name} on ${g.site}. The current VM is powered off first.` },
+      { id: 'new', label: s.kind === 'Files' ? `Into ${g.name}, a new folder` : `${g.site}, as a new VM`, desc: s.kind === 'Files' ? 'Files land in /aegis-restore-2026-10-21 inside the VM.' : `Creates ${g.name}-restored next to the original. Nothing is overwritten.` },
+      { id: 'site', label: 'Another site', desc: 'Restores across platforms, for example from Proxmox VE to OpenStack. Choose the target site below.' }
+    ].map(t => ({ ...t, on: s.target === t.id, ...radio(s.target === t.id), onClick: () => this.setState({ target: t.id }) }));
+    const siteOpts = A.sites.filter(x => !x.vmw && x.name !== g.site && x.status === 'ok').map(x => x.name);
+    const isOs = s.site.includes('openstack');
+    const targetLabel = s.kind === 'Files' ? (s.target === 'orig' ? `${g.name}, original folders` : s.target === 'new' ? `${g.name}, /aegis-restore-2026-10-21` : `Another site (${s.site})`) : (s.target === 'orig' ? `${g.name} on ${g.site} (replaced)` : s.target === 'new' ? `${g.name}-restored on ${g.site}` : `${g.name} on ${s.site}${s.site.includes('openstack') !== g.site.includes('openstack') ? ', converted' : ''}`);
+    return {
+      guests: A.guests.map(x => ({ v: x.name, sel: x.name === s.guest })), guest: s.guest, setGuest: e => this.setState({ guest: e.target.value, point: 0, pointT: null, path: '/', picked: {}, disks: {} }),
+      points: pts.map((p, i) => ({ ...p, on: i === pIdx, ...radio(i === pIdx), bg: i === pIdx ? 'var(--acc-soft)' : 'transparent', lockI: pol.lock ? 'lock' : '', lockTip: pol.lock ? `${pol.lock} mode` : undefined, encI: pol.enc ? 'shield' : '', repo: pol.dest, onClick: () => this.setState({ point: i, pointT: null }) })),
+      kinds: [['Whole VM', 'monitor'], ['Disks', 'hard-drive'], ['Files', 'folder']].map(([label, icon]) => ({ label, icon, on: s.kind === label, fg: s.kind === label ? 'var(--tx)' : 'var(--tx-2)', onClick: () => this.setState({ kind: label }) })),
+      isVm: s.kind === 'Whole VM', isDisks: s.kind === 'Disks', isFiles: s.kind === 'Files',
+      vmLine: `All ${g.disks.length} ${g.disks.length === 1 ? 'disk' : 'disks'} (${g.size.toFixed(2)} GB) and the VM’s configuration: ${g.os}, its network cards and its boot order.`,
+      disks: g.disks.map(([name, size, storage]) => { const on = s.disks[name] !== false; return { name, size: `${size.toFixed(2)} GB`, storage, on, bg: on ? 'var(--acc-soft)' : 'transparent', bd: on ? 'var(--acc)' : 'var(--ln-2)', cbg: on ? 'var(--acc)' : 'transparent', icon: on ? 'check' : '', onClick: () => this.setState(st => ({ disks: { ...st.disks, [name]: !on } })) }; }),
+      crumbs: [{ label: g.name, fg: crumbParts.length ? 'var(--tx-2)' : 'var(--tx)', sep: crumbParts.length ? 'chevron-right' : '', onClick: () => this.setState({ path: '/' }) }].concat(crumbParts.map((c, i) => ({ label: c, fg: i === crumbParts.length - 1 ? 'var(--tx)' : 'var(--tx-2)', sep: i < crumbParts.length - 1 ? 'chevron-right' : '', onClick: () => this.setState({ path: '/' + crumbParts.slice(0, i + 1).join('/') }) }))),
+      files: entries.map(([name, t, size]) => { const full = (s.path === '/' ? '' : s.path) + '/' + name; const on = !!s.picked[full]; return { name, icon: t === 'd' ? 'folder' : 'file', size: size || '', mod: '18 Oct 2026, 22:40', on, bg: on ? 'var(--acc-soft)' : 'transparent', bd: on ? 'var(--acc)' : 'var(--ln-2)', cbg: on ? 'var(--acc)' : 'transparent', icon2: on ? 'check' : '', nc: t === 'd' ? 'var(--tx)' : 'var(--tx-2)', onToggle: () => this.setState(st => ({ picked: { ...st.picked, [full]: !on } })), onOpen: () => { if (t === 'd' && tree[full]) this.setState({ path: full }); } }; }),
+      targets, showSite: crossSite && s.kind !== 'Files',
+      siteFields: [{ label: 'Target site', value: s.site, options: siteOpts, onChange: e => this.setState({ site: e.target.value }) }, { label: isOs ? 'Flavor' : 'Cores and memory', value: isOs ? 'm1.large' : '4 cores, 8192 MB', options: isOs ? ['m1.large', 'm1.xlarge'] : ['4 cores, 8192 MB', '8 cores, 16384 MB'], onChange: () => {} }, { label: 'Network', value: isOs ? 'prod-net' : 'vmbr0', options: isOs ? ['prod-net', 'dr-test-isolated'] : ['vmbr0', 'vmbr99'], onChange: () => {} }],
+      refused, refusal: ` Files can be restored only into the VM their recovery point came from: ${g.name} on ${g.site}. To get these files onto another site, restore the whole VM there first, then copy the files.`,
+      summary: [['Guest', `${g.name} · ${g.os}`], ['Point', `${pts[pIdx].t} IST`], ['Restore', s.kind === 'Files' ? `${pickedN} ${pickedN === 1 ? 'item' : 'items'}` : s.kind === 'Disks' ? `${diskN} of ${g.disks.length} disks` : 'Whole VM'], ['To', targetLabel], ['From', `${pol.dest}${pol.lock ? ', immutable' : ''}${pol.enc ? ', encrypted' : ''}`]].map(([k, v]) => ({ k, v })),
+      startDis: canStart ? undefined : 'true', startWhy: canStart ? undefined : why, startOp: canStart ? 1 : 0.45, startLabel: `Restore ${s.kind === 'Whole VM' ? 'VM' : s.kind.toLowerCase()}`, roleBlocked: !rs.ok,
+      start: () => { if (!canStart) return; const id = ctx.startJob({ name: `Restore ${s.kind.toLowerCase()}`, object: g.name, product: 'Backup', type: 'Restore', phases: ['Queued', 'Mount point', s.kind === 'Files' ? 'Copy files' : 'Write disks', s.kind === 'Whole VM' ? 'Register VM' : 'Check', 'Done'], speed: 14, rate: '220 MB/s', firstLine: `Restore of ${g.name} from ${pts[pIdx].t} started`, doneToast: `Restore of ${g.name} finished` }); this.setState({ jobId: id }); ctx.toast(`Restore of ${g.name} started`, 'info'); },
+      job: job ? { on: true, i: job.status === 'run' ? 'loader-circle' : 'circle-check', spin: job.status === 'run' ? 'true' : 'false', c: job.status === 'run' ? 'var(--run)' : 'var(--ok)', phase: job.status === 'run' ? job.phases[job.phase] : 'Finished', pct: `${Math.floor(job.pct)} %`, w: `${job.pct}%`, log: job.log } : { on: false, log: [] },
+      logRef: this.logRef
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="aegis-tokens.css">
+<script src="aegis-icons.js"></script>
+<script src="aegis-ui.js"></script>
+<script src="aegis-data.js"></script>
+</helmet>
+<div style="height:100%;min-height:0;display:flex;flex-direction:column;animation:ae-page 150ms var(--ease)">
+<div style="flex:none;padding:20px 24px 16px;display:flex;align-items:flex-end;gap:16px">
+<div style="flex:1;min-width:0"><div style="font:12px/16px var(--f-ui);color:var(--tx-3);margin-bottom:4px">Operations · {{ productLabel }}</div><h1 style="font:500 24px/32px var(--f-head)">Reports</h1><p style="margin-top:2px;color:var(--tx-2)">Scheduled summaries for {{ productLabel }}. Switch product in the header for the others.</p></div>
+<button onClick="{{ create }}" aria-disabled="{{ cfgDis }}" data-tip="{{ cfgWhy }}" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);font-weight:600;opacity:{{ cfgOp }}" style-hover="background:var(--acc-h)"><ae-icon name="plus"></ae-icon>Schedule a report</button>
+</div>
+<div style="flex:1;min-height:0;padding:0 24px 24px;display:grid;grid-template-columns:340px minmax(0,1fr);gap:16px">
+<nav aria-label="Reports" style="overflow:auto;background:var(--panel);border:1px solid var(--ln)">
+<ae-ind mode="rail" style="display:flex;flex-direction:column">
+<sc-for list="{{ list }}" as="r" hint-placeholder-count="3"><button aria-current="{{ r.current }}" onClick="{{ r.onClick }}" style="display:flex;flex-direction:column;gap:4px;padding:12px 16px;border-bottom:1px solid var(--ln);background:{{ r.bg }};text-align:left;transition:background-color 100ms" style-hover="background:var(--hover)"><span style="font-weight:600">{{ r.name }}</span><span style="font:12px/16px var(--f-ui);color:var(--tx-2)">{{ r.schedule }} · {{ r.format }}</span></button></sc-for>
+</ae-ind>
+</nav>
+<section style="min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--ln);animation:ae-fade 150ms var(--ease)">
+<div style="padding:16px 20px;border-bottom:1px solid var(--ln);display:flex;align-items:center;gap:8px"><div style="flex:1;min-width:0"><h2 style="font:500 20px/28px var(--f-head)">{{ r.name }}</h2><p style="margin-top:2px;font:13px var(--f-ui);color:var(--tx-2)">Last generated {{ r.last }}</p></div>
+<button onClick="{{ download }}" style="height:32px;padding:0 12px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ln-2);font-weight:600" style-hover="background:var(--hover)"><ae-icon name="download"></ae-icon>Download</button>
+<button onClick="{{ generate }}" aria-disabled="{{ opDis }}" data-tip="{{ opWhy }}" style="height:32px;padding:0 14px;display:inline-flex;align-items:center;gap:8px;background:var(--acc);color:var(--acc-ink);font-weight:600;opacity:{{ opOp }}" style-hover="background:var(--acc-h)"><ae-icon name="{{ genIcon }}" spin="{{ genSpin }}"></ae-icon>Generate now</button></div>
+<div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-bottom:1px solid var(--ln)">
+<sc-for list="{{ r.figures }}" as="f" hint-placeholder-count="4"><div style="padding:16px 20px;border-left:1px solid {{ f.bl }};display:flex;flex-direction:column;gap:4px"><span style="font:12px/16px var(--f-ui);color:var(--tx-2)">{{ f.k }}</span><span style="font:500 22px/30px var(--f-head);font-variant-numeric:tabular-nums;white-space:nowrap">{{ f.v }}</span></div></sc-for>
+</div>
+<dl style="display:grid;grid-template-columns:200px minmax(0,1fr);padding:0 20px;font:13px/18px var(--f-ui)"><sc-for list="{{ r.facts }}" as="f" hint-placeholder-count="4"><dt style="padding:10px 0;border-bottom:1px solid var(--ln);color:var(--tx-3)">{{ f.k }}</dt><dd style="padding:10px 0;border-bottom:1px solid var(--ln)">{{ f.v }}</dd></sc-for></dl>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { sel: {}, gen: false };
+  renderVals() {
+    const A = window.AEGIS; const ctx = this.props.ctx;
+    if (!A || !ctx) return { list: [], r: { figures: [], facts: [] } };
+    const p = ctx.product; const reps = A.reports[p];
+    const sel = this.state.sel[p] || reps[0].id; const r = reps.find(x => x.id === sel);
+    const cfg = ctx.can('configure', 'Scheduling a report'); const op = ctx.can('operate', 'Generating a report');
+    return {
+      productLabel: { backup: 'Backup & Recovery', dr: 'Disaster Recovery', mig: 'Migration' }[p],
+      cfgDis: cfg.dis, cfgWhy: cfg.why, cfgOp: cfg.op, opDis: op.dis, opWhy: op.why, opOp: op.op,
+      create: () => { if (cfg.ok) ctx.toast('Pick a report type, schedule and recipients to schedule it', 'info'); },
+      list: reps.map(x => ({ ...x, current: x.id === sel ? 'page' : undefined, bg: x.id === sel ? 'var(--acc-soft)' : 'transparent', onClick: () => this.setState(st => ({ sel: { ...st.sel, [p]: x.id } })) })),
+      r: { name: r.name, last: r.last, figures: r.figures.map(([k, v], i) => ({ k, v, bl: i ? 'var(--ln)' : 'transparent' })), facts: [{ k: 'Schedule', v: r.schedule }, { k: 'Format', v: r.format }, { k: 'Recipients', v: r.to }, { k: 'Covers', v: ctx.project }] },
+      genIcon: this.state.gen ? 'loader-circle' : 'refresh-cw', genSpin: this.state.gen ? 'true' : 'false',
+      generate: () => { if (!op.ok || this.state.gen) return; this.setState({ gen: true }); setTimeout(() => { this.setState({ gen: false }); ctx.toast(`${r.name} generated and sent to ${r.to}`, 'ok'); }, 1300); },
+      download: () => ctx.toast(`${r.name} (${r.format}) downloaded`, 'ok')
+    };
+  }
+}
+
+</script>
+</body>
+</html>
