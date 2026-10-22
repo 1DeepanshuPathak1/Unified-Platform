@@ -10,10 +10,11 @@ import { BreakGlassTab, DelegationTab, ServiceAccountsTab, SsoTab } from './Iden
 import { KeysTab } from './Keys';
 import { GovernorTab } from './Governor';
 import { NotificationsTab } from './Notifications';
+import { BrandingTab } from './Branding';
 import { inScope } from './common';
 import { useStore } from './store';
 
-type Tab = 'users' | 'roles' | 'delegation' | 'signin' | 'sso' | 'service' | 'breakglass' | 'vault' | 'keys' | 'notifications' | 'governor' | 'backup' | 'tunables';
+type Tab = 'users' | 'roles' | 'delegation' | 'signin' | 'sso' | 'service' | 'breakglass' | 'vault' | 'keys' | 'notifications' | 'branding' | 'governor' | 'backup' | 'tunables';
 type Group = 'identity' | 'security' | 'operations';
 const LEGACY: Partial<Record<Tab, string>> = { backup: 'Aegis backup', tunables: 'Tunables' };
 const GROUPS: Record<Group, { label: string; tabs: { v: Tab; label: string; provider?: boolean }[] }> = {
@@ -40,6 +41,7 @@ const GROUPS: Record<Group, { label: string; tabs: { v: Tab; label: string; prov
     label: 'Operations',
     tabs: [
       { v: 'notifications', label: 'Notifications' },
+      { v: 'branding', label: 'Branding' },
       { v: 'governor', label: 'Source impact', provider: true },
       { v: 'backup', label: 'Aegis backup', provider: true },
       { v: 'tunables', label: 'Tunables', provider: true }
@@ -80,6 +82,7 @@ export default function SettingsSection({ ctx }: { ctx: Ctx }) {
       {tab === 'keys' ? <KeysTab ctx={ctx} /> : null}
       {tab === 'governor' ? <GovernorTab ctx={ctx} /> : null}
       {tab === 'notifications' ? <NotificationsTab ctx={ctx} /> : null}
+      {tab === 'branding' ? <BrandingTab ctx={ctx} /> : null}
       {LEGACY[tab] ? (
         <div style={{ flex: 1, minHeight: 0 }}>
           <AegisSettings ctx={ctx} embedTab={LEGACY[tab]} />

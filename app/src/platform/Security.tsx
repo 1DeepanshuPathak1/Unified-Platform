@@ -5,6 +5,7 @@ import { Btn, CheckBox, Field, Seg, TextArea } from '../ui/controls';
 import { Bar, Facts, H3, MiniTable, Panel, Section, Spacer, Status, TableArea, Toolbar, plural } from '../ui/layout';
 import { DangerDialog, Dialog, Drawer, StepUp, useClosable } from '../ui/overlay';
 import { EvidenceTab } from './Evidence';
+import { ResidencyTab } from './Residency';
 import type { Ctx } from '../ui/ctx';
 import { CUSTOMERS, USERS, WORKLOADS } from '../data/platform';
 import { CLASSES, COMPLIANCE_MODE, FINDINGS, REVIEWS, type Finding } from '../data/ops';
@@ -12,7 +13,7 @@ import { custName, inScope, showCustomerCol } from './common';
 import { audit, update, useStore } from './store';
 import { nextApprovalId } from '../products/resilience/Failover';
 
-type Tab = 'posture' | 'findings' | 'mode' | 'reviews' | 'evidence';
+type Tab = 'posture' | 'findings' | 'mode' | 'residency' | 'reviews' | 'evidence';
 const SEV_TONE: Record<Finding['sev'], string> = { High: 'err', Medium: 'warn', Low: 'tx' };
 const short = (t: string) => t.replace(' 2026', '').replace(' IST', '');
 
@@ -37,7 +38,7 @@ function posture(cid: string) {
 
 /** Security & Compliance: posture, findings, compliance mode and periodic reviews. */
 export default function SecuritySection({ ctx }: { ctx: Ctx }) {
-  const tab = (['posture', 'findings', 'mode', 'reviews', 'evidence'].includes(ctx.tab) ? ctx.tab : 'posture') as Tab;
+  const tab = (['posture', 'findings', 'mode', 'residency', 'reviews', 'evidence'].includes(ctx.tab) ? ctx.tab : 'posture') as Tab;
   const custs = CUSTOMERS.filter(c => inScope(ctx, c.id) && c.status !== 'archived');
   return (
     <Section
@@ -50,6 +51,7 @@ export default function SecuritySection({ ctx }: { ctx: Ctx }) {
         { v: 'posture', label: 'Posture' },
         { v: 'findings', label: 'Findings', count: FINDINGS.filter(f => f.state === 'Open' && inScope(ctx, f.customer)).length },
         { v: 'mode', label: 'Compliance mode' },
+        { v: 'residency', label: 'Data residency' },
         { v: 'reviews', label: 'Reviews', count: REVIEWS.filter(r => r.state !== 'Done' && inScope(ctx, r.customer)).length },
         { v: 'evidence', label: 'Evidence packs' }
       ]}
@@ -59,6 +61,7 @@ export default function SecuritySection({ ctx }: { ctx: Ctx }) {
       {tab === 'mode' ? <ComplianceMode ctx={ctx} /> : null}
       {tab === 'reviews' ? <Reviews ctx={ctx} /> : null}
       {tab === 'evidence' ? <EvidenceTab ctx={ctx} /> : null}
+      {tab === 'residency' ? <ResidencyTab ctx={ctx} /> : null}
     </Section>
   );
 }
