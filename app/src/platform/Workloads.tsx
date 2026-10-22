@@ -3,6 +3,7 @@ import AegisTable from '../components/AegisTable';
 import { Icon } from '../lib/Icon';
 import { Btn, Field, FilterInput, RadioCard, Seg, SelectFilter, SelectInput, Tabs, Tag, TextArea, TextInput, InfoTip } from '../ui/controls';
 import { DiscoveryPage } from './Discovery';
+import { RecoveryPointsTab, pointsOf } from './RecoveryPoints';
 import { Activity, Bar, BulkBar, DrawerTiles, Facts, H3, MiniTable, Page, PageHeader, Spacer, Status, TableArea, Toolbar, plural } from '../ui/layout';
 import { Dialog, Drawer, StepUp, useClosable } from '../ui/overlay';
 import { audit, update } from './store';
@@ -204,6 +205,7 @@ function WorkloadDrawer({ ctx, w, tab, setTab, closing, onClose, onTier }: { ctx
   const tabs = [
     { v: 'Overview', label: 'Overview' },
     { v: 'Protection', label: 'Protection' },
+    { v: 'Points', label: 'Recovery points', count: pointsOf(w).length || '' },
     { v: 'Lifecycle', label: 'Lifecycle', count: w.lifecycle.length },
     { v: 'Dependencies', label: 'Dependencies', count: deps.length + usedBy.length },
     { v: 'Alerts', label: 'Alerts', count: alerts.length }
@@ -339,6 +341,7 @@ function WorkloadDrawer({ ctx, w, tab, setTab, closing, onClose, onTier }: { ctx
           </section>
         </div>
       ) : null}
+      {tab === 'Points' ? <RecoveryPointsTab ctx={ctx} w={w} onRestore={() => (w.sensitive ? restore.open(true) : ctx.go('backup/restore'))} /> : null}
       {tab === 'Lifecycle' ? (
         <ol aria-label="Lifecycle" style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column' }}>
           {STAGES.map(st => {

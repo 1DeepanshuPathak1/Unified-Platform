@@ -29,7 +29,10 @@ const FRAMEWORKS: Record<string, string[]> = {
   'ISO 22301': ['rt', 'dr', 'fo', 'rb', 'au'],
   'ISO 27001 (A.5.29, A.8.13, A.8.14)': ['bk', 'rt', 'im', 'ar', 'ky', 'au'],
   'DPDP Act 2023': ['im', 'ar', 'ky', 'au'],
-  'SOC 2 (A1.2, A1.3)': ['bk', 'rt', 'dr', 'ar', 'ap', 'au']
+  'SOC 2 (A1.2, A1.3)': ['bk', 'rt', 'dr', 'ar', 'ap', 'au'],
+  'IRDAI Information and Cyber Security Guidelines': ['bk', 'rt', 'im', 'dr', 'fo', 'au'],
+  'SEBI CSCRF (BCP and DR)': ['bk', 'rt', 'im', 'dr', 'fo', 'rb', 'ap', 'au'],
+  'DORA (Art. 11 and 12)': ['bk', 'rt', 'im', 'dr', 'fo', 'rb', 'au']
 };
 interface Pack { id: string; name: string; customer: string; framework: string; period: string; parts: string[]; built: string; by: string; state: 'Ready' | 'Building'; sha: string; shared?: string }
 const PACKS: Pack[] = [

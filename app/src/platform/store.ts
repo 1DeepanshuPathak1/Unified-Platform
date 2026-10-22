@@ -28,7 +28,9 @@ export const store = {
   drillSchedule: [...DRILL_SCHEDULE] as ScheduledDrill[],
   reconciliations: [...RECONCILIATIONS] as Reconciliation[],
   /** Where a return to primary is going, by recovery plan id, while it runs. */
-  failbackTarget: {} as Record<string, { target: string; same: boolean }>
+  failbackTarget: {} as Record<string, { target: string; same: boolean }>,
+  /** DNS record changes made from a recovery plan: TTL now, and whether it is lowered before planned failovers. */
+  dnsTtl: {} as Record<string, { ttl: number; auto: boolean; checked?: string }>
 };
 
 const listeners = new Set<() => void>();

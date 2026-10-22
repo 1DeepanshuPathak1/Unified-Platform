@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Icon } from '../../lib/Icon';
 import { pc } from '../../lib/pseudo';
-import { Btn, Seg, Tag } from '../../ui/controls';
+import { Btn, Seg, Tabs, Tag } from '../../ui/controls';
+import { SiteCapacity } from './Capacity';
 import { Bar, MiniTable, Page, PageHeader, Panel, StateBlock, Status, Tiles, plural, type Kpi } from '../../ui/layout';
 import type { Ctx } from '../../ui/ctx';
 import { custName, D_ST, Go, inScope, showCustomerCol, TierTag } from '../../platform/common';
@@ -14,8 +15,26 @@ const RPO_FILL: Record<RpoState, string> = { within: 'var(--ok)', behind: 'var(-
 export const scoreTone = (n: number | null) => (n == null ? 'warn' : n >= 85 ? 'ok' : n >= 60 ? 'warn' : 'err');
 const short = (t: string) => t.replace(' 2026', '').replace(' IST', '');
 
-/** Resilience › Overview: replication against target, readiness to fail over, drills and lag. */
+/** Resilience › Overview, with Site capacity as a second view for the provider. */
 export default function ResilienceOverview({ ctx }: { ctx: Ctx }) {
+  if (ctx.tab === 'capacity' && !ctx.actingAs)
+    return (
+      <Page scroll>
+        <PageHeader kicker="Resilience" title="Overview" sub="Recovery site capacity: what each site can hold, what is reserved for each customer and what is in use now." />
+        <OverviewTabs ctx={ctx} value="capacity" />
+        <SiteCapacity ctx={ctx} />
+      </Page>
+    );
+  return <Readiness ctx={ctx} />;
+}
+
+function OverviewTabs({ ctx, value }: { ctx: Ctx; value: 'readiness' | 'capacity' }) {
+  if (ctx.actingAs) return null;
+  return <Tabs<'readiness' | 'capacity'> label="Overview views" value={value} onChange={v => ctx.go(v === 'capacity' ? 'dr/overview/capacity' : 'dr/overview')} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'readiness', label: 'Readiness' }, { v: 'capacity', label: 'Site capacity' }]} />;
+}
+
+/** Resilience › Overview: replication against target, readiness to fail over, drills and lag. */
+function Readiness({ ctx }: { ctx: Ctx }) {
   const s = useStore();
   const [view, setView] = useState<'chart' | 'table'>('chart');
   const scoped = drWorkloads().filter(w => inScope(ctx, w.customer, w.project));
@@ -66,6 +85,7 @@ export default function ResilienceOverview({ ctx }: { ctx: Ctx }) {
           </>
         }
       />
+      <OverviewTabs ctx={ctx} value="readiness" />
       <div style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Tiles items={tiles} />
         {ui === 'unreach' ? <Bar tone="warn">Could not be read: the orchestrator did not answer within 30 s. Replication state is not shown until it can be read.</Bar> : null}

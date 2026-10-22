@@ -167,14 +167,16 @@ export interface Wave {
   usedMin: number;
   state: 'done' | 'in progress' | 'scheduled' | 'not scheduled';
   approval?: string;
+  /** The customer's change ticket for the cutover; Aegis posts progress and the result to it. */
+  change?: { sys: 'ServiceNow' | 'Jira'; id: string; state: string };
 }
 export const WAVES: Wave[] = [
-  { id: 'w0', customer: 'h360', name: W0, window: 'Sun 18 Oct 2026, 22:00 to 02:00 IST', budgetMin: 240, usedMin: 95, state: 'done' },
-  { id: 'w1', customer: 'h360', name: W1, window: 'Sun 25 Oct 2026, 22:00 to 02:00 IST', budgetMin: 240, usedMin: 0, state: 'scheduled' },
-  { id: 'w2', customer: 'h360', name: W2, window: 'Sun 01 Nov 2026, 22:00 to 04:00 IST', budgetMin: 360, usedMin: 0, state: 'scheduled' },
+  { id: 'w0', customer: 'h360', name: W0, window: 'Sun 18 Oct 2026, 22:00 to 02:00 IST', budgetMin: 240, usedMin: 95, state: 'done', change: { sys: 'ServiceNow', id: 'CHG0033980', state: 'Closed, successful' } },
+  { id: 'w1', customer: 'h360', name: W1, window: 'Sun 25 Oct 2026, 22:00 to 02:00 IST', budgetMin: 240, usedMin: 0, state: 'scheduled', change: { sys: 'ServiceNow', id: 'CHG0034217', state: 'Scheduled, CAB approved 20 Oct' } },
+  { id: 'w2', customer: 'h360', name: W2, window: 'Sun 01 Nov 2026, 22:00 to 04:00 IST', budgetMin: 360, usedMin: 0, state: 'scheduled', change: { sys: 'Jira', id: 'OPS-2214', state: 'Awaiting CAB, 28 Oct' } },
   { id: 'w3', customer: 'h360', name: W3, window: null, budgetMin: 480, usedMin: 145, state: 'in progress' },
-  { id: 'm1', customer: 'mer', name: M1, window: 'Sun 04 Oct 2026, 22:00 to 03:00 IST', budgetMin: 300, usedMin: 125, state: 'done' },
-  { id: 'm2', customer: 'mer', name: M2, window: 'Sun 25 Oct 2026, 22:00 to 04:00 IST', budgetMin: 360, usedMin: 0, state: 'scheduled', approval: 'APR-1042' }
+  { id: 'm1', customer: 'mer', name: M1, window: 'Sun 04 Oct 2026, 22:00 to 03:00 IST', budgetMin: 300, usedMin: 125, state: 'done', change: { sys: 'ServiceNow', id: 'CHG0050877', state: 'Closed, successful' } },
+  { id: 'm2', customer: 'mer', name: M2, window: 'Sun 25 Oct 2026, 22:00 to 04:00 IST', budgetMin: 360, usedMin: 0, state: 'scheduled', approval: 'APR-1042', change: { sys: 'ServiceNow', id: 'CHG0051190', state: 'Scheduled, CAB approved 19 Oct' } }
 ];
 
 /** Weekly servers-left-to-migrate, per customer. Planned runs to 14 Dec; actual to the last Monday. */

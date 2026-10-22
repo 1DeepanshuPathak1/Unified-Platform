@@ -8,9 +8,11 @@ import { DepGraph } from '../../ui/DepGraph';
 import type { Ctx } from '../../ui/ctx';
 import { custName, inScope, scopeCustomers, showCustomerCol } from '../../platform/common';
 import { audit } from '../../platform/store';
+import { ProfilesView, profileFor } from './Profiles';
+import { ValidationTab } from './Validation';
 import { BLACKOUTS, FLOWS, INVENTORY, IN_PROGRESS, STAGE_LABEL, SUGGESTED_APPS, WAVES, verdict, type Blackout, type SourceVm, type Wave } from './data';
 
-type Tab = 'waves' | 'map' | 'calendar';
+type Tab = 'waves' | 'map' | 'calendar' | 'profiles';
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const fmtMin = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
@@ -33,9 +35,9 @@ const needs = (name: string) => FLOWS.filter(f => f.to === name).map(f => f.from
  * map that decides what moves together and in what order, and the calendar of blackout periods.
  */
 export default function Plans({ ctx }: { ctx: Ctx }) {
-  const [tab, setTab] = useState<Tab>((['waves', 'map', 'calendar'] as Tab[]).includes(ctx.tab as Tab) ? (ctx.tab as Tab) : 'waves');
+  const [tab, setTab] = useState<Tab>((['waves', 'map', 'calendar', 'profiles'] as Tab[]).includes(ctx.tab as Tab) ? (ctx.tab as Tab) : 'waves');
   useEffect(() => {
-    if ((['waves', 'map', 'calendar'] as string[]).includes(ctx.tab)) setTab(ctx.tab as Tab);
+    if ((['waves', 'map', 'calendar', 'profiles'] as string[]).includes(ctx.tab)) setTab(ctx.tab as Tab);
   }, [ctx.tab]);
   const [waves, setWaves] = useState<Wave[]>(WAVES);
   const [member, setMember] = useState<Record<string, string | undefined>>({});
@@ -62,10 +64,11 @@ export default function Plans({ ctx }: { ctx: Ctx }) {
           </>
         }
       />
-      <Tabs label="Migration plans" value={tab} onChange={go} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'waves', label: 'Waves', count: ws.length }, { v: 'map', label: 'Dependency map' }, { v: 'calendar', label: 'Calendar', count: bos.length }]} />
+      <Tabs label="Migration plans" value={tab} onChange={go} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'waves', label: 'Waves', count: ws.length }, { v: 'map', label: 'Dependency map' }, { v: 'calendar', label: 'Calendar', count: bos.length }, { v: 'profiles', label: 'Transformation profiles' }]} />
       {tab === 'waves' ? <WaveList ctx={ctx} waves={ws} inv={inv} blackouts={bos} onEdit={w => create.open({ wave: w })} /> : null}
       {tab === 'map' ? <MapView ctx={ctx} inv={inv} kept={kept} onKeep={id => setKept(k => [...k, id])} onPlan={(customer, preset) => create.open({ customer, preset })} /> : null}
       {tab === 'calendar' ? <CalendarView ctx={ctx} waves={ws} blackouts={bos} /> : null}
+      {tab === 'profiles' ? <ProfilesView ctx={ctx} /> : null}
       {create.value ? (
         <WaveDialog
           ctx={ctx}
@@ -185,7 +188,7 @@ function WaveList({ ctx, waves, inv, blackouts, onEdit }: { ctx: Ctx; waves: Wav
           label="Migration wave"
           kicker={`Migration wave · ${custName(d.customer)}`}
           title={d.name}
-          status={<><span>{d.window || 'No cutover window'}</span><span>{plural(dc.mine.length, 'server')}</span></>}
+          status={<><span>{d.window || 'No cutover window'}</span><span>{plural(dc.mine.length, 'server')}</span>{d.change ? <span>{d.change.id}</span> : null}</>}
           actions={
             <>
               <Btn kind="primary" icon="power" perm={ctx.can('operate', 'Cutting over')} disabled={d.state === 'done' || !dc.mine.length || dc.mine.some(v => v.stage !== 'ready' && v.stage !== 'committed')} why={d.state === 'done' ? 'This wave is done.' : `${plural(dc.mine.filter(v => v.stage !== 'ready' && v.stage !== 'committed').length, 'server')} not ready for cutover.`} onClick={() => ctx.go('mig/servers')}>Cut over the wave</Btn>
@@ -194,7 +197,7 @@ function WaveList({ ctx, waves, inv, blackouts, onEdit }: { ctx: Ctx; waves: Wav
               <Btn kind="ghost" icon="server" onClick={() => ctx.go('mig/servers')}>Servers</Btn>
             </>
           }
-          tabs={[{ v: 'Servers', label: 'Servers', count: dc.mine.length }, { v: 'Order', label: 'Dependencies', count: dc.out.filter(c => !c.ok).length || undefined }, { v: 'Window', label: 'Window' }]}
+          tabs={[{ v: 'Servers', label: 'Servers', count: dc.mine.length }, { v: 'Order', label: 'Dependencies', count: dc.out.filter(c => !c.ok).length || undefined }, { v: 'Validation', label: 'Validation' }, { v: 'Window', label: 'Window' }]}
           tab={tab}
           onTab={setTab}
           closing={drawer.closing}
@@ -203,8 +206,8 @@ function WaveList({ ctx, waves, inv, blackouts, onEdit }: { ctx: Ctx; waves: Wav
           {tab === 'Servers' ? (
             <MiniTable
               label="Servers in the wave"
-              cols={[{ label: 'Server' }, { label: 'Stage', w: '170px' }, { label: 'Checks', w: '110px' }]}
-              rows={dc.mine.map(v => [<strong key="n" style={{ fontWeight: 600 }}>{v.name}</strong>, STAGE_LABEL[v.stage], verdict(v) === 'ok' ? <Status key="c" icon="circle-check" tone="ok" label="Ready" /> : verdict(v) === 'warn' ? <Status key="c" icon="triangle-alert" tone="warn" label="Warnings" /> : <Status key="c" icon="ban" tone="err" label="Blocked" />])}
+              cols={[{ label: 'Server' }, { label: 'Stage', w: '150px' }, { label: 'Profile', w: '150px' }, { label: 'Checks', w: '100px' }]}
+              rows={dc.mine.map(v => [<strong key="n" style={{ fontWeight: 600 }}>{v.name}</strong>, STAGE_LABEL[v.stage], profileFor(v) ? <button key="p" type="button" onClick={() => ctx.go('mig/plans/profiles')} data-tip={`${profileFor(v)!.name}, version ${profileFor(v)!.version}`} style={{ color: 'var(--acc)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'left' }}>{profileFor(v)!.name.replace(' Server', '')}</button> : <span key="p" style={{ color: 'var(--tx-3)' }}>No destination</span>, verdict(v) === 'ok' ? <Status key="c" icon="circle-check" tone="ok" label="Ready" /> : verdict(v) === 'warn' ? <Status key="c" icon="triangle-alert" tone="warn" label="Warnings" /> : <Status key="c" icon="ban" tone="err" label="Blocked" />])}
               empty="No servers yet. Edit the wave to add some."
             />
           ) : null}
@@ -214,13 +217,17 @@ function WaveList({ ctx, waves, inv, blackouts, onEdit }: { ctx: Ctx; waves: Wav
               <MiniTable label="Dependencies" cols={[{ label: 'Server', w: '140px' }, { label: 'Needs', w: '140px' }, { label: 'Result' }]} rows={dc.out.map(c => [c.server, c.dep, <Status key="r" icon={c.ok ? 'circle-check' : 'triangle-alert'} tone={c.ok ? 'ok' : 'warn'} label={c.text} />])} empty="No dependencies found for these servers." />
             </div>
           ) : null}
+          {tab === 'Validation' ? <ValidationTab ctx={ctx} wave={d} servers={dc.mine} /> : null}
           {tab === 'Window' ? (
             <Facts
               items={[
                 { k: 'Cutover window', v: d.window || 'Not set', muted: !d.window },
                 { k: 'Downtime budget', v: `${fmtMin(d.budgetMin)}; ${fmtMin(d.usedMin)} used` },
                 { k: 'Blackout check', v: d.window ? (inBlackout(d.customer, waveDay(d), blackouts) ? `Inside ${inBlackout(d.customer, waveDay(d), blackouts)!.name}` : 'Clear of every blackout period') : 'No window to check', icon: d.window && !inBlackout(d.customer, waveDay(d), blackouts) ? 'circle-check' : undefined, tone: 'ok' },
-                ...(d.approval ? [{ k: 'Go/no-go', v: `${d.approval}, two approvers` }] : [])
+                ...(d.approval ? [{ k: 'Go/no-go', v: `${d.approval}, two approvers` }] : []),
+                d.change
+                  ? { k: 'Change record', v: <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}><strong style={{ fontWeight: 600 }}>{d.change.sys} {d.change.id}</strong><span style={{ color: 'var(--tx-2)' }}>{d.change.state}</span><Btn kind="ghost" size="sm" icon="external-link" onClick={() => ctx.toast(`${d.change!.id} opens in ${d.change!.sys}`, 'info')}>Open</Btn></span> }
+                  : { k: 'Change record', v: 'None. Add one when you edit the wave; Aegis then posts progress and the result to it.', icon: 'triangle-alert', tone: 'warn' }
               ]}
             />
           ) : null}
@@ -336,6 +343,8 @@ function WaveDialog({ ctx, wave, preset, customer, inv, waves, blackouts, kept, 
   const [start, setStart] = useState(wave?.window?.match(/, (\d{2}:\d{2})/)?.[1] || '22:00');
   const [hours, setHours] = useState(String(wave ? Math.round(wave.budgetMin / 60) : 4));
   const [budget, setBudget] = useState(String(wave?.budgetMin || 240));
+  const [chSys, setChSys] = useState<'None' | 'ServiceNow' | 'Jira'>(wave?.change?.sys || (wave ? 'None' : 'ServiceNow'));
+  const [chId, setChId] = useState(wave?.change?.id || '');
   const [sel, setSel] = useState<string[]>(wave ? inv.filter(v => v.wave === wave.name && v.customer === wave.customer).map(v => v.id) : preset || []);
   const pool = inv.filter(v => v.customer === cust && v.stage !== 'excluded' && v.stage !== 'committed' && (!v.wave || v.wave === wave?.name));
   const bo = inBlackout(cust, day, blackouts);
@@ -347,8 +356,10 @@ function WaveDialog({ ctx, wave, preset, customer, inv, waves, blackouts, kept, 
   const [hh, mm] = start.split(':').map(Number);
   const endMin = (hh * 60 + mm + +hours * 60) % 1440;
   const window = `${isoLabel(day)}, ${start} to ${String(Math.floor(endMin / 60)).padStart(2, '0')}:${String(endMin % 60).padStart(2, '0')} IST`;
-  const ok = name.trim().length > 8 && !dupe && !bo && !past && sel.length > 0 && +budget > 0;
-  const why = name.trim().length <= 8 ? 'Name the wave.' : dupe ? 'That name is taken.' : bo ? `The window is inside ${bo.name}.` : past ? 'The window is in the past.' : !sel.length ? 'Add at least one server.' : 'Give a downtime budget.';
+  const chBad = chSys !== 'None' && chId.trim() !== '' && !(chSys === 'ServiceNow' ? /^CHG\d{7}$/ : /^[A-Z][A-Z0-9]+-\d+$/).test(chId.trim());
+  const ok = name.trim().length > 8 && !dupe && !bo && !past && sel.length > 0 && +budget > 0 && !chBad;
+  const why = name.trim().length <= 8 ? 'Name the wave.' : dupe ? 'That name is taken.' : bo ? `The window is inside ${bo.name}.` : past ? 'The window is in the past.' : !sel.length ? 'Add at least one server.' : chBad ? 'Check the change number.' : 'Give a downtime budget.';
+  const change = chSys !== 'None' && chId.trim() ? { sys: chSys, id: chId.trim(), state: wave?.change?.id === chId.trim() ? wave.change.state : 'New, linked by Aegis' } : undefined;
   return (
     <Dialog
       title={wave ? `Edit ${wave.name}` : 'Create a wave'}
@@ -357,7 +368,7 @@ function WaveDialog({ ctx, wave, preset, customer, inv, waves, blackouts, kept, 
       closing={closing}
       onClose={onClose}
       footNote={plural(sel.length, 'server')}
-      footer={<><Btn kind="ghost" onClick={onClose}>Cancel</Btn><Btn kind="primary" icon="check" perm={ctx.can('configure', 'Planning waves')} disabled={!ok} why={why} onClick={() => onSave({ id: wave?.id || 'w' + Date.now(), customer: cust, name: name.trim(), window, budgetMin: +budget, usedMin: wave?.usedMin || 0, state: wave?.state === 'in progress' ? 'in progress' : 'scheduled', approval: wave?.approval }, sel)}>{wave ? 'Save' : 'Create wave'}</Btn></>}
+      footer={<><Btn kind="ghost" onClick={onClose}>Cancel</Btn><Btn kind="primary" icon="check" perm={ctx.can('configure', 'Planning waves')} disabled={!ok} why={why} onClick={() => onSave({ id: wave?.id || 'w' + Date.now(), customer: cust, name: name.trim(), window, budgetMin: +budget, usedMin: wave?.usedMin || 0, state: wave?.state === 'in progress' ? 'in progress' : 'scheduled', approval: wave?.approval, change }, sel)}>{wave ? 'Save' : 'Create wave'}</Btn></>}
     >
       <div style={{ display: 'grid', gridTemplateColumns: custs.length > 1 && !wave ? 'minmax(0,1fr) 220px' : 'minmax(0,1fr)', gap: 16 }}>
         <Field id="wd-n" label="Name" err={dupe ? 'That name is taken.' : null}><TextInput id="wd-n" value={name} onChange={setName} invalid={dupe} autoFocus /></Field>
@@ -379,6 +390,16 @@ function WaveDialog({ ctx, wave, preset, customer, inv, waves, blackouts, kept, 
           ))}
         </div>
       </Field>
+      <div style={{ display: 'grid', gridTemplateColumns: '150px minmax(0,1fr) auto', gap: 16, alignItems: 'end' }}>
+        <Field id="wd-cs" label="Change record"><SelectInput id="wd-cs" value={chSys} onChange={v => { setChSys(v as typeof chSys); setChId(''); }} options={['None', 'ServiceNow', 'Jira']} /></Field>
+        <Field id="wd-ci" label={chSys === 'Jira' ? 'Issue key' : 'Change number'} err={chBad ? (chSys === 'ServiceNow' ? 'A change number looks like CHG0034217.' : 'An issue key looks like OPS-2214.') : null}>
+          <TextInput id="wd-ci" value={chId} onChange={v => setChId(v.toUpperCase())} placeholder={chSys === 'None' ? 'No change record' : chSys === 'Jira' ? 'OPS-2214' : 'CHG0034217'} readOnly={chSys === 'None'} invalid={chBad} />
+        </Field>
+        <Btn kind="outline" icon="plus" disabled={chSys === 'None' || !!chId.trim()} why={chSys === 'None' ? 'Choose ServiceNow or Jira.' : 'A record is already linked.'} onClick={() => { const id = chSys === 'Jira' ? `OPS-${2230 + Math.floor(Math.random() * 60)}` : `CHG00${34300 + Math.floor(Math.random() * 600)}`; setChId(id); ctx.toast(`${id} created in ${chSys} as a normal change, with the window and the servers`, 'ok'); }}>
+          Create one
+        </Btn>
+      </div>
+      {chSys !== 'None' ? <p style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginTop: -8 }}>Aegis posts the start, each server and the result to the {chSys === 'Jira' ? 'issue' : 'change'}, and closes it when the wave is committed.</p> : null}
       {missing.length ? (
         <Bar tone="warn" actions={<Btn kind="ghost" size="sm" icon="plus" onClick={() => setSel(s => [...s, ...pool.filter(v => missing.includes(v.name)).map(v => v.id)])}>Add {missing.length === 1 ? 'it' : 'them'}</Btn>}>
           {missing.join(', ')} {missing.length === 1 ? 'is' : 'are'} needed by servers in this wave and would stay behind.

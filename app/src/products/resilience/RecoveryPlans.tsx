@@ -14,6 +14,8 @@ import { FailbackDialog, FailoverDialog, RunPanel, runCell } from './Failover';
 import { Meter, scoreTone } from './Overview';
 import { stepText } from './runner';
 import { DrillCalendar, Reconciliations } from './Drills';
+import { ComplianceTab } from './Compliance';
+import { DnsMapping } from './Dns';
 
 const short = (t: string) => t.replace(' 2026', '').replace(' IST', '');
 
@@ -40,7 +42,7 @@ function PlanList({ ctx, onOpen }: { ctx: Ctx; onOpen: (id: string) => void }) {
   const s = useStore();
   const [q, setQ] = useState('');
   const [ready, setReady] = useState('All');
-  const [view, setView] = useState<'plans' | 'calendar'>(ctx.tab === 'calendar' ? 'calendar' : 'plans');
+  const [view, setView] = useState<'plans' | 'calendar' | 'compliance'>(ctx.tab === 'calendar' || ctx.tab === 'compliance' ? ctx.tab : 'plans');
   const create = useClosable<boolean>();
   const showCust = showCustomerCol(ctx);
   const ql = q.trim().toLowerCase();
@@ -58,8 +60,8 @@ function PlanList({ ctx, onOpen }: { ctx: Ctx; onOpen: (id: string) => void }) {
           </Btn>
         }
       />
-      <Tabs label="Recovery plans" value={view} onChange={v => { setView(v); ctx.go(`dr/recovery/${v}`); }} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'plans', label: 'Plans', count: all.length }, { v: 'calendar', label: 'Drill calendar', count: s.drillSchedule.filter(d => all.some(x => x.r.id === d.plan)).length }]} />
-      {view === 'calendar' ? <DrillCalendar ctx={ctx} /> : (
+      <Tabs label="Recovery plans" value={view} onChange={v => { setView(v); ctx.go(`dr/recovery/${v}`); }} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'plans', label: 'Plans', count: all.length }, { v: 'calendar', label: 'Drill calendar', count: s.drillSchedule.filter(d => all.some(x => x.r.id === d.plan)).length }, { v: 'compliance', label: 'Compliance', icon: 'scale' }]} />
+      {view === 'calendar' ? <DrillCalendar ctx={ctx} /> : view === 'compliance' ? <ComplianceTab ctx={ctx} /> : (
       <>
       <Toolbar>
         <FilterInput value={q} onChange={setQ} placeholder="Filter by name, customer or site" label="Filter recovery plans" width={260} />
@@ -110,7 +112,7 @@ function PlanList({ ctx, onOpen }: { ctx: Ctx; onOpen: (id: string) => void }) {
   );
 }
 
-type Tab = 'runbook' | 'ready' | 'versions' | 'doc' | 'runs';
+type Tab = 'runbook' | 'ready' | 'dns' | 'versions' | 'doc' | 'runs';
 
 function PlanPage({ ctx, rb, onBack }: { ctx: Ctx; rb: Runbook; onBack: () => void }) {
   const s = useStore();
@@ -238,6 +240,7 @@ function PlanPage({ ctx, rb, onBack }: { ctx: Ctx; rb: Runbook; onBack: () => vo
         tabs={[
           { v: 'runbook', label: 'Runbook', icon: 'workflow' },
           { v: 'ready', label: 'Readiness', count: unread ? '' : checks.filter(c => c.state !== 'pass').length },
+          { v: 'dns', label: 'DNS', icon: 'network' },
           { v: 'versions', label: 'Versions', count: rb.versions.length },
           { v: 'doc', label: 'Document', icon: 'file-check' },
           { v: 'runs', label: 'Runs and drills', count: s.drills.filter(d => d.plan === rb.id).length }
@@ -333,6 +336,18 @@ function PlanPage({ ctx, rb, onBack }: { ctx: Ctx; rb: Runbook; onBack: () => vo
               }}
             />
           )
+        ) : null}
+        {tab === 'dns' ? (
+          <DnsMapping
+            ctx={ctx}
+            rb={view}
+            onAddStep={(record, value) => {
+              if (!editable) return ctx.toast(live ? 'Editing is paused while the plan runs.' : 'You cannot edit this plan.', 'warn');
+              const last = view.stages[view.stages.length - 1];
+              setTab('runbook');
+              editStep.open({ stage: last.id, step: { ...newStep('dns', rb), record, value } });
+            }}
+          />
         ) : null}
         {tab === 'doc' ? <RunbookDocument ctx={ctx} rb={view} draft={!!draft} /> : null}
         {tab === 'runs' ? (
