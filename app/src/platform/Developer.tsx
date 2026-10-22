@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AegisTable from '../components/AegisTable';
 import { Icon } from '../lib/Icon';
 import { HOVER } from '../ui/layout';
@@ -8,6 +8,7 @@ import { Bar, Facts, MiniTable, Spacer, Status, TableArea, Toolbar } from '../ui
 import { Dialog, Drawer, useClosable } from '../ui/overlay';
 import type { Ctx } from '../ui/ctx';
 import { audit } from './store';
+import { EVENT_TYPES, EventCatalogue, GatewayView, ToolsView } from './Gateway';
 
 const BASE = 'https://aegis.host360.ai/api/v2';
 interface Param { name: string; in: 'path' | 'query' | 'body'; type: string; required?: boolean; example: string }
@@ -23,7 +24,7 @@ const ENDPOINTS: Endpoint[] = [
   { id: 'e8', group: 'Events', method: 'GET', path: '/events', summary: 'Events since a cursor, for polling instead of webhooks', scope: 'events:read', params: [{ name: 'after', in: 'query', type: 'string', example: 'evt_01JB2K' }], response: '{\n  "items": [ { "id": "evt_01JB2M", "type": "backup.failed", "object": "file-srv-03", "at": "2026-10-21T02:48:10+05:30" } ]\n}' }
 ];
 const METHOD_TONE: Record<Endpoint['method'], string> = { GET: 'ok', POST: 'run', DELETE: 'err' };
-const EVENTS = ['backup.completed', 'backup.failed', 'restore.finished', 'replication.lagging', 'failover.started', 'failover.finished', 'migration.finished', 'cutover.committed', 'storage.threshold_crossed', 'licence.expiring', 'alert.raised', 'approval.requested'];
+const EVENTS = EVENT_TYPES.filter(e => !e.deprecated).map(e => e.name);
 interface Sub { id: string; name: string; events: string[]; url: string; state: 'ok' | 'err'; last: string; log: [string, string, string][] }
 const SUBS: Sub[] = [
   { id: 's1', name: 'ServiceNow incidents', events: ['backup.failed', 'failover.started', 'alert.raised'], url: 'https://host360.service-now.com/api/x_aegis/events', state: 'ok', last: T('21 Oct', '14:53'), log: [[T('21 Oct', '14:53'), 'alert.raised · region-2-os', '200 in 312 ms'], [T('21 Oct', '02:48'), 'backup.failed · file-srv-03', '200 in 280 ms']] },
@@ -48,17 +49,21 @@ const curl = (e: Endpoint, vals: Record<string, string>) => {
 
 /** Automation › API and events: the API explorer with copy as cURL, webhook subscriptions and workflow templates. */
 export function ApiTab({ ctx }: { ctx: Ctx }) {
-  const [view, setView] = useState<'explorer' | 'events' | 'templates'>('explorer');
+  const [view, setView] = useState<'explorer' | 'events' | 'catalogue' | 'gateway' | 'tools' | 'templates'>('explorer');
+  const [startAdd, setStartAdd] = useState(false);
   return (
     <>
       <Toolbar>
-        <Seg label="Show" value={view} onChange={setView} options={[{ v: 'explorer', label: 'API explorer' }, { v: 'events', label: 'Event subscriptions' }, { v: 'templates', label: 'Workflow templates' }]} />
+        <Seg label="Show" value={view} onChange={setView} options={[{ v: 'explorer', label: 'Explorer' }, { v: 'events', label: 'Subscriptions' }, { v: 'catalogue', label: 'Event catalogue' }, { v: 'gateway', label: 'Gateway and limits' }, { v: 'tools', label: 'CLI and SDKs' }, { v: 'templates', label: 'Workflow templates' }]} />
         <Spacer />
         <Btn kind="ghost" icon="download" onClick={() => ctx.toast('openapi.yaml (OpenAPI 3.1, 64 endpoints) downloaded', 'ok')}>OpenAPI 3.1</Btn>
         <Btn kind="ghost" iconAfter="arrow-right" onClick={() => ctx.go('settings/service')}>API keys</Btn>
       </Toolbar>
       {view === 'explorer' ? <Explorer ctx={ctx} /> : null}
-      {view === 'events' ? <Subscriptions ctx={ctx} /> : null}
+      {view === 'events' ? <Subscriptions ctx={ctx} startAdd={startAdd} /> : null}
+      {view === 'catalogue' ? <EventCatalogue ctx={ctx} onSubscribe={() => { setStartAdd(true); setView('events'); }} /> : null}
+      {view === 'gateway' ? <GatewayView ctx={ctx} /> : null}
+      {view === 'tools' ? <ToolsView ctx={ctx} /> : null}
       {view === 'templates' ? (
         <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 24px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(300px,1fr))', gap: 12, alignContent: 'start' }}>
           {TEMPLATES.map(t => (
@@ -144,10 +149,13 @@ function Explorer({ ctx }: { ctx: Ctx }) {
   );
 }
 
-function Subscriptions({ ctx }: { ctx: Ctx }) {
+function Subscriptions({ ctx, startAdd }: { ctx: Ctx; startAdd?: boolean }) {
   const [list, setList] = useState<Sub[]>(SUBS);
   const drawer = useClosable<string>();
   const add = useClosable<boolean>();
+  useEffect(() => {
+    if (startAdd) add.open(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const cfg = ctx.can('configure', 'Changing event subscriptions');
   const d = drawer.value ? list.find(x => x.id === drawer.value) : null;
   return (

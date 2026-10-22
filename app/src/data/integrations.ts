@@ -2,9 +2,11 @@
    integration (DNS changes in recovery plans, tickets, payments) show whether it is connected. */
 import { T } from './platform';
 
-export type IntegCat = 'Service desk' | 'Chat and paging' | 'Identity' | 'Monitoring' | 'CMDB' | 'Security (SIEM)' | 'DNS and IPAM' | 'PSA and RMM' | 'Payments' | 'Accounting' | 'Marketplaces';
+export type IntegCat = 'Host360' | 'Service desk' | 'Chat and paging' | 'Identity' | 'Monitoring' | 'CMDB' | 'Security (SIEM)' | 'DNS and IPAM' | 'PSA and RMM' | 'Payments' | 'Accounting' | 'Marketplaces';
 export interface Integ { id: string; name: string; cat: IntegCat; what: string; state: 'connected' | 'available' | 'attention'; detail?: string; since?: string; fields: [string, string][]; uses?: string[]; manage?: string }
 export const INTEGRATIONS: Integ[] = [
+  { id: 'h360cloud', name: 'Host360 Cloud portal', cat: 'Host360', what: 'Backup plans at VM creation, VDC accounts as tenants, restores from the cloud portal', state: 'connected', since: T('15 Sep', '10:00'), detail: '3 of 4 accounts linked', fields: [['Portal', 'cloud.host360.ai']], manage: 'settings/portals' },
+  { id: 'h360partner', name: 'Host360 Partner Portal', cat: 'Host360', what: 'Partners create customers, buy licences and read usage and margin through the API', state: 'connected', since: T('11 Feb', '10:00'), detail: 'CloudNest IT Services', fields: [['Portal', 'partners.host360.ai']], manage: 'settings/portals' },
   { id: 'snow', name: 'ServiceNow', cat: 'Service desk', what: 'Incidents from alerts, change records for failovers and cutovers', state: 'connected', since: T('18 Jan', '11:00'), detail: 'host360.service-now.com · OAuth client aegis-int', fields: [['Instance', 'host360.service-now.com'], ['Client ID', 'aegis-int']], uses: ['Alerts › incident on Critical', 'Cutover go/no-go › change record CHG', 'Workflows › webhook step'] },
   { id: 'jira', name: 'Jira Service Management', cat: 'Service desk', what: 'Change requests and tickets for customers who use Jira', state: 'available', fields: [['Site', 'yourcompany.atlassian.net'], ['API token', '']] },
   { id: 'fresh', name: 'Freshservice', cat: 'Service desk', what: 'Tickets and change records', state: 'available', fields: [['Domain', 'yourcompany.freshservice.com'], ['API key', '']] },

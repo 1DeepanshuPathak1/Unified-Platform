@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Icon } from '../lib/Icon';
 import { Btn } from '../ui/controls';
-import { Bar, MiniTable, Panel, Status, Tiles } from '../ui/layout';
+import { Bar, Facts, MiniTable, Panel, Status, Tiles } from '../ui/layout';
 import type { Ctx } from '../ui/ctx';
 import { COMPONENTS, SLOS } from '../data/admin';
+import { audit } from './store';
 
 const copy = (ctx: Ctx, text: string) =>
   navigator.clipboard?.writeText(text).then(
@@ -81,6 +83,48 @@ export function HealthTab({ ctx }: { ctx: Ctx }) {
           </Panel>
         </div>
       </div>
+      <ControlPlane ctx={ctx} />
+    </div>
+  );
+}
+
+/** Where the control plane runs, how it survives losing a region, and how its own state is protected. */
+function ControlPlane({ ctx }: { ctx: Ctx }) {
+  const [rehearse, setRehearse] = useState(false);
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.5fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
+      <Panel title="Control plane" right={<span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>Tenant data never leaves India</span>}>
+        <div style={{ padding: '4px 16px 12px' }}>
+          <MiniTable
+            label="Control plane regions"
+            cols={[{ label: 'Region', w: '200px' }, { label: 'Role', w: '130px' }, { label: 'Runs' }, { label: 'State', w: '120px' }]}
+            rows={[
+              [<strong key="r" style={{ fontWeight: 600 }}>ap-south-1 Mumbai</strong>, 'Serving', 'EKS aegis-prod-mum, 3 zones; database primary', <Status key="s" icon="circle-check" tone="ok" label="Healthy" />],
+              [<strong key="r" style={{ fontWeight: 600 }}>ap-south-2 Hyderabad</strong>, 'Warm standby', 'EKS aegis-dr-hyd, 2 zones; database replica, 2 s behind', <Status key="s" icon="circle-check" tone="ok" label="In sync" />],
+              [<strong key="r" style={{ fontWeight: 600 }}>Chennai DC1 (on-premises)</strong>, 'Site agent', 'aegis-orchestrator: runs jobs if the cloud is unreachable', <Status key="s" icon="circle-check" tone="ok" label="Connected" />]
+            ]}
+          />
+          <p style={{ marginTop: 8, font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>If Mumbai is lost, Hyderabad takes over the same address in about 4 minutes. Jobs already running at a site carry on through its site agent and report back when the control plane returns.</p>
+        </div>
+      </Panel>
+      <Panel title="Protecting the platform itself" right={<Btn kind="ghost" size="sm" iconAfter="arrow-right" onClick={() => ctx.go('settings/backup')}>Aegis backup</Btn>}>
+        <div style={{ padding: '4px 16px 12px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Facts
+            labelW={140}
+            items={[
+              { k: 'Platform state', v: 'Configuration, catalogue and audit chain backed up every hour to obj-check, immutable 30 days' },
+              { k: 'Last backup', v: '21 Oct, 16:00 IST', icon: 'circle-check', tone: 'ok' },
+              { k: 'Restore tested', v: '12 Oct: restored into a scratch cluster and checked' },
+              { k: 'Rebuild rehearsed', v: '28 Sep: from nothing to serving in 47 min, target 2 h' }
+            ]}
+          />
+          <div>
+            <Btn kind="outline" size="sm" icon="calendar" perm={ctx.can('admin', 'Booking a rebuild rehearsal')} disabled={rehearse} why="Already booked." onClick={() => { setRehearse(true); audit({ who: 'priya.raman', customer: 'h360', what: 'Booked a control-plane rebuild rehearsal', object: 'Sun 01 Nov, 02:00 IST', when: ctx.now(), r: 'ok' }); ctx.toast('Rebuild rehearsal booked for Sun 01 Nov, 02:00 IST, in an isolated account', 'ok'); }}>
+              {rehearse ? 'Rehearsal booked for 01 Nov' : 'Book a rebuild rehearsal'}
+            </Btn>
+          </div>
+        </div>
+      </Panel>
     </div>
   );
 }

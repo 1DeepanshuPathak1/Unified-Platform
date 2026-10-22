@@ -8,7 +8,8 @@ import { Dialog, Drawer, useClosable } from '../ui/overlay';
 import type { Ctx } from '../ui/ctx';
 import { audit, update, useStore } from './store';
 
-const CATS: IntegCat[] = ['Service desk', 'Chat and paging', 'Identity', 'Monitoring', 'CMDB', 'Security (SIEM)', 'DNS and IPAM', 'PSA and RMM', 'Payments', 'Accounting', 'Marketplaces'];
+const MANAGED_IN: Record<string, string> = { 'settings/sso': 'Settings › Single sign-on', 'activity/health': 'Alerts & Activity › Platform health', 'settings/portals': 'Settings › Host360 portals' };
+const CATS: IntegCat[] = ['Host360', 'Service desk', 'Chat and paging', 'Identity', 'Monitoring', 'CMDB', 'Security (SIEM)', 'DNS and IPAM', 'PSA and RMM', 'Payments', 'Accounting', 'Marketplaces'];
 const ST = { connected: ['circle-check', 'ok', 'Connected'], available: ['plus', 'tx', 'Available'], attention: ['triangle-alert', 'warn', 'Needs attention'] } as const;
 
 /** Automation › Integrations: every system Aegis talks to, connected or ready to connect. */
@@ -44,7 +45,7 @@ export function IntegrationsTab({ ctx }: { ctx: Ctx }) {
             <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>{i.cat}</span>
             <span style={{ color: 'var(--tx-2)', font: '13px/18px var(--f-body)' }}>{i.what}</span>
             {i.state === 'attention' && !i.manage ? <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--warn)', marginTop: 'auto' }}>{i.detail}</span> : null}
-            {i.manage ? <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--acc-tx)', marginTop: 'auto' }}>{i.detail ? `${i.detail} · ` : ''}Managed in {i.manage.startsWith('settings') ? 'Settings › Single sign-on' : 'Alerts & Activity › Platform health'}</span> : null}
+            {i.manage ? <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--acc-tx)', marginTop: 'auto' }}>{i.detail ? `${i.detail} · ` : ''}Managed in {MANAGED_IN[i.manage]}</span> : null}
           </button>
         ))}
         {!rows.length ? <p style={{ color: 'var(--tx-2)' }}>No integrations match. <button type="button" onClick={() => { setCat('All'); setQ(''); setShow('all'); }} style={{ color: 'var(--acc-tx)', fontWeight: 600 }}>Clear filters</button></p> : null}
