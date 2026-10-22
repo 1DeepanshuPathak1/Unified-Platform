@@ -9,6 +9,7 @@ import { DangerDialog, Dialog, Drawer, useClosable } from '../ui/overlay';
 import type { Ctx } from '../ui/ctx';
 import { custName, inScope, showCustomerCol } from './common';
 import { audit, update, useStore } from './store';
+import { InvoicesTab, MeteringTab, QuotaTab } from './Commercial';
 
 const ST: Record<Entitlement['state'], [string, string, string]> = {
   active: ['circle-check', 'Active', 'ok'],
@@ -19,19 +20,29 @@ const ST: Record<Entitlement['state'], [string, string, string]> = {
   expired: ['circle-x', 'Expired', 'err']
 };
 
-type Tab = 'entitlements';
+type Tab = 'entitlements' | 'usage' | 'invoices' | 'quotas';
+const TABS: { v: Tab; label: string }[] = [
+  { v: 'entitlements', label: 'Entitlements' },
+  { v: 'usage', label: 'Usage and rating' },
+  { v: 'invoices', label: 'Invoices' },
+  { v: 'quotas', label: 'Quotas' }
+];
 
 export default function BillingSection({ ctx }: { ctx: Ctx }) {
+  const tab = (TABS.some(t => t.v === ctx.tab) ? ctx.tab : 'entitlements') as Tab;
   return (
     <Section<Tab>
       kicker="Administration"
       title="Billing & Licensing"
-      sub="Licences for each product and customer, how much of each is used, and when they renew."
-      tab="entitlements"
+      sub={ctx.actingAs ? 'Your licences, what you have used this month, invoices and quotas.' : 'Licences, metered usage and how it is rated, invoices with GST, payments and quotas.'}
+      tab={tab}
       onTab={t => ctx.go(`billing/${t}`)}
-      tabs={[{ v: 'entitlements', label: 'Entitlements' }]}
+      tabs={TABS}
     >
-      <Entitlements ctx={ctx} />
+      {tab === 'entitlements' ? <Entitlements ctx={ctx} /> : null}
+      {tab === 'usage' ? <MeteringTab ctx={ctx} /> : null}
+      {tab === 'invoices' ? <InvoicesTab ctx={ctx} /> : null}
+      {tab === 'quotas' ? <QuotaTab ctx={ctx} /> : null}
     </Section>
   );
 }
