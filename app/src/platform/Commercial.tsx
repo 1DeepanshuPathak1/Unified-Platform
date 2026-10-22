@@ -168,6 +168,7 @@ export function InvoicesTab({ ctx }: { ctx: Ctx }) {
   const issue = useClosable<string>();
   const pay = useClosable<string>();
   const credit = useClosable<string>();
+  const profiles = useClosable<boolean>();
   useEffect(() => {
     if (ctx.openId && INVOICES.some(i => i.id === ctx.openId)) drawer.open(ctx.openId);
   }, [ctx.nonce]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -210,6 +211,7 @@ export function InvoicesTab({ ctx }: { ctx: Ctx }) {
           Host360 Managed Services · GSTIN 33AAKCH4021M1Z6
           <InfoTip tip="Billed from Chennai, Tamil Nadu. Customers in Tamil Nadu pay CGST and SGST; other states pay IGST; exports are zero-rated under a Letter of Undertaking." />
         </span>
+        {!customer ? <Btn kind="outline" icon="scale" onClick={() => profiles.open(true)}>Billing and tax profiles</Btn> : null}
       </Toolbar>
       <TableArea>
         <AegisTable
@@ -347,6 +349,7 @@ export function InvoicesTab({ ctx }: { ctx: Ctx }) {
           }}
         />
       ) : null}
+      {profiles.value ? <ProfilesDialog ctx={ctx} closing={profiles.closing} onClose={profiles.close} /> : null}
       {credit.value ? (
         <CreditDialog
           inv={list.find(i => i.id === credit.value)!}
@@ -507,6 +510,54 @@ function CreditDialog({ inv, closing, onClose, onSave }: { inv: Invoice; closing
         </Field>
       </div>
       {n > 0 && n <= max ? <p style={{ color: 'var(--tx-2)' }}>Credit with tax: {money(Math.round(n * (1 + inv.tax.reduce((a, t) => a + t.rate, 0) / 100)), inv.currency)}.</p> : null}
+    </Dialog>
+  );
+}
+
+const TAX_PROFILES = [
+  { n: 'India GST, intra-state', applies: 'Customers in Tamil Nadu', how: 'CGST 9 % + SGST 9 % on SAC 998315, 998316 and 997331; e-invoice IRN at issue', used: 'Kaveri Logistics, Coromandel Insurance' },
+  { n: 'India GST, inter-state', applies: 'Customers in other Indian states', how: 'IGST 18 %; place of supply from the customer’s GSTIN', used: 'Meridian Cooperative Bank, CloudNest IT Services' },
+  { n: 'Export of services under LUT', applies: 'Customers outside India', how: 'Zero-rated; LUT ARN AD330326001234X for FY 2026–27; paid in foreign currency', used: 'Atlas Freight GmbH' },
+  { n: 'EU VAT, reverse charge', applies: 'EU businesses with a valid VAT number (checked in VIES)', how: 'No VAT charged; invoice states “Reverse charge, Article 196 VAT Directive”', used: 'Atlas Freight GmbH' },
+  { n: 'US sales tax', applies: 'US customers, by state where Host360 has nexus', how: 'Rate by ship-to address from Avalara AvaTax; SaaS taxable in TX, NY, WA, PA and others; exemption certificates kept per customer; filed monthly', used: 'No US customers yet; ready for the Host360 Inc. entity' },
+  { n: 'TDS (section 194J)', applies: 'Indian customers who deduct tax at source', how: '2 % on the taxable value; Form 16A tracked each quarter against 26AS', used: 'Meridian Cooperative Bank' }
+];
+const BILLING_PROFILES = [
+  { c: 'mer', cur: 'INR', freq: 'Monthly', terms: 'Postpaid, net 5', commit: '₹1,20,00,000 a year', pay: 'RTGS' },
+  { c: 'kav', cur: 'INR', freq: 'Monthly', terms: 'Postpaid, net 5; 2 % early-payment discount', commit: 'None', pay: 'NEFT' },
+  { c: 'sah', cur: 'INR', freq: 'Monthly, to CloudNest', terms: 'Postpaid, net 5', commit: 'Through partner', pay: 'NEFT' },
+  { c: 'cor', cur: 'INR', freq: 'Monthly', terms: 'Postpaid, net 5', commit: 'None', pay: 'NEFT' },
+  { c: 'atl', cur: 'EUR', freq: 'Annual', terms: 'Prepaid, net 14', commit: '€18,600 a year', pay: 'SEPA' },
+  { c: 'nil', cur: 'INR', freq: 'None during the trial', terms: 'Trial ends 04 Nov 2026', commit: 'None', pay: '—' }
+];
+
+function ProfilesDialog({ ctx, closing, onClose }: { ctx: Ctx; closing: boolean; onClose: () => void }) {
+  const [view, setView] = useState<'billing' | 'tax'>('billing');
+  const [freq, setFreq] = useState<Record<string, string>>(Object.fromEntries(BILLING_PROFILES.map(b => [b.c, b.freq])));
+  const changed = BILLING_PROFILES.filter(b => freq[b.c] !== b.freq);
+  return (
+    <Dialog
+      title="Billing and tax profiles"
+      sub="How often each customer is invoiced, in which currency and on what terms, and the tax rules invoices follow."
+      size="lg"
+      closing={closing}
+      onClose={onClose}
+      footer={<><Btn kind="ghost" onClick={onClose}>Close</Btn>{view === 'billing' ? <Btn kind="primary" icon="check" disabled={!changed.length} why="Nothing has changed." onClick={() => { changed.forEach(b => audit({ who: 'priya.raman', customer: b.c, what: 'Changed invoice frequency', object: custName(b.c), when: ctx.now(), r: 'ok', before: [['Frequency', b.freq]], after: [['Frequency', freq[b.c]]] })); ctx.toast(`Invoice frequency changed for ${plural(changed.length, 'customer')}; it applies from the next period`, 'ok'); onClose(); }}>Save</Btn> : null}</>}
+    >
+      <Seg label="Show" value={view} onChange={setView} options={[{ v: 'billing', label: 'Billing profiles' }, { v: 'tax', label: 'Tax profiles' }]} />
+      {view === 'billing' ? (
+        <MiniTable
+          label="Billing profiles"
+          cols={[{ label: 'Customer' }, { label: 'Currency', w: '72px' }, { label: 'Invoiced', w: '170px' }, { label: 'Terms', w: '190px' }, { label: 'Commitment', w: '140px' }]}
+          rows={BILLING_PROFILES.map(b => [<strong key="c" style={{ fontWeight: 600 }}>{custName(b.c)}</strong>, b.cur, b.c === 'nil' || b.c === 'sah' ? b.freq : <SelectInput key="f" value={freq[b.c]} onChange={v => setFreq(x => ({ ...x, [b.c]: v }))} options={['Monthly', 'Quarterly', 'Annual']} width={150} />, <span key="t" data-tip={b.terms} data-tip-overflow="" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.terms}</span>, b.commit])}
+        />
+      ) : (
+        <MiniTable
+          label="Tax profiles"
+          cols={[{ label: 'Profile', w: '190px' }, { label: 'How it is applied' }, { label: 'Used by', w: '170px' }]}
+          rows={TAX_PROFILES.map(t => [<strong key="n" style={{ fontWeight: 600 }} data-tip={t.applies}>{t.n}</strong>, <span key="h" data-tip={t.how} data-tip-overflow="" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.how}</span>, <span key="u" data-tip={t.used} data-tip-overflow="" style={{ overflow: 'hidden', textOverflow: 'ellipsis', color: t.used.startsWith('No ') ? 'var(--tx-3)' : undefined }}>{t.used}</span>])}
+        />
+      )}
     </Dialog>
   );
 }

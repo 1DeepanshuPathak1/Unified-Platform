@@ -60,6 +60,10 @@ export default function Coverage({ hub }: { hub?: boolean }) {
           Handoff values
           <Icon name="arrow-right" />
         </a>
+        <a href="#/admin/tenants" className={pc('hover', 'background:var(--hover)')} style={btn}>
+          Internal admin
+          <Icon name="arrow-right" />
+        </a>
         <a href={consoleHref} className={pc('hover', 'background:var(--hover)')} style={btn}>
           Open the console
           <Icon name="external-link" />
@@ -163,7 +167,7 @@ function Row({ c }: { c: CovItem }) {
         {c.screens.length ? (
           c.screens.map((s, i) =>
             s.route ? (
-              <a key={i} href={`#/${s.route.startsWith('dr/') || s.route.startsWith('mig/') || s.route.startsWith('backup/') ? s.route : `backup/${s.route}`}`} style={{ color: 'var(--acc-tx)', fontWeight: 600 }}>
+              <a key={i} href={`#/${/^(dr|mig|backup|admin)\//.test(s.route) ? s.route : `backup/${s.route}`}`} style={{ color: 'var(--acc-tx)', fontWeight: 600 }}>
                 {s.label}
               </a>
             ) : (
