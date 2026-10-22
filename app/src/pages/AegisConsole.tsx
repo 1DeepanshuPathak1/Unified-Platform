@@ -12,7 +12,7 @@ import AegisMigServers from '../screens/AegisMigServers';
 import AegisList from '../screens/AegisList';
 import AegisOverview from '../screens/AegisOverview';
 import AegisMappings from '../screens/AegisMappings';
-import AegisReports from '../screens/AegisReports';
+import ReportsSection from '../platform/Reports';
 import AegisRestore from '../screens/AegisRestore';
 import { Nav } from '../shell/Nav';
 import { TenantMenu } from '../shell/TenantMenu';
@@ -82,6 +82,7 @@ const PLATFORM = {
   'mig/sources': 1,
   'mig/assessment': 1,
   'mig/plans': 1,
+  reports: 1,
   home: 1,
   agents: 1,
   security: 1,
@@ -469,7 +470,7 @@ export default class AegisConsole extends DC {
       list: LIST_PAGES.includes(key),
       mappings: key === 'mappings',
       platform: !!PLATFORM[key],
-      reports: key === 'reports',
+      reports: false,
       restore: key === 'backup/restore'
     };
     const BUILT = [
@@ -1329,14 +1330,10 @@ export default class AegisConsole extends DC {
                 {v.key === 'agents' ? <Agents ctx={v.ctx} /> : null}
                 {v.key === 'security' ? <SecuritySection ctx={v.ctx} /> : null}
                 {v.key === 'support' ? <SupportSection ctx={v.ctx} /> : null}
+                {v.key === 'reports' ? <ReportsSection ctx={v.ctx} /> : null}
               </div>
             ) : null}
 
-            {v.is?.reports ? (
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisReports ctx={v.ctx} />
-              </div>
-            ) : null}
             {v.is?.restore ? (
               <div style={{ flex: 1, minHeight: 0 }}>
                 <AegisRestore ctx={v.ctx} />
