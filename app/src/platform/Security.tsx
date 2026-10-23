@@ -6,6 +6,7 @@ import { Bar, Facts, H3, MiniTable, Panel, Section, Spacer, Status, TableArea, T
 import { DangerDialog, Dialog, Drawer, StepUp, useClosable } from '../ui/overlay';
 import { EvidenceTab } from './Evidence';
 import { IsolationTab } from './Isolation';
+import { ThreatsTab, openThreatCount } from './Threats';
 import { ResidencyTab } from './Residency';
 import type { Ctx } from '../ui/ctx';
 import { CUSTOMERS, USERS, WORKLOADS } from '../data/platform';
@@ -14,7 +15,7 @@ import { custName, inScope, showCustomerCol } from './common';
 import { audit, update, useStore } from './store';
 import { nextApprovalId } from '../products/resilience/Failover';
 
-type Tab = 'posture' | 'findings' | 'mode' | 'residency' | 'isolation' | 'reviews' | 'evidence';
+type Tab = 'posture' | 'threats' | 'findings' | 'mode' | 'residency' | 'isolation' | 'reviews' | 'evidence';
 const SEV_TONE: Record<Finding['sev'], string> = { High: 'err', Medium: 'warn', Low: 'tx' };
 const short = (t: string) => t.replace(' 2026', '').replace(' IST', '');
 
@@ -39,7 +40,7 @@ function posture(cid: string) {
 
 /** Security & Compliance: posture, findings, compliance mode and periodic reviews. */
 export default function SecuritySection({ ctx }: { ctx: Ctx }) {
-  const tab = (['posture', 'findings', 'mode', 'residency', 'isolation', 'reviews', 'evidence'].includes(ctx.tab) ? ctx.tab : 'posture') as Tab;
+  const tab = (['posture', 'threats', 'findings', 'mode', 'residency', 'isolation', 'reviews', 'evidence'].includes(ctx.tab) ? ctx.tab : 'posture') as Tab;
   const custs = CUSTOMERS.filter(c => inScope(ctx, c.id) && c.status !== 'archived');
   return (
     <Section
@@ -50,6 +51,7 @@ export default function SecuritySection({ ctx }: { ctx: Ctx }) {
       onTab={t => ctx.go(`security/${t}`)}
       tabs={[
         { v: 'posture', label: 'Posture' },
+        { v: 'threats', label: 'Threats', count: openThreatCount(ctx) || undefined },
         { v: 'findings', label: 'Findings', count: FINDINGS.filter(f => f.state === 'Open' && inScope(ctx, f.customer)).length },
         { v: 'mode', label: 'Compliance mode' },
         { v: 'residency', label: 'Data residency' },
@@ -59,6 +61,7 @@ export default function SecuritySection({ ctx }: { ctx: Ctx }) {
       ]}
     >
       {tab === 'posture' ? <Posture ctx={ctx} custs={custs} /> : null}
+      {tab === 'threats' ? <ThreatsTab ctx={ctx} /> : null}
       {tab === 'findings' ? <Findings ctx={ctx} /> : null}
       {tab === 'mode' ? <ComplianceMode ctx={ctx} /> : null}
       {tab === 'reviews' ? <Reviews ctx={ctx} /> : null}

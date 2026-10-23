@@ -199,7 +199,7 @@ export function Toggle({ on, onChange, label, children, perm }: { on: boolean; o
       <span style={{ width: 32, height: 18, padding: 2, flex: 'none', display: 'flex', background: on ? 'var(--acc)' : 'transparent', border: `1px solid ${on ? 'var(--acc)' : 'var(--ln-2)'}`, transition: 'background-color 120ms,border-color 120ms' }}>
         <span style={{ width: 12, height: 12, background: on ? 'var(--acc-ink)' : 'var(--tx-3)', transform: on ? 'translateX(14px)' : 'none', transition: 'transform 120ms var(--ease),background-color 120ms' }} />
       </span>
-      {children}
+      {children != null ? <span style={{ whiteSpace: 'normal', textAlign: 'left', minWidth: 0 }}>{children}</span> : null}
     </button>
   );
 }

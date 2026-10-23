@@ -7,7 +7,7 @@ import type { Ctx } from '../../ui/ctx';
 import AegisDrServers from '../../screens/AegisDrServers';
 import { WORKLOADS } from '../../data/platform';
 import { custName, inScope } from '../../platform/common';
-import { DR_INFO } from './data';
+import { DR_INFO, fmtMin, rpoOf, wl } from './data';
 
 type Check = { sum: 'Matched' | 'Mismatch, resynced' | 'Not run'; sumWhen: string; boot: 'Booted' | 'Booted, no network' | 'Not scheduled'; bootWhen: string; resets: [string, string][]; enc: string };
 /** Replica correctness per server: sampled checksums against the source, weekly test boots, and every resync with its reason. */
@@ -25,15 +25,24 @@ const CHECKS: Record<string, Check> = {
 const NOT_BOOTED = new Set(['mum-oracle-phy-01', 'file-srv-03']);
 const checkOf = (id: string): Check => CHECKS[id] || { sum: 'Matched', sumWhen: '21 Oct, 03:00', boot: NOT_BOOTED.has(id) ? 'Not scheduled' : 'Booted', bootWhen: NOT_BOOTED.has(id) ? '—' : '20 Oct, 04:00', resets: [], enc: 'AES-256 · tenant key' };
 
-/** Resilience › Protected servers: the original list and the replica checks, as two tabs. */
+/** Write-order consistency groups: every member shares each recovery point, so the group is only as recent as its slowest member. */
+const GROUPS: { id: string; name: string; customer: string; plan: string; members: string[]; target: number; note?: string }[] = [
+  { id: 'g-erp', name: 'ERP', customer: 'h360', plan: 'Core services failover', members: ['erp-db-01', 'sql-prod-02', 'erp-app-01'], target: 15 },
+  { id: 'g-mail', name: 'Directory and mail', customer: 'h360', plan: 'Core services failover', members: ['ad-dc-01', 'mail-gw-01'], target: 15 },
+  { id: 'g-cbs', name: 'Core banking', customer: 'mer', plan: 'CBS failover', members: ['cbs-db-01', 'payments-api'], target: 15, note: 'payments-api has no replica yet, so the group cannot take a point that includes it. cbs-db-01 keeps its own points meanwhile.' },
+  { id: 'g-cbr', name: 'Core banking reporting', customer: 'mer', plan: 'Core banking reporting failover', members: ['sql01', 'rpt-app-01'], target: 15 },
+  { id: 'g-kav', name: 'Kaveri finance', customer: 'kav', plan: 'Kaveri finance', members: ['kav-wms-db', 'kav-tally-01'], target: 60 }
+];
+
+/** Resilience › Protected servers: the original list, consistency groups and replica checks, as tabs. */
 export function DrServersPage({ ctx }: { ctx: Ctx }) {
-  const tab = ctx.tab === 'checks' ? 'checks' : 'servers';
+  const tab = ctx.tab === 'checks' || ctx.tab === 'groups' ? ctx.tab : 'servers';
   const tabs = (
     <Tabs
       label="Protected servers sections"
       value={tab}
-      onChange={t => ctx.go(t === 'checks' ? 'servers/checks' : 'servers')}
-      tabs={[{ v: 'servers', label: 'Replication' }, { v: 'checks', label: 'Replica checks', tip: 'Checksums, test boots, resyncs and encryption at the recovery site' }]}
+      onChange={t => ctx.go(t === 'servers' ? 'servers' : `servers/${t}`)}
+      tabs={[{ v: 'servers', label: 'Replication' }, { v: 'groups', label: 'Consistency groups', count: GROUPS.filter(g => inScope(ctx, g.customer)).length, tip: 'Servers that share each recovery point, and the group’s RPO' }, { v: 'checks', label: 'Replica checks', tip: 'Checksums, test boots, resyncs and encryption at the recovery site' }]}
       style={{ margin: '0 24px 12px', padding: 0 }}
     />
   );
@@ -43,11 +52,11 @@ export function DrServersPage({ ctx }: { ctx: Ctx }) {
       <div style={{ flex: 'none', padding: '20px 24px 16px' }}>
         <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 4 }}>Resilience</div>
         <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Protected servers</h1>
-        <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>Proof that each replica would start and holds the same data as its source.</p>
+        <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{tab === 'groups' ? 'Servers that must come back from the same moment, so a database and its application never disagree.' : 'Proof that each replica would start and holds the same data as its source.'}</p>
       </div>
       {tabs}
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-fade 150ms var(--ease)' }}>
-        <ReplicaChecksView ctx={ctx} />
+      <div key={tab} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-fade 150ms var(--ease)' }}>
+        {tab === 'groups' ? <GroupsView ctx={ctx} /> : <ReplicaChecksView ctx={ctx} />}
       </div>
     </div>
   );
@@ -121,6 +130,83 @@ function ReplicaChecksView({ ctx }: { ctx: Ctx }) {
             <DrawerTiles items={[{ label: 'Checksum', value: c.sum === 'Matched' ? 'Matched' : c.sum === 'Not run' ? '—' : 'Resynced', sub: c.sumWhen }, { label: 'Test boot', value: c.boot === 'Booted' ? 'Booted' : c.boot === 'Not scheduled' ? '—' : 'No network', sub: c.bootWhen }, { label: 'Resyncs, 30 d', value: String(c.resets.length) }]} />
             <Facts items={[{ k: 'Encryption at rest', v: `${c.enc}; journals and test copies too`, icon: 'shield' }, { k: 'Checksum method', v: 'SHA-256 of 2 % of blocks each night, chosen at random; every block on the 1st of the month' }, { k: 'Test boot', v: 'Weekly on an isolated network: boots, waits for the console, takes a screenshot, powers off and deletes' }]} />
             <MiniTable label="Resyncs" cols={[{ label: 'When', w: '130px' }, { label: 'Reason' }]} rows={c.resets.map(([w, r]) => [w, r])} empty="No resyncs in 30 days." />
+          </div>
+        </Drawer>
+      ) : null}
+    </>
+  );
+}
+
+function GroupsView({ ctx }: { ctx: Ctx }) {
+  const drawer = useClosable<string>();
+  const groups = GROUPS.filter(g => inScope(ctx, g.customer)).map(g => {
+    const ms = g.members.map(id => {
+      const w = wl(id);
+      const r = w ? rpoOf(w) : null;
+      const replicated = !!w && !!DR_INFO[id] && w.dr.s !== 'none' && r?.age != null;
+      return { id, name: w?.name || id, age: replicated ? r!.age! : null, failed: w?.dr.s === 'failed' };
+    });
+    const missing = ms.filter(m => m.age == null);
+    const worst = missing.length ? null : Math.max(...ms.map(m => m.age!));
+    const slowest = worst == null ? null : ms.find(m => m.age === worst)!;
+    const state: 'ok' | 'warn' | 'err' = missing.length ? 'err' : worst! > g.target ? 'warn' : 'ok';
+    return { ...g, ms, missing, worst, slowest, state };
+  });
+  const d = drawer.value ? groups.find(g => g.id === drawer.value) : null;
+  return (
+    <>
+      <div style={{ padding: '0 24px 12px' }}>
+        <Tiles
+          items={[
+            { label: 'Groups', value: String(groups.length), icon: 'layers', sub: `${groups.reduce((a, g) => a + g.members.length, 0)} servers share their recovery points` },
+            { label: 'Within the group RPO', value: String(groups.filter(g => g.state === 'ok').length), unit: `of ${groups.length}`, icon: 'circle-check', tone: groups.every(g => g.state === 'ok') ? 'ok' : 'warn', sub: 'The slowest member sets the group’s age' },
+            { label: 'Incomplete', value: String(groups.filter(g => g.state === 'err').length), icon: 'circle-x', tone: groups.some(g => g.state === 'err') ? 'err' : 'ok', sub: 'A member has no replica yet' }
+          ]}
+        />
+      </div>
+      <TableArea>
+        <AegisTable
+          label="Consistency groups"
+          cols={[
+            { k: 'n', label: 'Group', w: 'minmax(160px,1.2fr)' },
+            { k: 'c', label: 'Customer', w: 'minmax(130px,1fr)', dim: true },
+            { k: 'm', label: 'Members', w: 'minmax(200px,1.6fr)', dim: true },
+            { k: 'age', label: 'Group point age', w: '140px', r: true },
+            { k: 't', label: 'Target', w: '80px', r: true, dim: true },
+            { k: 'slow', label: 'Slowest member', w: '150px' },
+            { k: 's', label: 'State', w: '150px' }
+          ]}
+          rows={groups.map(g => ({
+            id: g.id,
+            n: { v: g.name, strong: true, tip: g.plan },
+            c: custName(g.customer),
+            m: { v: g.ms.map(m => m.name).join(', '), tip: g.ms.map(m => m.name).join(', ') },
+            age: g.worst == null ? { v: '—', muted: true, s: 1e9 } : { v: fmtMin(g.worst), s: g.worst },
+            t: fmtMin(g.target),
+            slow: g.slowest ? { v: g.slowest.name, tip: g.slowest.failed ? 'Its last sync failed' : undefined } : { v: g.missing.map(m => m.name).join(', '), tip: 'No replica yet' },
+            s: g.state === 'ok' ? { t: 'status', i: 'circle-check', c: 'ok', l: 'Within RPO', s: 0 } : g.state === 'warn' ? { t: 'status', i: 'triangle-alert', c: 'warn', l: 'Behind target', s: 1 } : { t: 'status', i: 'circle-x', c: 'err', l: 'Incomplete', s: 2, tip: g.note }
+          }))}
+          onRow={(id: string) => drawer.open(id)}
+          active={drawer.value}
+          state={ctx.ui}
+          unit={['group', 'groups']}
+          emptyText="No consistency groups. Turn on write-order consistency in a protection plan to create one."
+          sort="s"
+          dir={-1}
+          footR="Groups come from the protection plan’s write-order consistency setting"
+        />
+      </TableArea>
+      {d ? (
+        <Drawer label="Consistency group" kicker={`Consistency group · ${custName(d.customer)}`} title={d.name} status={<><span>{d.plan}</span><span>{d.members.length} servers</span></>} closing={drawer.closing} onClose={drawer.close}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {d.note ? <Bar tone="err" multiline>{d.note}</Bar> : d.state === 'warn' ? <Bar tone="warn" multiline>{d.slowest?.name} is {fmtMin(d.worst! - d.target)} behind the group target, so a failover now would bring every member back to {fmtMin(d.worst!)} ago.{d.slowest?.failed ? ' Its last sync failed.' : ''}</Bar> : null}
+            <DrawerTiles items={[{ label: 'Group point age', value: d.worst == null ? '—' : fmtMin(d.worst) }, { label: 'Target', value: fmtMin(d.target) }, { label: 'Members', value: String(d.members.length) }]} />
+            <MiniTable
+              label="Members"
+              cols={[{ label: 'Server' }, { label: 'Own newest point', w: '150px', r: true }, { label: '', w: '150px' }]}
+              rows={d.ms.map(m => [<strong key="n" style={{ fontWeight: 600 }}>{m.name}</strong>, m.age == null ? 'No replica' : fmtMin(m.age), m === d.slowest ? 'Sets the group age' : m.age == null ? 'Blocks the group' : ''])}
+            />
+            <Facts items={[{ k: 'How', v: 'Writes on every member are tagged with one sequence; a group point is cut when every member has reached the same tag' }, { k: 'Failover', v: 'All members start from the same group point; a member cannot be failed over to a newer point on its own' }, { k: 'Set in', v: `${d.plan} · protection plan setting “Write-order consistency”` }]} />
           </div>
         </Drawer>
       ) : null}
