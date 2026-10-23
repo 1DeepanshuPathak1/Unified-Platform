@@ -35,6 +35,33 @@ export const AGENTS: Agent[] = [
   { id: 'ag13', machine: 'nil-pos-db', customer: 'nil', kind: 'Windows agent', os: 'Windows Server 2019', site: 'Chennai-proxmox-prod', version: '4.2.0', ring: 'Broad', products: ['Protection'], health: 'ok', heartbeat: T('21 Oct', '16:03'), installed: T('05 Oct', '18:10') }
 ];
 
+/** Laptops and desktops with the endpoint agent: Meridian's 112 treasury and branch laptops, and Host360 staff machines. */
+const endpoint = (i: number, customer: string, prefix: string): Agent => {
+  const mac = i % 9 === 4;
+  const off = i % 23 === 7;
+  const old = i % 17 === 3;
+  const hh = String(9 + (i % 7)).padStart(2, '0');
+  return {
+    id: `ep-${prefix}-${i}`,
+    machine: `${prefix}-${mac ? 'MB' : 'LT'}-${String(i).padStart(4, '0')}`,
+    customer,
+    kind: 'Endpoint agent',
+    os: mac ? (i % 2 ? 'macOS 15 Sequoia' : 'macOS 14 Sonoma') : i % 5 === 0 ? 'Windows 10 22H2' : 'Windows 11 23H2',
+    site: 'Remote',
+    version: old ? '4.1.3' : '4.2.0',
+    ring: 'Broad',
+    products: ['Protection'],
+    health: off ? 'unreach' : old ? 'warn' : 'ok',
+    heartbeat: off ? T('19 Oct', `${hh}:14`) : T('21 Oct', `${String(13 + (i % 3)).padStart(2, '0')}:${String(10 + (i % 50)).padStart(2, '0')}`),
+    note: off ? 'No heartbeat for more than 24 h; the laptop is probably off or away from the network.' : old ? 'Two versions behind; it updates at the next connection on mains power.' : undefined,
+    installed: T('12 Jun', '10:00')
+  };
+};
+AGENTS.push(
+  ...Array.from({ length: 112 }, (_, k) => 401 + k).filter(i => i !== 442).map(i => endpoint(i, 'mer', 'MBK')),
+  ...Array.from({ length: 6 }, (_, k) => k + 1).map(i => endpoint(i, 'h360', 'H360'))
+);
+
 export const RINGS = [
   { ring: 'Canary', share: '5 %', rule: 'Host360 internal machines first; 24 h soak' },
   { ring: 'Early', share: '25 %', rule: 'Customers who opted in; 48 h soak' },

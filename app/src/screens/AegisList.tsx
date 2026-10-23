@@ -47,6 +47,51 @@ const short = s => {
 };
 const st3 = (i, l, c, extra?) => ({ t: 'status', i, l, c, ...(extra || {}) });
 
+/* Storage targets a repository can live on, and how each one is locked. */
+const REPO_TYPES = ['Filesystem', 'NFS', 'SMB', 'SFTP', 'S3-compatible', 'Amazon S3', 'Azure Blob', 'Google Cloud Storage', 'Host360 Object Storage', 'Tape library'];
+const REPO_REMOTE = ['SFTP', 'S3-compatible', 'Amazon S3', 'Azure Blob', 'Google Cloud Storage', 'Host360 Object Storage'];
+const REPO_HINT: Record<string, string> = {
+  Filesystem: 'A local disk on an appliance or proxy. Hardened mode locks points with single-use credentials and no root login.',
+  NFS: 'A share mounted by the appliance or proxy.',
+  SMB: 'A share mounted by the appliance or proxy.',
+  SFTP: 'A remote server reached over SFTP with a key held in the vault.',
+  'S3-compatible': 'Object storage such as MinIO, Ceph RGW or Wasabi, with optional Object Lock.',
+  'Amazon S3': 'Amazon S3 with Object Lock; Glacier classes for archive copies.',
+  'Azure Blob': 'A container protected by a time-based retention policy and, if needed, a legal hold.',
+  'Google Cloud Storage': 'A bucket protected by a locked retention policy (bucket lock).',
+  'Host360 Object Storage': 'Host360’s own S3 service in Chennai or Mumbai, with Object Lock.',
+  'Tape library': 'An LTO library with media pools, WORM tapes and offsite vault tracking.'
+};
+const REPO_LOCKS: Record<string, string[]> = {
+  Filesystem: ['Off', 'Hardened'],
+  'S3-compatible': ['Off', 'Governance', 'Compliance'],
+  'Amazon S3': ['Off', 'Governance', 'Compliance'],
+  'Host360 Object Storage': ['Off', 'Governance', 'Compliance'],
+  'Azure Blob': ['Off', 'Time-based retention', 'Retention and legal hold'],
+  'Google Cloud Storage': ['Off', 'Bucket lock'],
+  'Tape library': ['Off', 'WORM tape']
+};
+const REPO_LOCK_LABEL: Record<string, string> = { 'S3-compatible': 'Object Lock', 'Amazon S3': 'Object Lock', 'Host360 Object Storage': 'Object Lock', 'Azure Blob': 'Immutability policy', 'Google Cloud Storage': 'Retention policy', Filesystem: 'Hardened repository', 'Tape library': 'WORM' };
+const REPO_LOCK_HINT = (t: string, l: string) =>
+  l === 'Off' ? 'Points can be deleted at any time.'
+  : l === 'Compliance' ? 'Compliance mode: no one can delete a locked point before it expires.'
+  : l === 'Governance' ? 'Governance mode: Owners can remove a lock with a separate permission.'
+  : l === 'Hardened' ? 'Files carry the immutable attribute and a retention date; the proxy logs in with single-use credentials and root login is disabled.'
+  : l === 'Bucket lock' ? 'Once locked, the retention policy cannot be shortened or removed, even by the bucket owner.'
+  : l === 'WORM tape' ? 'Written once to WORM media; tapes leave for the vault after the job.'
+  : l === 'Retention and legal hold' ? 'Blobs cannot be changed until the retention ends, and not at all while a legal hold is set.'
+  : `${t}: blobs cannot be changed or deleted until the retention ends.`;
+const REPO_WHERE = (f: any) =>
+  f.type === 'Filesystem' ? f.path
+  : f.type === 'NFS' || f.type === 'SMB' ? f.share
+  : f.type === 'SFTP' ? `sftp://${f.sftpUser}@${f.sftpHost}${f.path}`
+  : f.type === 'S3-compatible' ? `${f.endpoint}/${f.bucket}`
+  : f.type === 'Amazon S3' ? `s3://${f.bucket} (${f.region}, ${f.cls})`
+  : f.type === 'Azure Blob' ? `${f.azAccount}.blob.core.windows.net/${f.azContainer} (${f.azTier})`
+  : f.type === 'Google Cloud Storage' ? `gs://${f.bucket} (${f.gcsLoc})`
+  : f.type === 'Host360 Object Storage' ? `${f.h360Region} · ${f.bucket}`
+  : `${f.tapeLib} · ${f.tapePool}`;
+
 export default class AegisList extends DC {
   state: any = {
     view: null,
@@ -250,7 +295,23 @@ export default class AegisList extends DC {
                   node: 'aegis-prod-220',
                   lock: 'Compliance',
                   days: '14',
-                  enc: true
+                  enc: true,
+                  sftpHost: 'backup-sftp.kaveri-logistics.in',
+                  sftpUser: 'aegis',
+                  role: 'arn:aws:iam::418291736650:role/aegis-repo',
+                  cls: 'Standard',
+                  azAccount: 'mbkaegisbackup',
+                  azContainer: 'aegis-points',
+                  azTier: 'Cool',
+                  azAuth: 'Managed identity',
+                  gcsLoc: 'asia-south1 (Mumbai)',
+                  gcsSa: 'aegis-repo@atlas-backup.iam.gserviceaccount.com',
+                  h360Region: 'Mumbai DC2',
+                  tapeLib: 'IBM TS4300 · chn-tape-01',
+                  tapePool: 'Monthly-LTO9-WORM',
+                  tapeDrives: '2',
+                  tapeVault: 'Iron Mountain, Chennai',
+                  ipAllow: '10.20.4.0/24'
                 }
               }
             })
@@ -274,7 +335,7 @@ export default class AegisList extends DC {
             `${21 - i} Oct 2026, 02:${String(14 + i).padStart(2, '0')}`,
             ['web-frontend-01', 'sql-prod-02', 'gitlab-01', 'mail-gw-01'][i % 4],
             `${(2.4 + i * 1.3).toFixed(2)} GB`,
-            r.lock ? `Until ${String(4 - Math.floor(i / 3)).padStart(2, '0')} Nov` : 'Not locked'
+            r.lock ? `Until ${String(4 - Math.floor(i / 3)).padStart(2, '0')} Nov · ${14 - Math.floor(i / 3)} d left` : 'Not locked'
           ]);
           return {
             kicker: `Repository · ${r.type}`,
@@ -303,7 +364,7 @@ export default class AegisList extends DC {
                 'Recovery points',
                 'table',
                 {
-                  grid: 'minmax(0,1.4fr) minmax(0,1.2fr) 96px 110px',
+                  grid: 'minmax(0,1.3fr) minmax(0,1.1fr) 90px 160px',
                   head: [['Point in time (IST)'], ['Guest'], ['Size', 'r'], ['Lock']],
                   rows: pts.map(p => [p[0], p[1], [p[2], null, 'r'], [p[3], null, null, r.lock ? 'lock' : '']])
                 }
@@ -1227,7 +1288,7 @@ export default class AegisList extends DC {
         span: span || 1,
         hint: hint || ''
       });
-      const S = (k, label, options, span) => ({
+      const S = (k, label, options, span, hint?) => ({
         id: 'pd-' + k,
         label,
         value: f[k],
@@ -1235,7 +1296,7 @@ export default class AegisList extends DC {
         options,
         onChange: set(k),
         span: span || 1,
-        hint: ''
+        hint: hint || ''
       });
       const SG = (k, label, opts, hint?, span?) => ({
         id: 'pd-' + k,
@@ -1342,53 +1403,40 @@ export default class AegisList extends DC {
       } else {
         const STEPS = ['Type', 'Location', 'Protection', 'Review'];
         const t = f.type;
+        const objLock = REPO_LOCKS[t] || ['Off'];
+        const where = REPO_WHERE(f);
         const fieldsBy = [
           [
-            SG(
-              'type',
-              'Repository type',
-              ['Filesystem', 'NFS', 'SMB', 'S3-compatible'],
-              t === 'S3-compatible'
-                ? 'Object storage with optional Object Lock for immutability.'
-                : t === 'Filesystem'
-                  ? 'A local disk on an appliance.'
-                  : 'A share mounted by the appliance.'
-            ),
-            S(
-              'node',
-              'Node that writes to it',
-              A.nodes.filter(n => n.role !== 'proxy').map(n => n.name),
-              2
-            )
+            {
+              ...S('type', 'Repository type', REPO_TYPES, 2, REPO_HINT[t]),
+              onChange: e => {
+                const v = e.target.value;
+                const l = REPO_LOCKS[v] || ['Off'];
+                this.setState(st => ({ pd: { ...st.pd, f: { ...st.pd.f, type: v, lock: l[l.length - 1] } } }));
+              }
+            },
+            S('node', 'Written by', [...A.nodes.filter(n => n.role !== 'proxy').map(n => n.name), 'Deploy a new proxy (VM)', 'Deploy a new proxy (bare metal)'], 2)
           ],
-          t === 'S3-compatible'
-            ? [
-                I('name', 'Name', 2),
-                I('endpoint', 'Endpoint', 2),
-                I('bucket', 'Bucket'),
-                I('region', 'Region'),
-                I('access', 'Access key'),
-                I('secret', 'Secret key')
-              ]
-            : t === 'Filesystem'
-              ? [I('name', 'Name', 2), I('path', 'Path', 2)]
-              : [I('name', 'Name', 2), I('share', t === 'NFS' ? 'Export' : 'Share', 2)],
           [
-            ...(t === 'S3-compatible'
+            I('name', 'Name', 2),
+            ...(t === 'Filesystem' ? [I('path', 'Path', 2)] : []),
+            ...(t === 'NFS' || t === 'SMB' ? [I('share', t === 'NFS' ? 'Export' : 'Share', 2, t === 'SMB' ? 'SMB 3 with encryption; Kerberos or a service account' : '')] : []),
+            ...(t === 'SFTP' ? [I('sftpHost', 'Host'), I('sftpUser', 'User (key from the vault)'), I('path', 'Path', 2)] : []),
+            ...(t === 'S3-compatible' ? [I('endpoint', 'Endpoint', 2), I('bucket', 'Bucket'), I('region', 'Region'), I('access', 'Access key'), I('secret', 'Secret key')] : []),
+            ...(t === 'Amazon S3' ? [I('bucket', 'Bucket'), S('region', 'Region', ['ap-south-1', 'ap-south-2', 'eu-central-1', 'us-east-1'], 1), I('role', 'IAM role ARN', 2), S('cls', 'Storage class', ['Standard', 'Glacier Instant Retrieval', 'Glacier Flexible Retrieval', 'Glacier Deep Archive'], 2, f.cls && f.cls.includes('Flexible') ? 'Points must be restored to S3 before reading: 3 to 5 hours, retrieval charged per GB' : f.cls && f.cls.includes('Deep') ? 'Points must be restored before reading: up to 12 hours, retrieval charged per GB' : '')] : []),
+            ...(t === 'Azure Blob' ? [I('azAccount', 'Storage account'), I('azContainer', 'Container'), S('azTier', 'Access tier', ['Hot', 'Cool', 'Cold', 'Archive'], 1), S('azAuth', 'Sign in with', ['Managed identity', 'SAS token', 'Account key'], 1)] : []),
+            ...(t === 'Google Cloud Storage' ? [I('bucket', 'Bucket'), S('gcsLoc', 'Location', ['asia-south1 (Mumbai)', 'asia-south2 (Delhi)', 'europe-west3'], 1), I('gcsSa', 'Service account', 2)] : []),
+            ...(t === 'Host360 Object Storage' ? [S('h360Region', 'Region', ['Chennai DC1', 'Mumbai DC2'], 1), I('bucket', 'Bucket')] : []),
+            ...(t === 'Tape library' ? [I('tapeLib', 'Library'), S('tapePool', 'Media pool', ['Weekly-LTO9', 'Monthly-LTO9-WORM', 'Yearly-vault'], 1), I('tapeDrives', 'Drives to use'), S('tapeVault', 'Offsite vault', ['Iron Mountain, Chennai', 'None'], 1)] : []),
+            ...(REPO_REMOTE.includes(t) ? [I('ipAllow', 'Allow access only from', 2, 'Addresses or ranges; the proxy that writes is always allowed')] : [])
+          ],
+          [
+            ...(objLock.length > 1
               ? [
-                  SG(
-                    'lock',
-                    'Object Lock',
-                    ['Off', 'Governance', 'Compliance'],
-                    f.lock === 'Compliance'
-                      ? 'Compliance mode: no one can delete a locked point before it expires.'
-                      : f.lock === 'Governance'
-                        ? 'Governance mode: Owners can remove a lock with a separate permission.'
-                        : 'Points can be deleted at any time.'
-                  ),
+                  SG('lock', REPO_LOCK_LABEL[t] || 'Immutability', objLock, REPO_LOCK_HINT(t, f.lock)),
                   ...(f.lock !== 'Off' ? [I('days', 'Default lock (days)')] : [])
                 ]
-              : []),
+              : [{ id: 'pd-nolock', label: 'Immutability', isInput: false, span: 2, hint: `${t} cannot be locked. Keep an immutable copy elsewhere with a backup copy policy.` }]),
             TG('enc', 'Encryption', 'Encrypt with AES-256', 'Not encrypted', 'shield')
           ],
           [
@@ -1397,7 +1445,7 @@ export default class AegisList extends DC {
               label: 'Summary',
               isInput: false,
               span: 2,
-              hint: `${f.name} · ${t} · ${t === 'S3-compatible' ? `${f.endpoint}/${f.bucket}` : t === 'Filesystem' ? f.path : f.share} · written by ${f.node} · ${t === 'S3-compatible' && f.lock !== 'Off' ? `Object Lock ${f.lock}, ${f.days} d` : 'no lock'} · ${f.enc ? 'encrypted' : 'not encrypted'}`
+              hint: `${f.name} · ${t} · ${where} · written by ${f.node}${objLock.length > 1 && f.lock !== 'Off' ? ` · ${f.lock}, ${f.days} d` : ' · not immutable'}${f.ipAllow && REPO_REMOTE.includes(t) ? ` · only from ${f.ipAllow}` : ''}${f.enc ? ' · AES-256' : ''}`
             }
           ]
         ];
@@ -1529,17 +1577,17 @@ export default class AegisList extends DC {
                 used: 0,
                 cap: 2048,
                 red: '—',
-                lock: f.type === 'S3-compatible' && f.lock !== 'Off' ? f.lock : null,
+                lock: (REPO_LOCKS[f.type] || ['Off']).length > 1 && f.lock !== 'Off' ? f.lock : null,
                 lockDays: +f.days,
                 enc: f.enc,
                 status: 'ok',
-                endpoint: f.endpoint,
+                endpoint: REPO_WHERE(f),
                 points: 0,
                 logical: '0.00 GB'
               }
             ])
           }));
-          ctx.toast(`Repository ${f.name} added`, 'ok');
+          ctx.toast(f.node.startsWith('Deploy') ? `Repository ${f.name} added; the proxy that writes to it is being deployed` : `Repository ${f.name} added`, 'ok');
           return;
         }
         const f = G.f;

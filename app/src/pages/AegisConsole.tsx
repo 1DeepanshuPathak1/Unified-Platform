@@ -6,7 +6,7 @@ import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
 import { AEGIS } from '../data/aegis';
 import AegisSites from '../screens/AegisSites';
-import AegisGuests from '../screens/AegisGuests';
+import { GuestsPage } from '../products/protection/Endpoints';
 import AegisDrServers from '../screens/AegisDrServers';
 import AegisMigServers from '../screens/AegisMigServers';
 import AegisList from '../screens/AegisList';
@@ -1279,7 +1279,7 @@ export default class AegisConsole extends DC {
             ) : null}
             {v.is?.guests ? (
               <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisGuests ctx={v.ctx} />
+                <GuestsPage ctx={v.ctx} />
               </div>
             ) : null}
             {v.is?.drServers ? (

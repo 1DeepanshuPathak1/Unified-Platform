@@ -541,6 +541,7 @@ export default class AegisGuests extends DC {
             </a>
           </div>
         </div>
+        {this.props.tabs}
         <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '44px' }}>
           <Ind
             mode="fill"

@@ -4,6 +4,7 @@ import { Bar, MiniTable, Panel, Status } from '../ui/layout';
 import { Dialog, useClosable } from '../ui/overlay';
 import type { Ctx } from '../ui/ctx';
 import { audit } from './store';
+import { AGENTS } from '../data/ops';
 
 /** How changed blocks are found on each platform. One layer reads them for backup, replication and migration alike. */
 const TRACKING: { platform: string; how: string; fallback: string; used: string; sites: string; resets: string; tone: 'ok' | 'warn' | 'tx' }[] = [
@@ -13,7 +14,7 @@ const TRACKING: { platform: string; how: string; fallback: string; used: string;
   { platform: 'VMware vSphere', how: 'Changed Block Tracking through VDDK', fallback: 'Full read with a CBT reset alert', used: 'DR, Migration', sites: 'Chennai vCenter, esxi-edge-07', resets: '1: CBT reset on SQL01 after a storage vMotion', tone: 'warn' },
   { platform: 'Microsoft Hyper-V', how: 'Resilient Change Tracking (RCT)', fallback: 'Full read', used: 'Backup, DR, Migration', sites: 'None connected', resets: '—', tone: 'tx' },
   { platform: 'Nutanix AHV', how: 'Changed Region Tracking through Prism v4', fallback: 'Full read when CRT is unavailable', used: 'Backup, DR, Migration', sites: 'None connected', resets: '—', tone: 'tx' },
-  { platform: 'Agents (Windows, Linux, macOS)', how: 'Aegis changed-block filter driver', fallback: 'Full read after an unclean shutdown', used: 'Backup, DR, Migration', sites: '18 agents', resets: '2: unclean shutdowns on laptops', tone: 'ok' }
+  { platform: 'Agents (Windows, Linux, macOS)', how: 'Aegis changed-block filter driver', fallback: 'Full read after an unclean shutdown', used: 'Backup, DR, Migration', sites: `${AGENTS.filter(a => a.kind !== 'Kubernetes operator' && a.kind !== 'Database plug-in').length} agents`, resets: '2: unclean shutdowns on laptops', tone: 'ok' }
 ];
 interface Defaults { compression: string; inTransit: string; wan: boolean; checkpoint: string; resume: string; streams: string }
 

@@ -190,12 +190,15 @@ const METHODS = {
   push: { title: 'Push from Aegis', note: 'Aegis installs over WinRM or SSH with a credential from the vault.', cmd: 'Choose machines and a vault credential; Aegis does the rest.' },
   script: { title: 'Run a one-line installer', note: 'Copy a command with a one-time token that expires in 24 h.', cmd: 'curl -fsSL https://aegis.host360.ai/agent/install.sh | sudo bash -s -- --token AGT-7Q2M-91XD --orchestrator aegis.host360.ai' },
   windows: { title: 'Windows installer (MSI)', note: 'For GPO, SCCM or Intune. The token is a property.', cmd: 'msiexec /i AegisAgent-4.2.0-x64.msi /qn TOKEN=AGT-7Q2M-91XD ORCHESTRATOR=aegis.host360.ai' },
+  macos: { title: 'macOS package with MDM profile', note: 'Push the signed package and the Full Disk Access profile through Jamf, Intune or Kandji.', cmd: 'sudo installer -pkg AegisAgent-4.2.0.pkg -target / && sudo /Library/Aegis/bin/aegis-agent enrol --token AGT-7Q2M-91XD  # deploy aegis-fda.mobileconfig first' },
+  ansible: { title: 'Ansible playbook', note: 'The host360.aegis collection installs and enrols on every host in an inventory group.', cmd: 'ansible-playbook -i inventory.ini host360.aegis.agent -e aegis_token=AGT-7Q2M-91XD -e aegis_group=linux-servers' },
+  rmm: { title: 'RMM script', note: 'A ready script for ConnectWise Automate, NinjaOne, Datto RMM or Atera.', cmd: 'powershell -ExecutionPolicy Bypass -c "iwr https://aegis.host360.ai/agent/install.ps1 -UseBasicParsing | iex; Install-AegisAgent -Token AGT-7Q2M-91XD"' },
   helm: { title: 'Kubernetes operator (Helm)', note: 'One operator per cluster protects every namespace you choose.', cmd: 'helm install aegis-operator oci://registry.host360.ai/charts/aegis-operator --version 4.2.0 --set token=AGT-7Q2M-91XD' }
 } as const;
 
-function DeployDialog({ ctx, closing, onClose }: { ctx: Ctx; closing: boolean; onClose: () => void }) {
-  const [m, setM] = useState<keyof typeof METHODS>('script');
-  const [cust, setCust] = useState('h360');
+export function DeployDialog({ ctx, closing, onClose, initial, customer }: { ctx: Ctx; closing: boolean; onClose: () => void; initial?: keyof typeof METHODS; customer?: string }) {
+  const [m, setM] = useState<keyof typeof METHODS>(initial || 'script');
+  const [cust, setCust] = useState(customer || 'h360');
   const copy = () => {
     navigator.clipboard?.writeText(METHODS[m].cmd).then(
       () => ctx.toast('Command copied. The token expires in 24 h.', 'ok'),
