@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AegisTable from '../../components/AegisTable';
 import { Btn, Field, RadioCard, Seg, SelectInput, TextInput } from '../../ui/controls';
 import { Bar, DrawerTiles, Facts, Progress, Spacer, TableArea, Tiles, Toolbar } from '../../ui/layout';
@@ -42,6 +42,9 @@ const backupSources = (): BackupSrc[] => [
 /** Mobility › Sources › Images and backups: disk images, machines built from a backup, and seed disks. */
 export function ImagesView({ ctx }: { ctx: Ctx }) {
   const [view, setView] = useState<'images' | 'backups' | 'seeds'>(ctx.openId === 'backups' || ctx.openId === 'seeds' ? ctx.openId : 'images');
+  useEffect(() => {
+    if (ctx.openId === 'backups' || ctx.openId === 'seeds') setView(ctx.openId);
+  }, [ctx.nonce]); // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <>
       <Toolbar style={{ paddingTop: 0 }}>

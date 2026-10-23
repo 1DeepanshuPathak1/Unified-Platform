@@ -45,8 +45,10 @@ export function SeedView({ ctx, product }: { ctx: Ctx; product: Product }) {
   const saved = open.reduce((a, s) => a + Math.max(0, netDays(s.tb, s.link) - DISK_DAYS), 0);
   const d = drawer.value ? mine.find(s => s.id === drawer.value) : null;
   const last = LAST[product];
+  /** The tamper seal fitted when the copy is finished; its number is checked when the disk arrives. */
+  const seal = `H360-SEAL-88${String(230 + seeds.length).padStart(3, '0')}`;
   const advance = (s: Seed, to: number, what: string, toast: string) => {
-    setSeeds(x => x.map(y => (y.id === s.id ? { ...y, step: to, at: [...y.at.slice(0, to), ctx.now().replace(' 2026', '').replace(' IST', '')], catchUp: to === 4 ? 0 : y.catchUp, changedGb: to === 4 ? Math.round(s.tb * 40) : y.changedGb } : y)));
+    setSeeds(x => x.map(y => (y.id === s.id ? { ...y, step: to, at: [...y.at.slice(0, to), ctx.now().replace(' 2026', '').replace(' IST', '')], seal: to === 1 ? seal : y.seal, catchUp: to === 4 ? 0 : y.catchUp, changedGb: to === 4 ? Math.round(s.tb * 40) : y.changedGb } : y)));
     audit({ who: 'priya.raman', customer: s.customer, what, object: s.id, when: ctx.now(), r: 'ok' });
     ctx.toast(toast, 'ok');
   };
@@ -109,7 +111,7 @@ export function SeedView({ ctx, product }: { ctx: Ctx; product: Product }) {
           onClose={drawer.close}
           actions={
             <>
-              {d.step === 0 ? <Btn kind="primary" icon="check" perm={ctx.can('operate', 'Recording seed progress')} onClick={() => advance(d, 1, 'Recorded seed copy complete and sealed', `${d.id}: copy verified (SHA-256 per disk) and sealed`)}>Mark copied and sealed</Btn> : null}
+              {d.step === 0 ? <Btn kind="primary" icon="check" perm={ctx.can('operate', 'Recording seed progress')} onClick={() => advance(d, 1, 'Recorded seed copy complete and sealed', `${d.id}: copy verified (SHA-256 per disk) and sealed with ${seal}`)}>Mark copied and sealed</Btn> : null}
               {d.step === 1 ? <Btn kind="primary" icon="send" perm={ctx.can('operate', 'Recording seed progress')} onClick={() => advance(d, 2, 'Recorded seed handed to courier', `${d.id}: handed to the courier`)}>Mark handed to the courier</Btn> : null}
               {d.step === 2 ? <Btn kind="primary" icon="download" perm={ctx.can('operate', 'Receiving seed disks')} onClick={() => advance(d, 3, 'Received seed disk; seal intact', `${d.id}: received with seal ${d.seal} intact; import started`)}>Mark received, seal intact</Btn> : null}
               {d.step === 3 ? <Btn kind="primary" icon="play" perm={ctx.can('operate', 'Receiving seed disks')} onClick={() => advance(d, 4, 'Seed imported; sending changes since the copy', `${d.id}: imported; sending the changes since the copy`)}>Import finished</Btn> : null}
