@@ -8,7 +8,7 @@ import { DR_INFO, fmtMin, parseDur, wl, type RStep, type Runbook } from './data'
 export type RunKind = 'Test' | 'Planned' | 'Unplanned' | 'Failback';
 export const KIND_LABEL: Record<RunKind, string> = { Test: 'Test failover', Planned: 'Planned failover', Unplanned: 'Unplanned failover', Failback: 'Return to primary' };
 
-type Item = { stage: string; step: string };
+type Item = { stage: string; step: string; scale?: number };
 export interface DrRun {
   plan: string;
   kind: RunKind;
@@ -17,6 +17,7 @@ export interface DrRun {
   i: number;
   sub: number;
   state: 'run' | 'wait' | 'done' | 'stopped';
+  waitKind?: 'manual' | 'approval';
   started: string;
   /** Simulated seconds since the start, used for timings and the RTO comparison. */
   sim: number;
@@ -48,6 +49,8 @@ export function stepText(x: RStep, rb: Runbook, kind?: RunKind): [string, string
       return [x.name || 'Run a script', `${x.lang} on the ${(x.where || 'Orchestrator').toLowerCase()}; up to ${Math.round((x.timeout || 300) / 60)} min.`];
     case 'manual':
       return ['Manual step', `${x.who ? `${x.who}: ` : ''}${x.text}`];
+    case 'approval':
+      return ['Approval', testing && x.expect === 'Approve automatically' ? 'Approved automatically in a test.' : `${x.who} approves before the run goes on; escalates after ${Math.round((x.timeout || 900) / 60)} min.`];
     case 'dns':
       return [`Point ${x.record} at ${x.value}`, testing ? 'Skipped in a test: production DNS is never changed.' : 'Updates the record in the customer DNS; TTL 60 s.'];
     case 'lb':
@@ -55,8 +58,8 @@ export function stepText(x: RStep, rb: Runbook, kind?: RunKind): [string, string
   }
 }
 
-const SIM: Record<RStep['kind'], number> = { boot: 150, delay: 0, gate: 20, script: 45, manual: 120, dns: 15, lb: 20 };
-const TICKS: Record<RStep['kind'], number> = { boot: 3, delay: 1, gate: 2, script: 2, manual: 1, dns: 1, lb: 1 };
+const SIM: Record<RStep['kind'], number> = { boot: 150, delay: 0, gate: 20, script: 45, manual: 120, approval: 300, dns: 15, lb: 20 };
+const TICKS: Record<RStep['kind'], number> = { boot: 3, delay: 1, gate: 2, script: 2, manual: 1, approval: 1, dns: 1, lb: 1 };
 const PRE: Record<string, [string, number]> = {
   'pre-sync': ['Final sync: copying the last changes of every server', 120],
   'pre-stop': ['Shutting down the servers at the primary site', 60],
@@ -76,7 +79,23 @@ export function startRun(ctx: Ctx, rb: Runbook, kind: RunKind, stageIds: string[
   const flat: Item[] = [];
   if (kind === 'Planned') flat.push({ stage: '_pre', step: 'pre-sync' }, { stage: '_pre', step: 'pre-stop' });
   if (kind === 'Failback') flat.push({ stage: '_pre', step: 'pre-reverse' });
-  ordered.forEach(s => s.steps.forEach(x => flat.push({ stage: s.id, step: x.id })));
+  // Consecutive stages marked parallel form one group; their steps interleave and the group
+  // takes as long as its longest branch.
+  const groups: (typeof ordered)[] = [];
+  ordered.forEach((s, i) => {
+    const par = kind === 'Failback' ? ordered[i - 1]?.parallel : s.parallel;
+    if (par && groups.length) groups[groups.length - 1].push(s);
+    else groups.push([s]);
+  });
+  const cost = (x: RStep) => (x.kind === 'delay' ? x.secs || 0 : SIM[x.kind]);
+  groups.forEach(g => {
+    if (g.length === 1) return g[0].steps.forEach(x => flat.push({ stage: g[0].id, step: x.id }));
+    const totals = g.map(s => s.steps.reduce((a, x) => a + cost(x), 0));
+    const sum = totals.reduce((a, b) => a + b, 0) || 1;
+    const scale = Math.max(...totals) / sum;
+    const n = Math.max(...g.map(s => s.steps.length));
+    for (let k = 0; k < n; k++) g.forEach(s => s.steps[k] && flat.push({ stage: s.id, step: s.steps[k].id, scale }));
+  });
   if (kind === 'Failback') flat.push({ stage: '_post', step: 'post-stop' });
   if (kind === 'Test') flat.push({ stage: '_post', step: 'post-test' });
   const phases = ordered.map(s => s.name).concat(['Done']);
@@ -153,8 +172,16 @@ function tick() {
         const w = wl(x.w);
         if (x.kind === 'manual') {
           r.state = 'wait';
+          r.waitKind = 'manual';
           line(r, `Waiting for a person: ${x.text}`, 'warn');
           ctx.patchJob(r.jobId, { line: { text: 'Waiting for a manual step', lv: 'warn' } });
+          return;
+        }
+        if (x.kind === 'approval' && !(r.kind === 'Test' && x.expect === 'Approve automatically')) {
+          r.state = 'wait';
+          r.waitKind = 'approval';
+          line(r, `Waiting for approval: ${x.who}. Approvers paged; escalates after ${Math.round((x.timeout || 900) / 60)} min.`, 'warn');
+          ctx.patchJob(r.jobId, { line: { text: 'Waiting for an approval', lv: 'warn' } });
           return;
         }
         if (x.kind === 'boot') {
@@ -167,7 +194,7 @@ function tick() {
         else line(r, `${title}: done`, 'ok');
         r.sub++;
         if (r.sub >= TICKS[x.kind]) {
-          r.sim += x.kind === 'delay' ? x.secs || 0 : SIM[x.kind];
+          r.sim += (x.kind === 'delay' ? x.secs || 0 : SIM[x.kind]) * (it.scale ?? 1);
           r.i++;
           r.sub = 0;
         }
@@ -227,12 +254,13 @@ function finish(r: DrRun, rb: Runbook, ctx: Ctx) {
 }
 
 /** A person confirms the manual step the run is waiting on. */
-export function confirmManual(planId: string) {
+export function confirmManual(planId: string, approver?: string) {
   update(s => {
     const r = s.drRuns[planId];
     if (!r || r.state !== 'wait') return;
-    line(r, 'Manual step confirmed by priya.raman', 'ok');
-    r.sim += SIM.manual;
+    line(r, r.waitKind === 'approval' ? `Approved by ${approver || 'arun.kumar'} (second factor verified)` : 'Manual step confirmed by priya.raman', 'ok');
+    r.sim += (r.waitKind === 'approval' ? SIM.approval : SIM.manual) * (r.flat[r.i]?.scale ?? 1);
+    r.waitKind = undefined;
     r.i++;
     r.sub = 0;
     r.state = 'run';

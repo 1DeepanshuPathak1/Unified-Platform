@@ -7,11 +7,11 @@ import { Ind } from '../lib/Ind';
 import { AEGIS } from '../data/aegis';
 import AegisSites from '../screens/AegisSites';
 import { GuestsPage } from '../products/protection/Endpoints';
-import AegisDrServers from '../screens/AegisDrServers';
+import { DrServersPage } from '../products/resilience/ReplicaChecks';
 import AegisMigServers from '../screens/AegisMigServers';
 import AegisList from '../screens/AegisList';
 import AegisOverview from '../screens/AegisOverview';
-import AegisMappings from '../screens/AegisMappings';
+import { MappingsPage } from '../products/resilience/NetworkRecovery';
 import ReportsSection from '../platform/Reports';
 import AegisRestore from '../screens/AegisRestore';
 import { Nav } from '../shell/Nav';
@@ -1284,7 +1284,7 @@ export default class AegisConsole extends DC {
             ) : null}
             {v.is?.drServers ? (
               <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisDrServers ctx={v.ctx} />
+                <DrServersPage ctx={v.ctx} />
               </div>
             ) : null}
             {v.is?.migServers ? (
@@ -1304,7 +1304,7 @@ export default class AegisConsole extends DC {
             ) : null}
             {v.is?.mappings ? (
               <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisMappings ctx={v.ctx} />
+                <MappingsPage ctx={v.ctx} />
               </div>
             ) : null}
             {v.is?.platform ? (

@@ -123,6 +123,7 @@ export default class AegisMappings extends DC {
             Add a mapping
           </button>
         </div>
+        {this.props.tabs}
         <div
           style={{
             flex: 1,

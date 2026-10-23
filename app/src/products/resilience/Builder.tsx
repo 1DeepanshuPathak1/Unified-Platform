@@ -7,14 +7,15 @@ import { DR_INFO, fmtMin, wl, type GateCheck, type OnFail, type RStage, type RSt
 import { stepText, type DrRun } from './runner';
 import { WORKLOADS } from '../../data/platform';
 
-export const KIND_ICON: Record<StepKind, string> = { boot: 'power', delay: 'hourglass', gate: 'heart-pulse', script: 'square-terminal', manual: 'hand', dns: 'network', lb: 'split' };
-export const KIND_NAME: Record<StepKind, string> = { boot: 'Start a server', delay: 'Wait', gate: 'Health gate', script: 'Run a script', manual: 'Manual step', dns: 'Update DNS', lb: 'Update a load balancer' };
+export const KIND_ICON: Record<StepKind, string> = { boot: 'power', delay: 'hourglass', gate: 'heart-pulse', script: 'square-terminal', manual: 'hand', approval: 'user-check', dns: 'network', lb: 'split' };
+export const KIND_NAME: Record<StepKind, string> = { boot: 'Start a server', delay: 'Wait', gate: 'Health gate', script: 'Run a script', manual: 'Manual step', approval: 'Approval', dns: 'Update DNS', lb: 'Update a load balancer' };
 const KIND_NOTE: Record<StepKind, string> = {
   boot: 'Starts a replicated server from its newest point. Servers in one stage start together.',
   delay: 'Pauses before the next step.',
   gate: 'Checks a port, URL, ping or query. The run stops, asks a person or continues if it fails.',
   script: 'PowerShell or Bash on the orchestrator or on a recovered server.',
   manual: 'Waits until a named person confirms they did something.',
+  approval: 'Stops until an approver, other than the person who started the run, approves with their second factor.',
   dns: 'Changes a record in the customer DNS. Skipped in tests.',
   lb: 'Changes the members of a load balancer pool. Skipped in tests.'
 };
@@ -38,6 +39,8 @@ export function dryRun(rb: Runbook): { findings: Finding[]; estimate: number; st
   const stageOf: Record<string, number> = {};
   rb.stages.forEach((st, i) => st.steps.forEach(x => x.kind === 'boot' && x.w && (stageOf[x.w] = i)));
   let est = 0;
+  let before = 0;
+  const stageEst: number[] = [];
   rb.stages.forEach((st, i) => {
     if (!st.steps.length) findings.push({ stage: st.id, level: 'warn', text: `Stage ${i + 1} has no steps.` });
     const boots = st.steps.filter(x => x.kind === 'boot');
@@ -53,7 +56,7 @@ export function dryRun(rb: Runbook): { findings: Finding[]; estimate: number; st
           (DEPENDS[w.id] || []).forEach(dep => {
             const d = wl(dep);
             if (stageOf[dep] == null) return;
-            if (stageOf[dep] >= i) findings.push({ step: x.id, level: 'warn', text: `${w.name} needs ${d?.name} running first, but ${d?.name} starts ${stageOf[dep] === i ? 'in the same stage' : 'later'}.` });
+            if (stageOf[dep] >= i || (st.parallel && stageOf[dep] === i - 1)) findings.push({ step: x.id, level: 'warn', text: `${w.name} needs ${d?.name} running first, but ${d?.name} starts ${stageOf[dep] === i ? 'in the same stage' : 'later'}.` });
           });
         }
         if (rb.stages.flatMap(s => s.steps).filter(y => y.kind === 'boot' && y.w === x.w).length > 1) findings.push({ step: x.id, level: 'err', text: `${w?.name || 'This server'} is started twice.` });
@@ -72,8 +75,19 @@ export function dryRun(rb: Runbook): { findings: Finding[]; estimate: number; st
         est += 120;
         if (!x.who) findings.push({ step: x.id, level: 'warn', text: 'Name who does this step, so the run knows whom to wait for.' });
       }
+      if (x.kind === 'approval') {
+        est += 300;
+        if (!x.who) findings.push({ step: x.id, level: 'err', text: 'Name who approves.' });
+      }
       if (x.kind === 'dns' || x.kind === 'lb') est += 15;
     });
+    stageEst.push(est - before);
+    before = est;
+  });
+  // A parallel stage runs alongside the one before it: the pair takes as long as the longer one.
+  rb.stages.forEach((st, i) => {
+    if (st.parallel && i > 0) est -= Math.min(stageEst[i], stageEst[i - 1]);
+    if (st.parallel && i === 0) findings.push({ stage: st.id, level: 'warn', text: 'The first stage has nothing to run alongside.' });
   });
   const servers = rb.stages.flatMap(s => s.steps.filter(x => x.kind === 'boot')).length;
   const steps = rb.stages.reduce((a, s) => a + s.steps.length, 0);
@@ -124,6 +138,11 @@ export function Canvas({ rb, run, findings, editable, onChange, onEditStep, onAd
     onChange(st);
   };
   const addStage = () => onChange([...clone(), { id: 'st' + Date.now(), name: `Stage ${rb.stages.length + 1}`, steps: [] }]);
+  const toggleParallel = (si: number) => {
+    const st = clone();
+    st[si].parallel = !st[si].parallel;
+    onChange(st);
+  };
   const rename = (si: number, name: string) => {
     const st = clone();
     st[si].name = name;
@@ -156,6 +175,7 @@ export function Canvas({ rb, run, findings, editable, onChange, onEditStep, onAd
                       {st.name}
                     </button>
                   )}
+                  {editable && si > 0 ? <IconBtn icon="split" size={24} label={st.parallel ? `Run after stage ${si}` : `Run alongside stage ${si}`} onClick={() => toggleParallel(si)} /> : null}
                   {editable ? (
                     <>
                       <IconBtn icon="chevron-left" size={24} label="Move stage earlier" perm={si === 0 ? { ok: false, why: 'Already first.', op: 0.45 } : undefined} onClick={() => moveStage(si, -1)} />
@@ -164,6 +184,12 @@ export function Canvas({ rb, run, findings, editable, onChange, onEditStep, onAd
                     </>
                   ) : null}
                 </header>
+                {st.parallel && si > 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderBottom: '1px solid var(--ln)', background: 'var(--acc-soft)', font: '12px/16px var(--f-ui)', color: 'var(--acc-tx)' }}>
+                    <Icon name="split" size={12} />
+                    Runs alongside stage {si}
+                  </div>
+                ) : null}
                 <ol style={{ listStyle: 'none', padding: 8, display: 'flex', flexDirection: 'column', gap: 6, minHeight: 56 }}>
                   {st.steps.map((x, xi) => {
                     const [title, detail] = stepText(x, rb, run?.kind);
@@ -223,7 +249,7 @@ export function Canvas({ rb, run, findings, editable, onChange, onEditStep, onAd
                 </ol>
               </section>
               <span aria-hidden="true" style={{ alignSelf: 'stretch', width: 32, flex: 'none', display: 'grid', placeItems: 'start center', paddingTop: 12, color: 'var(--tx-3)' }}>
-                {si < rb.stages.length - 1 || editable ? <Icon name="arrow-right" /> : null}
+                {si < rb.stages.length - 1 ? rb.stages[si + 1].parallel ? <span data-tip="The next stage starts at the same time" style={{ font: '700 16px var(--f-ui)', color: 'var(--acc-tx)' }}>‖</span> : <Icon name="arrow-right" /> : editable ? <Icon name="arrow-right" /> : null}
               </span>
             </li>
           );
@@ -259,7 +285,7 @@ export function StepDialog({ rb, step, closing, onClose, onSave }: { rb: Runbook
   const candidates = WORKLOADS.filter(w => w.customer === rb.customer && w.dr.s !== 'na' && w.type !== 'DNS record' && w.type !== 'Load balancer');
   const used = new Set(rb.stages.flatMap(s => s.steps.filter(y => y.kind === 'boot' && y.id !== step.id).map(y => y.w)));
   const err =
-    x.kind === 'boot' && !x.w ? 'Choose a server.' : x.kind === 'gate' && !x.target ? 'Name what to check.' : x.kind === 'script' && !x.body?.trim() ? 'Write the script.' : x.kind === 'manual' && !x.text?.trim() ? 'Say what the person does.' : x.kind === 'dns' && (!x.record || !x.value) ? 'Give the record and its new value.' : null;
+    x.kind === 'boot' && !x.w ? 'Choose a server.' : x.kind === 'gate' && !x.target ? 'Name what to check.' : x.kind === 'script' && !x.body?.trim() ? 'Write the script.' : x.kind === 'manual' && !x.text?.trim() ? 'Say what the person does.' : x.kind === 'approval' && !x.who?.trim() ? 'Name who approves.' : x.kind === 'dns' && (!x.record || !x.value) ? 'Give the record and its new value.' : null;
   const fail = (
     <Field id="sd-fail" label="If it fails">
       <SelectInput id="sd-fail" value={x.onFail || 'Stop the run'} onChange={v => set({ onFail: v as OnFail })} options={['Stop the run', 'Ask a person', 'Continue']} />
@@ -350,6 +376,19 @@ export function StepDialog({ rb, step, closing, onClose, onSave }: { rb: Runbook
             </Field>
           </>
         ) : null}
+        {x.kind === 'approval' ? (
+          <>
+            <Field id="sd-ap" label="Who approves" span={2} hint="Anyone with the Failover Approver role on this customer, except the person who started the run.">
+              <TextInput id="sd-ap" value={x.who || ''} onChange={v => set({ who: v })} placeholder="Head of IT operations" />
+            </Field>
+            <Field id="sd-esc" label="Escalate after (min)" hint="The approvers are paged again, then their managers.">
+              <TextInput id="sd-esc" value={String(Math.round((x.timeout || 900) / 60))} onChange={v => set({ timeout: (+v.replace(/\D/g, '') || 1) * 60 })} inputMode="numeric" />
+            </Field>
+            <Field id="sd-apt" label="In a test">
+              <SelectInput id="sd-apt" value={x.expect || 'Ask for approval'} onChange={v => set({ expect: v })} options={['Ask for approval', 'Approve automatically']} />
+            </Field>
+          </>
+        ) : null}
         {x.kind === 'dns' ? (
           <>
             <Field id="sd-r" label="Record">
@@ -383,6 +422,7 @@ export function newStep(kind: StepKind, rb: Runbook): RStep {
   if (kind === 'gate') return { ...base, check: 'Port', timeout: 120, onFail: 'Stop the run' };
   if (kind === 'script') return { ...base, lang: 'PowerShell', where: 'Orchestrator', timeout: 300, onFail: 'Ask a person' };
   if (kind === 'manual') return { ...base, who: rb.owner };
+  if (kind === 'approval') return { ...base, who: 'Failover Approver', timeout: 900, expect: 'Ask for approval' };
   return base;
 }
 

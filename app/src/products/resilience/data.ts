@@ -107,7 +107,7 @@ export function rpoOf(w: Workload): { age: number | null; target: number | null;
 }
 
 // ---- recovery plans as runbooks ----
-export type StepKind = 'boot' | 'delay' | 'gate' | 'script' | 'manual' | 'dns' | 'lb';
+export type StepKind = 'boot' | 'delay' | 'gate' | 'script' | 'manual' | 'approval' | 'dns' | 'lb';
 export type GateCheck = 'Port' | 'HTTP' | 'Ping' | 'SQL query' | 'Service running' | 'Database mounted' | 'Business transaction';
 export type OnFail = 'Stop the run' | 'Ask a person' | 'Continue';
 export interface RStep {
@@ -135,6 +135,8 @@ export interface RStage {
   id: string;
   name: string;
   steps: RStep[];
+  /** Runs at the same time as the stage before it (a parallel branch). */
+  parallel?: boolean;
 }
 export interface RVersion {
   v: number;
@@ -196,7 +198,7 @@ export const RUNBOOKS: Runbook[] = [
     lastTest: { when: T('12 Oct', '21:30'), r: 'ok', dur: '7 min 12 s', by: 'meera.iyer' }, nextDrill: '12 Apr 2027, 21:30 IST', validated: T('21 Oct', '06:00'),
     stages: [
       { id: 'w1', name: 'Front ends', steps: [boot('web-frontend-01'), boot('web-frontend-02'), gate('HTTP', 'https://shop.host360.ai/health', { expect: '200 OK' }), S('lb', { pool: 'lb-storefront · pool web', value: 'web-frontend-01-dr, web-frontend-02-dr' })] },
-      { id: 'w2', name: 'Tools', steps: [boot('gitlab-01'), gate('Port', 'gitlab-01', { port: 443, onFail: 'Continue' })] }
+      { id: 'w2', name: 'Tools', parallel: true, steps: [boot('gitlab-01'), gate('Port', 'gitlab-01', { port: 443, onFail: 'Continue' })] }
     ]
   },
   {
@@ -215,7 +217,7 @@ export const RUNBOOKS: Runbook[] = [
     stages: [
       { id: 'k1', name: 'Database', steps: [boot('cbs-db-01'), gate('SQL query', 'cbs-db-01', { expect: 'Finacle health view returns OPEN' })] },
       { id: 'k2', name: 'Services', steps: [boot('payments-api'), gate('HTTP', 'https://upi.meridianbank.in/health', { expect: '200 OK' }), gate('Business transaction', 'upi-loopback-test.sh', { expect: 'A ₹1 UPI collect request to the bank’s own test VPA settles', timeout: 300, onFail: 'Ask a person' })] },
-      { id: 'k3', name: 'Front door', steps: [S('lb', { pool: 'lb-cbs-prod · pool cbs', value: 'Recreated at region-2-os' }), S('dns', { record: 'cbs.meridianbank.in', value: '10.70.1.11' }), S('manual', { text: 'Tell NPCI and the branch network that core banking runs from the DR site.', who: 'CBS duty manager' })] }
+      { id: 'k3', name: 'Front door', steps: [S('approval', { who: 'Head of IT operations (Suresh Iyer) or the CIO', timeout: 900 }), S('lb', { pool: 'lb-cbs-prod · pool cbs', value: 'Recreated at region-2-os' }), S('dns', { record: 'cbs.meridianbank.in', value: '10.70.1.11' }), S('manual', { text: 'Tell NPCI and the branch network that core banking runs from the DR site.', who: 'CBS duty manager' })] }
     ]
   },
   {

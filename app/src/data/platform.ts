@@ -469,7 +469,7 @@ export interface Policy {
   template?: boolean;
   residency?: string;
   /** Resilience plans only: what the plan promises. */
-  dr?: { tier: Tier; rpo: string; rto: string; mode: 'Continuous' | 'Scheduled'; every?: string; dest: string };
+  dr?: { tier: Tier; rpo: string; rto: string; mode: 'Continuous' | 'Scheduled' | 'Near-synchronous' | 'Synchronous'; every?: string; dest: string; topology?: 'Pilot light' | 'Warm standby' | 'Hot standby'; group?: string };
 }
 export const POLICIES: Policy[] = [
   { id: 'g-bk-daily', name: 'Production daily', type: 'Backup', level: 'Global', owner: 'Host360', version: 7, updated: T('14 Oct', '10:20'), updatedBy: 'arun.kumar', assigned: 89, drift: 2, template: true,

@@ -25,12 +25,35 @@ const REPOS = [
   { name: 'atl-obj-fra', where: 'Frankfurt, Germany' }
 ];
 
+/** Recovery sites with the round trip measured from the protected sites over the last 7 days (p95). */
 const DR_SITES = [
-  { name: 'production-openstack', where: 'Chennai, India' },
-  { name: 'Chennai-proxmox-prod', where: 'Chennai, India' },
-  { name: 'region-2-os', where: 'Hyderabad, India' },
-  { name: 'fra-openstack', where: 'Frankfurt, Germany' }
+  { name: 'production-openstack', where: 'Chennai, India', rtt: 0.6 },
+  { name: 'Chennai-proxmox-prod', where: 'Chennai, India', rtt: 0.4 },
+  { name: 'region-2-os', where: 'Hyderabad, India', rtt: 11.8 },
+  { name: 'fra-openstack', where: 'Frankfurt, Germany', rtt: 142 }
 ];
+type DrMode = 'Scheduled' | 'Continuous' | 'Near-synchronous' | 'Synchronous';
+type Topology = 'Pilot light' | 'Warm standby' | 'Hot standby';
+/** Round trip each mode tolerates before writes slow down. */
+const MODE_RTT: Record<DrMode, number> = { Scheduled: Infinity, Continuous: Infinity, 'Near-synchronous': 10, Synchronous: 5 };
+const MODE_NOTE: Record<DrMode, string> = {
+  Scheduled: 'A snapshot on a schedule; only changed blocks are copied.',
+  Continuous: 'Every write journalled and sent as it happens. RPO of seconds; about 4 × the bandwidth.',
+  'Near-synchronous': 'Writes are acknowledged locally and shipped within a second. Needs a round trip under 10 ms.',
+  Synchronous: 'A write completes only when both sites have it. RPO zero. Needs a round trip under 5 ms, so a site in the same metro.'
+};
+const TOPO_NOTE: Record<Topology, string> = {
+  'Pilot light': 'Replicas only; machines are created at failover. Cheapest; RTO in hours.',
+  'Warm standby': 'Machines registered and powered off at the DR site. RTO in minutes.',
+  'Hot standby': 'Machines running on reserved compute. RTO in seconds to minutes; reserved capacity is billed.'
+};
+const TIER_DEFAULT: Record<string, { mode: DrMode; topo: Topology }> = {
+  'Mission Critical': { mode: 'Continuous', topo: 'Hot standby' },
+  'Business Critical': { mode: 'Scheduled', topo: 'Warm standby' },
+  Important: { mode: 'Scheduled', topo: 'Pilot light' }
+};
+const MODE_PRICE: Record<DrMode, number> = { Scheduled: 1, Continuous: 1.5, 'Near-synchronous': 2, Synchronous: 2.5 };
+const TOPO_PRICE: Record<Topology, string> = { 'Pilot light': 'compute billed only while a failover or test runs', 'Warm standby': 'plus ₹3 a vCPU-day held', 'Hot standby': 'plus ₹9 a vCPU-day reserved' };
 const HEAD: Record<PolicyType, { kicker: string; title: string; sub: string }> = {
   Backup: { kicker: 'Protection', title: 'Policies', sub: 'Schedules, retention and where recovery points are stored. The same policies appear under Automation › Policies.' },
   DR: { kicker: 'Resilience', title: 'Protection plans', sub: 'How often each workload is copied to its recovery site, how old its newest point may be (RPO) and how fast it must run again (RTO).' },
@@ -281,7 +304,7 @@ const drRow = (p: Policy) => {
     tier: p.dr ? { v: TIER_SHORT[p.dr.tier], tip: p.dr.tier, s: TIERS.indexOf(p.dr.tier) } : { v: '—', muted: true },
     rpo: p.dr ? p.dr.rpo : '—',
     rto: p.dr ? p.dr.rto : '—',
-    mode: p.dr ? { v: p.dr.mode === 'Continuous' ? 'Continuous' : `Every ${p.dr.every || p.dr.rpo}`, tip: `${MODE_LABEL[p.dr.mode]}. ${MODE_TIP[p.dr.mode]}` } : '—',
+    mode: p.dr ? { v: p.dr.mode === 'Scheduled' ? `Every ${p.dr.every || p.dr.rpo}` : p.dr.mode, tip: p.dr.mode === 'Scheduled' || p.dr.mode === 'Continuous' ? `${MODE_LABEL[p.dr.mode]}. ${MODE_TIP[p.dr.mode]}${p.dr.topology ? ` ${p.dr.topology}.` : ''}` : `${MODE_NOTE[p.dr.mode]}${p.dr.topology ? ` ${p.dr.topology}.` : ''}` } : '—',
     n: { v: String(p.assigned), s: p.assigned },
     comp: ws.length ? { t: 'bar', pct: (ok / ws.length) * 100, c: ok === ws.length ? 'ok' : 'warn', v: `${ok} of ${ws.length}${unread ? ' · 1 not read' : ''}`, s: ok / ws.length } : { v: 'None visible here', muted: true, s: -1 },
     drift: driftCell(p)
@@ -311,7 +334,10 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
   const [tier, setTier] = useState<Tier>('Mission Critical');
   const [rpo, setRpo] = useState('15 min');
   const [rto, setRto] = useState('1 h');
-  const [mode, setMode] = useState<'Continuous' | 'Scheduled'>('Scheduled');
+  const [mode, setMode] = useState<DrMode>('Continuous');
+  const [topo, setTopo] = useState<Topology>('Hot standby');
+  const [group, setGroup] = useState('One group for the whole plan');
+  const [atRest, setAtRest] = useState('AES-256, tenant key from Settings › Keys');
   const [dest, setDest] = useState('production-openstack');
   const [versions, setVersions] = useState('2, one every 4 h');
   const [refused, setRefused] = useState<string | null>(null);
@@ -325,10 +351,16 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
       setRpo(x.rpo);
       setRto(x.rto);
     }
+    if (TIER_DEFAULT[t]) {
+      setMode(TIER_DEFAULT[t].mode);
+      setTopo(TIER_DEFAULT[t].topo);
+    }
     setRefused(null);
   };
   const modeErr = type === 'DR' && rpo === 'Seconds' && mode === 'Scheduled' ? 'An RPO of seconds needs continuous replication.' : null;
-  const err = !name.trim() ? 'Name the policy.' : modeErr;
+  const rttErr = type === 'DR' && site.rtt > MODE_RTT[mode] ? `${mode} replication to ${dest} would slow every write: the round trip is ${site.rtt} ms and ${mode.toLowerCase()} needs under ${MODE_RTT[mode]} ms. Choose a site in the same metro, or continuous replication.` : null;
+  const price = Math.round(52 * MODE_PRICE[mode] * (tier === 'Mission Critical' ? 1.5 : 1));
+  const err = !name.trim() ? 'Name the policy.' : modeErr || rttErr;
   const save = () => {
     const eu = cust.residency.startsWith('European');
     const india = cust.residency.startsWith('India');
@@ -344,12 +376,12 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
     }
     const settings: [string, string][] =
       type === 'DR'
-        ? [['Criticality tier', `${tier} (${TIER_SHORT[tier]})`], ['Recovery target (RPO)', rpo === 'Seconds' ? 'Seconds' : rpo], ['Recovery time (RTO)', rto], ['Replication mode', mode === 'Continuous' ? MODE_LABEL.Continuous : `Scheduled every ${rpo}: snapshot and changed blocks`], ['Recovery site', `${dest} (${site.where})`], ['Versions kept', versions], ['Drill cadence', TIER_TARGET[tier]?.drill || 'Not required']]
+        ? [['Criticality tier', `${tier} (${TIER_SHORT[tier]})`], ['Recovery target (RPO)', rpo === 'Seconds' ? 'Seconds' : rpo], ['Recovery time (RTO)', rto], ['Replication mode', mode === 'Continuous' ? MODE_LABEL.Continuous : mode === 'Scheduled' ? `Scheduled every ${rpo}: snapshot and changed blocks` : `${mode} (round trip ${site.rtt} ms)`], ['DR topology', `${topo}: ${TOPO_NOTE[topo]}`], ['Write-order consistency', group], ['Encryption at the DR site', atRest], ['Recovery site', `${dest} (${site.where})`], ['Versions kept', versions], ['Drill cadence', TIER_TARGET[tier]?.drill || 'Not required'], ['Price', `₹${price} a workload a day, ${TOPO_PRICE[topo]}`]]
         : type === 'Backup'
           ? [['Inherits from', tpl], ['Repository', `${repo} (${repoInfo.where})`], ['Immutability', immut]]
           : [['Inherits from', tpl]];
     update(st => {
-      st.policies.unshift({ id: 'p' + Date.now(), name: name.trim(), type, level, owner: level === 'Global' ? 'Host360' : cust.name, inherits: tpl, version: 1, updated: ctx.now(), updatedBy: 'priya.raman', assigned: 0, drift: 0, residency: cust.residency.startsWith('India') ? 'India only' : cust.residency.startsWith('European') ? 'EU only' : undefined, overrides: [], settings, dr: type === 'DR' ? { tier, rpo: rpo === 'Seconds' ? 'Seconds' : rpo, rto, mode, every: mode === 'Scheduled' ? rpo : undefined, dest } : undefined });
+      st.policies.unshift({ id: 'p' + Date.now(), name: name.trim(), type, level, owner: level === 'Global' ? 'Host360' : cust.name, inherits: tpl, version: 1, updated: ctx.now(), updatedBy: 'priya.raman', assigned: 0, drift: 0, residency: cust.residency.startsWith('India') ? 'India only' : cust.residency.startsWith('European') ? 'EU only' : undefined, overrides: [], settings, dr: type === 'DR' ? { tier, rpo: rpo === 'Seconds' ? 'Seconds' : rpo, rto, mode, every: mode === 'Scheduled' ? rpo : undefined, dest, topology: topo, group } : undefined });
     });
     ctx.toast(`${type === 'DR' ? 'Protection plan' : 'Policy'} ${name.trim()} saved as version 1`, 'ok');
     audit({ who: 'priya.raman', customer: cust.id, what: `Created ${type === 'DR' ? 'protection plan' : `${type} policy`}`, object: name.trim(), when: ctx.now(), r: 'ok' });
@@ -413,18 +445,42 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
               <SelectInput id="po-dest" value={dest} onChange={v => { setDest(v); setRefused(null); }} options={DR_SITES.map(x => ({ v: x.name, label: `${x.name} · ${x.where}` }))} />
             </Field>
             <Field id="po-rpo" label="Recovery point objective (RPO)" err={modeErr}>
-              <SelectInput id="po-rpo" value={rpo} onChange={v => { setRpo(v); if (v === 'Seconds') setMode('Continuous'); }} options={['Seconds', '15 min', '1 h', '4 h', '1 d']} />
+              <SelectInput id="po-rpo" value={rpo} onChange={v => { setRpo(v); if (v === 'Seconds' && mode === 'Scheduled') setMode('Continuous'); }} options={['Zero', 'Seconds', '15 min', '1 h', '4 h', '1 d'].map(o => ({ v: o, label: o === 'Zero' ? 'Zero (synchronous)' : o }))} />
             </Field>
             <Field id="po-rto" label="Recovery time objective (RTO)">
               <SelectInput id="po-rto" value={rto} onChange={setRto} options={['15 min', '1 h', '4 h', '24 h']} />
             </Field>
             <div role="radiogroup" aria-label="Replication mode" style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <RadioCard on={mode === 'Scheduled'} onClick={() => { setMode('Scheduled'); if (rpo === 'Seconds') setRpo('15 min'); }} icon="calendar-clock" title="Scheduled" note={`A snapshot every ${rpo === 'Seconds' ? '15 min' : rpo}; only changed blocks are copied.`} />
-              <RadioCard on={mode === 'Continuous'} onClick={() => setMode('Continuous')} icon="activity" title="Continuous" note="Every write is journalled and copied. RPO of seconds; about 4 × the bandwidth." />
+              <RadioCard on={mode === 'Scheduled'} onClick={() => { setMode('Scheduled'); if (rpo === 'Seconds' || rpo === 'Zero') setRpo('15 min'); }} icon="calendar-clock" title="Scheduled" note={rpo === 'Seconds' || rpo === 'Zero' ? MODE_NOTE.Scheduled : `A snapshot every ${rpo}; only changed blocks are copied.`} />
+              <RadioCard on={mode === 'Continuous'} onClick={() => { setMode('Continuous'); if (rpo === 'Zero') setRpo('Seconds'); }} icon="activity" title="Continuous (asynchronous)" note={MODE_NOTE.Continuous} />
+              <RadioCard on={mode === 'Near-synchronous'} onClick={() => { setMode('Near-synchronous'); if (rpo === 'Zero') setRpo('Seconds'); }} icon="zap" title="Near-synchronous" note={MODE_NOTE['Near-synchronous']} tag={site.rtt > MODE_RTT['Near-synchronous'] ? `${site.rtt} ms` : undefined} />
+              <RadioCard on={mode === 'Synchronous'} onClick={() => { setMode('Synchronous'); setRpo('Zero'); }} icon="copy-check" title="Synchronous" note={MODE_NOTE.Synchronous} tag={site.rtt > MODE_RTT.Synchronous ? `${site.rtt} ms` : undefined} />
             </div>
+            {rttErr ? (
+              <div style={{ gridColumn: 'span 2' }}>
+                <Bar tone="warn" multiline>{rttErr}</Bar>
+              </div>
+            ) : (mode === 'Near-synchronous' || mode === 'Synchronous') ? (
+              <div style={{ gridColumn: 'span 2', font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Round trip to {dest}: {site.rtt} ms (p95, last 7 days). If it rises above {MODE_RTT[mode]} ms for 5 minutes, replication drops to continuous and an alert is raised; it returns on its own.</div>
+            ) : null}
+            <div role="radiogroup" aria-label="DR topology" style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
+              {(['Pilot light', 'Warm standby', 'Hot standby'] as Topology[]).map(t => (
+                <RadioCard key={t} on={topo === t} onClick={() => setTopo(t)} icon={t === 'Pilot light' ? 'power' : t === 'Warm standby' ? 'pause' : 'play'} title={t} note={TOPO_NOTE[t]} />
+              ))}
+            </div>
+            <Field id="po-grp" label="Write-order consistency" hint="Workloads in one group share each recovery point, so a database and its application never disagree. The group’s RPO is its slowest member’s.">
+              <SelectInput id="po-grp" value={group} onChange={setGroup} options={['One group for the whole plan', 'One group per application', 'None: each workload on its own']} />
+            </Field>
+            <Field id="po-enc" label="Encryption at the DR site" hint="Replicas, journals and test copies at rest.">
+              <SelectInput id="po-enc" value={atRest} onChange={setAtRest} options={['AES-256, tenant key from Settings › Keys', 'AES-256, the customer’s own KMS key', 'AES-256, a key held only at the DR site']} />
+            </Field>
             <Field id="po-ver" label="Versions kept at the recovery site">
               <SelectInput id="po-ver" value={versions} onChange={setVersions} options={['1', '2, one every 4 h', '4, one every 6 h', '24, one every hour']} />
             </Field>
+            <div style={{ alignSelf: 'end', padding: '8px 12px', border: '1px solid var(--ln)', background: 'var(--panel-2)', font: '13px/18px var(--f-ui)' }}>
+              <div style={{ fontWeight: 600 }}>₹{price} a workload a day</div>
+              <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>{TIER_SHORT[tier]} · {mode} · {TOPO_PRICE[topo]}</div>
+            </div>
           </>
         ) : null}
       </div>

@@ -309,23 +309,50 @@ export function RunPanel({ ctx, rb, run, onFailback }: { ctx: Ctx; rb: Runbook; 
   const cur = run.flat[run.i];
   const curStage = cur ? rb.stages.find(s => s.id === cur.stage) : null;
   const atRecovery = (run.kind === 'Planned' || run.kind === 'Unplanned') && run.state === 'done';
+  const [approving, setApproving] = useState<'open' | 'closing' | null>(null);
+  const [verified, setVerified] = useState(false);
+  const closeApprove = () => { setApproving('closing'); window.setTimeout(() => { setApproving(null); setVerified(false); }, 160); };
+  const approvalStep = run.waitKind === 'approval' ? rb.stages.flatMap(s => s.steps).find(x => x.id === run.flat[run.i]?.step) : undefined;
   return (
     <section aria-label="Run in progress" style={{ border: `1px solid var(--${tone === 'run' ? 'acc' : tone})`, background: 'var(--panel)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid var(--ln)' }}>
         <Icon name={run.state === 'done' ? 'circle-check' : run.state === 'wait' ? 'hand' : run.state === 'stopped' ? 'circle-stop' : 'loader-circle'} spin={run.state === 'run'} size={20} style={{ color: `var(--${tone})` }} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 600 }}>
-            {KIND_LABEL[run.kind]} {run.state === 'done' ? (atRecovery ? `finished: ${rb.name} runs at ${rb.to}` : run.kind === 'Failback' ? `finished: back at ${rb.from}` : 'passed') : run.state === 'wait' ? 'is waiting for a person' : run.state === 'stopped' ? 'was stopped' : `in progress · step ${Math.min(run.i + 1, total)} of ${total}${curStage ? ` · ${curStage.name}` : ''}`}
+            {KIND_LABEL[run.kind]} {run.state === 'done' ? (atRecovery ? `finished: ${rb.name} runs at ${rb.to}` : run.kind === 'Failback' ? `finished: back at ${rb.from}` : 'passed') : run.state === 'wait' ? (run.waitKind === 'approval' ? `is waiting for approval: ${approvalStep?.who || 'an approver'}` : 'is waiting for a person') : run.state === 'stopped' ? 'was stopped' : `in progress · step ${Math.min(run.i + 1, total)} of ${total}${curStage ? ` · ${curStage.name}` : ''}`}
           </div>
           <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>
             Started {run.started} by {run.by}
             {run.approvedBy ? ` · approved by ${run.approvedBy.split(' (')[0]}` : ''} · {fmtMin(run.sim / 60)} of {rb.rtoTarget} used{run.sim / 60 > rto ? ' — over the RTO target' : ''}
           </div>
         </div>
-        {run.state === 'wait' ? (
+        {run.state === 'wait' && run.waitKind === 'approval' ? (
+          <Btn kind="primary" icon="user-check" perm={op} onClick={() => setApproving('open')}>
+            Approve…
+          </Btn>
+        ) : run.state === 'wait' ? (
           <Btn kind="primary" icon="check" perm={op} onClick={() => confirmManual(rb.id)}>
             Mark the manual step done
           </Btn>
+        ) : null}
+        {approving ? (
+          <Dialog
+            title="Approve the run going on"
+            sub={`${KIND_LABEL[run.kind]} of ${rb.name}, started by ${run.by}. You cannot approve a run you started.`}
+            closing={approving === 'closing'}
+            onClose={closeApprove}
+            footer={
+              <>
+                <Btn kind="ghost" onClick={closeApprove}>Cancel</Btn>
+                <Btn kind="primary" icon="check" disabled={!verified} why="Confirm with your second factor first." onClick={() => { confirmManual(rb.id, 'arun.kumar'); audit({ who: 'arun.kumar', customer: rb.customer, what: 'Approved a recovery plan step', object: rb.name, when: ctx.now(), r: 'ok', note: approvalStep?.who }); ctx.toast('Approved; the run goes on', 'ok'); closeApprove(); }}>
+                  Approve as arun.kumar
+                </Btn>
+              </>
+            }
+          >
+            <Bar tone="info" multiline>Next: {rb.stages.find(s => s.id === run.flat[run.i + 1]?.stage)?.name || 'the end of the run'}. {run.kind === 'Test' ? 'Nothing outside the test network changes.' : 'Production DNS and load balancers change after this point.'}</Bar>
+            <StepUp who="arun.kumar@host360.ai" verified={verified} onVerified={() => setVerified(true)} />
+          </Dialog>
         ) : null}
         {run.state === 'run' || run.state === 'wait' ? (
           <Btn kind="outline" icon="circle-stop" perm={op} onClick={() => stopRun(rb.id)}>
@@ -438,7 +465,7 @@ export function FailbackDialog({ ctx, rb, closing, onClose }: { ctx: Ctx; rb: Ru
 /** The same states as a status cell for the shared table. */
 export function runCell(run: DrRun) {
   if (run.state === 'run') return { t: 'status', i: 'loader-circle', spin: true, c: 'run', l: `${KIND_LABEL[run.kind]} running`, s: 0 };
-  if (run.state === 'wait') return { t: 'status', i: 'hand', c: 'warn', l: 'Waiting for a person', s: 0 };
+  if (run.state === 'wait') return { t: 'status', i: run.waitKind === 'approval' ? 'user-check' : 'hand', c: 'warn', l: run.waitKind === 'approval' ? 'Waiting for approval' : 'Waiting for a person', s: 0 };
   if (run.state === 'stopped') return { t: 'status', i: 'circle-stop', c: 'warn', l: 'Stopped', s: 0 };
   if (run.kind === 'Test') return { t: 'status', i: 'flask-conical', c: 'ok', l: 'Test passed · clean up', s: 0 };
   if (run.kind === 'Failback') return { t: 'status', i: 'circle-check', c: 'ok', l: 'Back at primary', s: 0 };
@@ -448,7 +475,7 @@ export function runCell(run: DrRun) {
 export function RunStatus({ run }: { run?: DrRun }) {
   if (!run) return null;
   if (run.state === 'run') return <Status icon="loader-circle" spin tone="run" label={`${KIND_LABEL[run.kind]} running`} />;
-  if (run.state === 'wait') return <Status icon="hand" tone="warn" label="Waiting for a person" />;
+  if (run.state === 'wait') return <Status icon={run.waitKind === 'approval' ? 'user-check' : 'hand'} tone="warn" label={run.waitKind === 'approval' ? 'Waiting for approval' : 'Waiting for a person'} />;
   if (run.state === 'stopped') return <Status icon="circle-stop" tone="warn" label="Stopped" />;
   if (run.kind === 'Test') return <Status icon="flask-conical" tone="ok" label="Test passed · clean up" />;
   if (run.kind === 'Failback') return <Status icon="circle-check" tone="ok" label="Back at primary" />;
