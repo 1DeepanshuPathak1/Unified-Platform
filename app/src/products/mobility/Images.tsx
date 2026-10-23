@@ -30,9 +30,9 @@ const ST: Record<ImgState, { i: string; c: string }> = { Ready: { i: 'circle-che
 /** Machines that can be built from a backup instead of being read from production. */
 type BackupSrc = { id: string; name: string; os: string; customer: string; from: string; vendor: string; newest: string; gb: number; native: boolean };
 const AEGIS_BACKUPS: BackupSrc[] = [
-  { id: 'bk-web1', name: 'web-frontend-01', os: 'Ubuntu 24.04', customer: 'h360', from: 'Aegis Protection · obj-check', vendor: 'Aegis', newest: '23 Oct, 02:00', gb: 48, native: true },
-  { id: 'bk-git', name: 'gitlab-01', os: 'Ubuntu 22.04', customer: 'h360', from: 'Aegis Protection · obj-check', vendor: 'Aegis', newest: '23 Oct, 02:00', gb: 310, native: true },
-  { id: 'bk-mon', name: 'monitoring-01', os: 'Rocky Linux 9', customer: 'h360', from: 'Aegis Protection · obj-check', vendor: 'Aegis', newest: '23 Oct, 02:00', gb: 96, native: true }
+  { id: 'bk-web1', name: 'web-frontend-01', os: 'Ubuntu 24.04', customer: 'h360', from: 'Aegis Protection · obj-check', vendor: 'Aegis', newest: '21 Oct, 02:00', gb: 48, native: true },
+  { id: 'bk-git', name: 'gitlab-01', os: 'Ubuntu 22.04', customer: 'h360', from: 'Aegis Protection · obj-check', vendor: 'Aegis', newest: '21 Oct, 02:00', gb: 310, native: true },
+  { id: 'bk-mon', name: 'monitoring-01', os: 'Rocky Linux 9', customer: 'h360', from: 'Aegis Protection · obj-check', vendor: 'Aegis', newest: '21 Oct, 02:00', gb: 96, native: true }
 ];
 const backupSources = (): BackupSrc[] => [
   ...AEGIS_BACKUPS,
@@ -329,7 +329,7 @@ function BuildFromBackupDialog({ ctx, src, closing, onClose }: { ctx: Ctx; src: 
     >
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 16 }}>
         <Field id="bb-p" label="Backup point">
-          <SelectInput id="bb-p" value={pt} onChange={setPt} options={[src.newest, '22 Oct, 02:00', '21 Oct, 02:00']} />
+          <SelectInput id="bb-p" value={pt} onChange={setPt} options={[src.newest, ...(src.native ? ['20 Oct, 02:00', '19 Oct, 02:00'] : ['19 Oct, 23:00', '18 Oct, 23:00'])]} />
         </Field>
         <Field id="bb-d" label="Destination">
           <SelectInput id="bb-d" value={dest} onChange={setDest} options={['production-openstack', 'Chennai-proxmox-prod', 'region-2-os']} />

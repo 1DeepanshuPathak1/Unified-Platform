@@ -5,10 +5,11 @@ import { Icon } from '../lib/Icon';
 import { AEGIS } from '../data/aegis';
 import { T } from '../data/platform';
 import { Btn, Field, FilterInput, InfoTip, Seg, SelectFilter, SelectInput, TextInput } from '../ui/controls';
-import { BulkBar, Facts, H3, LogView, MiniTable, Progress, Spacer, StepList, TableArea, Toolbar, plural, type Step } from '../ui/layout';
+import { Bar, BulkBar, Facts, H3, LogView, MiniTable, Progress, Spacer, Status, StepList, TableArea, Toolbar, plural, type Step } from '../ui/layout';
 import { Dialog, Drawer, useClosable } from '../ui/overlay';
 import type { Ctx, LiveJob } from '../ui/ctx';
 import { custName } from './common';
+import { diagnose } from './errors';
 
 type Q = {
   id: string;
@@ -163,7 +164,7 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
               { k: 'proxy', label: 'Runs on', w: 'minmax(120px,1fr)', dim: true },
               { k: 'state', label: 'State', w: 'minmax(150px,1.2fr)' },
               { k: 'pct', label: 'Progress', w: '130px' },
-              ...(view === 'queue' ? [{ k: 'rate', label: 'Throughput', w: '92px', r: true }, { k: 'bn', label: 'Bottleneck', w: '100px' }] : [{ k: 'dur', label: 'Duration', w: '104px', r: true }, { k: 'started', label: 'Started', w: '176px', dim: true }])
+              ...(view === 'queue' ? [{ k: 'eta', label: 'Ends', w: '72px', r: true }, { k: 'rate', label: 'Throughput', w: '92px', r: true }, { k: 'bn', label: 'Bottleneck', w: '100px' }] : [{ k: 'dur', label: 'Duration', w: '104px', r: true }, { k: 'started', label: 'Started', w: '176px', dim: true }])
             ]}
             rows={rows.map(j => {
               const b = j.state === 'run' ? bottleneck(j.id, ctx.tick) : null;
@@ -177,6 +178,7 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
                 proxy: j.proxy,
                 state: { t: 'status', i: st[0], l: j.state === 'run' ? `${st[1]} · ${j.phases[j.phase]}` : st[1], c: st[2], spin: j.state === 'run', tip: j.why || j.note || st[1] },
                 pct: j.state === 'queued' ? { v: '—', muted: true, s: 0 } : { t: 'bar', pct: j.pct, v: `${Math.floor(j.pct)} %`, c: j.state === 'run' ? 'run' : j.state === 'err' ? 'err' : j.state === 'paused' ? 'warn' : 'ok' },
+                eta: (() => { const e = etaOf(j, rows); return e ? { v: e.at, s: e.min, tip: e.tip } : { v: '—', muted: true, s: 1e6 }; })(),
                 rate: j.state === 'run' ? j.rate || '—' : { v: '—', muted: true },
                 bn: b ? { t: 'status', i: b.at === 'source' ? 'hard-drive' : b.at === 'network' ? 'wifi' : 'database', l: b.at[0].toUpperCase() + b.at.slice(1), c: 'warn', tip: `Source ${b.src} % busy · network ${b.net} % · target ${b.tgt} %` } : { v: '—', muted: true },
                 dur: j.duration || '—',
@@ -242,7 +244,7 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
           {tab === 'Progress' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {d.why ? <p style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--tx-2)' }}><Icon name="info" />{d.why}</p> : null}
-              {d.note ? <p style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--tx-2)' }}><Icon name="triangle-alert" style={{ color: 'var(--warn)' }} />{d.note}</p> : null}
+              {d.note && (d.state === 'err' || d.state === 'warn') ? <Diagnosis key={d.id} ctx={ctx} note={d.note} object={d.object} tone={d.state} /> : d.note ? <p style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--tx-2)' }}><Icon name="triangle-alert" style={{ color: 'var(--warn)' }} />{d.note}</p> : null}
               {d.phases.length > 1 ? (
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', font: '13px/18px var(--f-ui)', marginBottom: 6 }}>
@@ -256,7 +258,7 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
                 </div>
               ) : null}
               {d.state === 'run' ? <BottleneckPanel id={d.id} tick={ctx.tick} /> : null}
-              <Facts items={[{ k: 'Started', v: d.started }, ...(d.dependsOn ? [{ k: 'Waits for', v: d.dependsOn, icon: 'workflow' }] : []), { k: 'Runs on', v: d.proxy }, { k: 'Customer', v: custName(d.customer) }]} />
+              <Facts items={[{ k: 'Started', v: d.started }, ...(etaOf(d, rows) ? [{ k: 'Ends about', v: `${etaOf(d, rows)!.at} IST · ${etaOf(d, rows)!.tip}` }] : []), ...(d.dependsOn ? [{ k: 'Waits for', v: d.dependsOn, icon: 'workflow' }] : []), { k: 'Runs on', v: d.proxy }, { k: 'Customer', v: custName(d.customer) }]} />
             </div>
           ) : null}
           {tab === 'Log' ? (
@@ -399,6 +401,70 @@ function Limits({ ctx }: { ctx: Ctx }) {
             <TextInput id="lim-v" value={val} onChange={setVal} inputMode="numeric" invalid={!/^\d+$/.test(val)} />
           </Field>
         </Dialog>
+      ) : null}
+    </div>
+  );
+}
+
+/**
+ * Estimated end from the measured rate so far, or for a queued job from the jobs ahead of it on the same proxy.
+ * The console clock stands at 16:05 IST.
+ */
+function etaOf(j: Q, all: Q[]): { at: string; min: number; tip: string } | null {
+  const clock = (m: number) => { const t = 16 * 60 + 5 + m; return `${String(Math.floor(t / 60) % 24).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; };
+  const speed = (j.live as unknown as { speed?: number })?.speed || 6;
+  if (j.state === 'run') {
+    const min = Math.max(1, Math.round(((100 - j.pct) / speed) * 1.5));
+    return { at: clock(min), min, tip: `in about ${min} min at the rate measured so far` };
+  }
+  if (j.state === 'queued') {
+    const ahead = all.filter(x => x.proxy === j.proxy && (x.state === 'run' || (x.state === 'queued' && x.prio < j.prio))).length;
+    const min = 12 + ahead * 9 + j.prio * 3;
+    return { at: clock(min), min, tip: ahead ? `after ${ahead} job${ahead === 1 ? '' : 's'} ahead of it on ${j.proxy}` : 'when a slot frees' };
+  }
+  return null;
+}
+
+/** Code, cause, fix, KB article and a troubleshooter for a failed or warned job. */
+function Diagnosis({ ctx, note, object, tone }: { ctx: Ctx; note: string; object: string; tone: 'err' | 'warn' }) {
+  const dx = diagnose(note)!;
+  const [ran, setRan] = useState<'no' | 'run' | 'done'>('no');
+  const repeats = /quiesce/i.test(note) ? 3 : 1;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <Bar tone={tone} multiline>
+        <strong style={{ display: 'block', fontWeight: 600 }}>{dx.code} · {dx.title}</strong>
+        {note}
+      </Bar>
+      <Facts
+        items={[
+          { k: 'Cause', v: dx.cause },
+          { k: 'Where', v: `${dx.area} · ${object}` },
+          ...(repeats > 1 ? [{ k: 'Root cause', v: `Same code ${repeats} times on ${object} in 24 h: the cause is in the guest, not the network or the target`, icon: 'target' }] : []),
+          { k: 'Retry', v: dx.retry === 'safe' ? 'Safe to retry now' : 'Fix the cause first; a retry now fails the same way' }
+        ]}
+      />
+      <div>
+        <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)', marginBottom: 6 }}>How to fix it</div>
+        <ol style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4, font: '13px/20px var(--f-ui)' }}>
+          {dx.fix.map((f, i) => <li key={i}>{f}</li>)}
+        </ol>
+      </div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {dx.checks.length ? (
+          <Btn kind="outline" icon={ran === 'run' ? 'loader-circle' : 'gauge'} spin={ran === 'run'} disabled={ran === 'run'} onClick={() => { setRan('run'); window.setTimeout(() => setRan('done'), 1100); }}>
+            {ran === 'done' ? 'Run the troubleshooter again' : ran === 'run' ? 'Checking…' : 'Run the troubleshooter'}
+          </Btn>
+        ) : null}
+        {dx.kb ? <Btn kind="ghost" icon="book-open" onClick={() => ctx.go('support/kb')}>{dx.kb}</Btn> : null}
+        <Btn kind="ghost" icon="ticket" onClick={() => ctx.go('support/requests')}>Open a support request</Btn>
+      </div>
+      {ran === 'done' ? (
+        <MiniTable
+          label="Troubleshooter"
+          cols={[{ label: 'Check' }, { label: 'Result', w: '260px' }]}
+          rows={dx.checks.map(([l, s, v]) => [l, <Status key="s" icon={s === 'ok' ? 'circle-check' : s === 'warn' ? 'triangle-alert' : 'circle-x'} tone={s} label={v} />])}
+        />
       ) : null}
     </div>
   );

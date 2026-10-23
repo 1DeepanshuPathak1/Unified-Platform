@@ -6,6 +6,7 @@ import { Btn, Field, FilterInput, InfoTip, Seg, SelectFilter, SelectInput, TextI
 import { Activity, Bar, BulkBar, Facts, MiniTable, Spacer, TableArea, Toolbar, plural } from '../ui/layout';
 import { Dialog, Drawer, useClosable } from '../ui/overlay';
 import type { Ctx } from '../ui/ctx';
+import { diagnose } from './errors';
 import { custName, inScope, showCustomerCol } from './common';
 import { audit, update, useStore } from './store';
 
@@ -165,6 +166,7 @@ export function AlertsTab({ ctx }: { ctx: Ctx }) {
             <Facts
               items={[
                 { k: 'What happened', v: d.detail },
+                ...((dx => (dx && dx.code !== 'AEG-GEN-0001' ? [{ k: 'Error code', v: `${dx.code} · ${dx.title}` }, { k: 'Cause', v: dx.cause }, { k: 'Fix', v: dx.fix[0] }, ...(dx.kb ? [{ k: 'Article', v: `${dx.kb} in Support › Knowledge base`, icon: 'book-open' }] : [])] : []))(diagnose(d.detail))),
                 { k: 'Object', v: d.object },
                 { k: 'Customer', v: custName(d.customer) },
                 { k: 'Rule', v: d.rule },

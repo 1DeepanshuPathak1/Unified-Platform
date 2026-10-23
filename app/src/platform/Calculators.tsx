@@ -6,6 +6,8 @@ import { audit } from './store';
 import { Facts, MiniTable, Panel, Spacer, TableArea, Tiles, Toolbar } from '../ui/layout';
 import type { Ctx } from '../ui/ctx';
 import { Icon } from '../lib/Icon';
+import { CopyCurl } from '../ui/CopyCurl';
+import { BackupOutputs, DrOutputs, MigOutputs, QuoteDialog } from './CalcOutputs';
 
 /* ---------------------------------------------------------------- One engine for all three calculators */
 
@@ -46,6 +48,57 @@ export const engine = {
     const finalGB = (tb * 1024 * (a.change / 100) * syncEveryH) / 24 / servers;
     const downtimeMin = Math.round((finalGB * 1024) / a.mbps / 60 + 12);
     return { firstH, waves, weeks: waves + 2, downtimeMin };
+  },
+  /** What the backup design needs and costs: volumes, tiers, bandwidth, window, proxies, restore times, TCO and the downside. */
+  backupDesign(a: Assume, sourceTB: number, b: { parts: [string, number][]; total: number; red: number }, windowH: number, lockD: number, monthly: number, copy: boolean) {
+    const inc = sourceTB * (a.change / 100);
+    const needMBs = (inc * 1024 * 1024) / (Math.max(1, windowH) * 3600);
+    const workers = Math.max(1, Math.ceil(needMBs / a.mbps));
+    const proxies = workers + 1;
+    const windowEst = (inc * 1024 * 1024) / (a.mbps * workers) / 3600;
+    const archive = b.parts[3][1] * (Math.max(0, monthly - 3) / Math.max(1, monthly)) + b.parts[4][1];
+    const immutable = (sourceTB + inc * lockD) / b.red;
+    const usable = b.total * 1.25;
+    const price = { software: sourceTB * 3800, storage: b.total * 1450, egress: b.total * 0.03 * 900, infra: proxies * 9500 };
+    const month = price.software + price.storage + price.egress + price.infra;
+    const grow = (n: number) => Array.from({ length: n }, (_, y) => Math.pow(1.2, y)).reduce((x, y) => x + y, 0);
+    const licence = sourceTB * 190000;
+    const rest = (price.storage + price.egress + price.infra) * 12;
+    const stored = (change: number, dedupe: number) => engine.backup({ ...a, change, dedupe }, sourceTB, 14, 4, monthly, 1, copy).total;
+    return {
+      inc, monthlyIngest: inc * 30, annualIngest: inc * 365, needMbps: needMBs * 8.39, proxies, windowEst, archive, rehydCost: archive * 2000, immutable, usable, raw: usable * 1.25,
+      rtoVmMin: Math.round((200 * 1024) / a.mbps / 60), rtoSiteH: (sourceTB * 1024 * 1024) / (a.mbps * workers) / 3600,
+      price, month, tco3: month * 12 * grow(3), tco5: month * 12 * grow(5), comp3: licence * (1 + 0.22 * 3) + rest * grow(3), comp5: licence * (1 + 0.22 * 5) + rest * grow(5),
+      range: [stored(a.change * 0.8, a.dedupe * 1.2), b.total, stored(a.change * 1.5, a.dedupe * 0.7)] as [number, number, number],
+      worseChange: stored(a.change * 1.5, a.dedupe), worseDedupe: stored(a.change, a.dedupe * 0.7)
+    };
+  },
+  /** DR feasibility and cost: achievable RPO on the link, first copy, journal, RTO, DRaaS against building a site, downtime saved. */
+  drDesign(a: Assume, d: { vcpu: number }, storageTB: number, linkMbps: number, rpoMin: number, histH: number, revLakh: number) {
+    const perMinGB = (storageTB * 1024 * (a.change / 100)) / 1440 / a.compress;
+    const needMbps = (perMinGB * 3 * 8192) / 60;
+    const usable = Math.max(1, linkMbps) * 0.8;
+    const ok = usable >= needMbps;
+    const achievable = ok ? rpoMin : Math.ceil((rpoMin * needMbps) / usable);
+    const seedDays = (storageTB * 8e6) / usable / 86400;
+    const journal = (storageTB * (a.change / 100) * histH) / 24 / a.compress;
+    const draas = storageTB * 2600 + journal * 1450 + d.vcpu * 420 + 11700;
+    const build = { capex: 24000000, month: 900000 };
+    const years = [1, 3, 5].map(y => ({ y, rent: draas * 12 * y, build: build.capex + build.month * 12 * y }));
+    const outage = (h: number) => revLakh * 100000 * h;
+    const rtoMin = 4 * 7 + 5 + 10;
+    // One whole-site outage every four years, recovered from tape in 24 h today.
+    const saving = (outage(24) - outage(rtoMin / 60)) * 0.25;
+    return { needMbps, ok, achievable, seedDays, journal, rtoMin, draas, years, saving, payback: (draas * 12) / Math.max(1, saving / 12) };
+  },
+  /** Migration business case: one-off cost, run cost before and after, payback, NPV and TCO. */
+  migCost(tb: number, servers: number, waves: number, vmwLakh: number, hosts: number) {
+    const oneOff = servers * 18000 + waves * 5 * 45000 + tb * 1500;
+    const current = (vmwLakh * 100000) / 12 + hosts * 38000 + hosts * 14000;
+    const target = servers * 14500 * 0.78;
+    const saving = current - target;
+    const npv = [1, 2, 3].reduce((x, y) => x + (saving * 12) / Math.pow(1.1, y), 0) - oneOff;
+    return { oneOff, current, target, saving, payback: saving > 0 ? oneOff / saving : Infinity, npv, years: [1, 3, 5].map(y => ({ y, current: current * 12 * y, target: oneOff + target * 12 * y })) };
   }
 };
 const fmt = (n: number, d = 1) => n.toLocaleString('en-IN', { maximumFractionDigits: d, minimumFractionDigits: d });
@@ -57,6 +110,7 @@ export function CalculatorsTab({ ctx }: { ctx: Ctx }) {
   return (
     <>
       <CalculatorBody
+        ctx={ctx}
         toast={ctx.toast}
         inConsole
         extra={
@@ -72,10 +126,11 @@ export function CalculatorsTab({ ctx }: { ctx: Ctx }) {
 }
 
 /** The same three calculators, in the console or on the public page at aegis.host360.ai/calculator. */
-export function CalculatorBody({ toast, inConsole, extra, lead }: { toast: (m: string, tone?: string) => void; inConsole?: boolean; extra?: ReactNode; lead?: (calc: string, summary: string) => ReactNode }) {
+export function CalculatorBody({ toast, inConsole, extra, lead, ctx }: { toast: (m: string, tone?: string) => void; inConsole?: boolean; extra?: ReactNode; lead?: (calc: string, summary: string) => ReactNode; ctx?: Ctx }) {
   const [calc, setCalc] = useState<'backup' | 'dr' | 'mig'>('backup');
+  const quote = useClosable<string>();
   const [a, setA] = useState<Assume>(DEFAULTS);
-  const [f, setF] = useState<Record<string, string>>({ source: '20', daily: '14', weekly: '4', monthly: '12', yearly: '1', copy: 'Yes', vcpu: '320', ram: '1280', storage: '22', simul: '60', over: '1.5', versions: '7', tb: '12.4', servers: '29', perWave: '6', sync: '4' });
+  const [f, setF] = useState<Record<string, string>>({ source: '20', daily: '14', weekly: '4', monthly: '12', yearly: '1', copy: 'Yes', vcpu: '320', ram: '1280', storage: '22', simul: '60', over: '1.5', versions: '7', tb: '12.4', servers: '29', perWave: '6', sync: '4', window: '8', lock: '14', link: '1000', rpo: '15', hist: '24', rev: '4', vmw: '64', hosts: '6' });
   const set = (k: string, v: string) => setF(x => ({ ...x, [k]: v.replace(/[^\d.]/g, '') }));
   const mine = () => {
     setF(x => ({ ...x, source: '18.6', vcpu: '268', ram: '1088', storage: '22.4', tb: '12.4', servers: '29' }));
@@ -97,9 +152,9 @@ export function CalculatorBody({ toast, inConsole, extra, lead }: { toast: (m: s
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <Panel title="Inputs">
             <div style={{ padding: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              {calc === 'backup' ? [input('source', 'Data to protect (TB)'), input('daily', 'Daily points'), input('weekly', 'Weekly points'), input('monthly', 'Monthly points'), input('yearly', 'Yearly points'), <Field key="copy" id="cl-copy" label="Offsite copy"><SelectInput id="cl-copy" value={f.copy} onChange={v => setF(x => ({ ...x, copy: v }))} options={['Yes', 'No']} /></Field>] : null}
-              {calc === 'dr' ? [input('vcpu', 'vCPU protected'), input('ram', 'Memory protected (GB)'), input('storage', 'Storage protected (TB)'), input('simul', 'Failing over together (%)', 'A whole-site loss is 100 %'), input('over', 'vCPU over-commit', '1.5 means 1.5 vCPU per core'), input('versions', 'Versions kept')] : null}
-              {calc === 'mig' ? [input('tb', 'Data to move (TB)'), input('servers', 'Servers'), input('perWave', 'Servers per weekend wave'), input('sync', 'Hours between sync passes')] : null}
+              {calc === 'backup' ? [input('source', 'Data to protect (TB)'), input('daily', 'Daily points'), input('weekly', 'Weekly points'), input('monthly', 'Monthly points'), input('yearly', 'Yearly points'), <Field key="copy" id="cl-copy" label="Offsite copy"><SelectInput id="cl-copy" value={f.copy} onChange={v => setF(x => ({ ...x, copy: v }))} options={['Yes', 'No']} /></Field>, input('window', 'Backup window (hours)'), input('lock', 'Immutable lock (days)')] : null}
+              {calc === 'dr' ? [input('vcpu', 'vCPU protected'), input('ram', 'Memory protected (GB)'), input('storage', 'Storage protected (TB)'), input('simul', 'Failing over together (%)', 'A whole-site loss is 100 %'), input('over', 'vCPU over-commit', '1.5 means 1.5 vCPU per core'), input('versions', 'Versions kept'), input('link', 'Link to the recovery site (Mbit/s)'), input('rpo', 'Target RPO (minutes)'), input('hist', 'Journal history (hours)'), input('rev', 'Revenue lost per hour down (₹ lakh)')] : null}
+              {calc === 'mig' ? [input('tb', 'Data to move (TB)'), input('servers', 'Servers'), input('perWave', 'Servers per weekend wave'), input('sync', 'Hours between sync passes'), input('vmw', 'VMware licences today (₹ lakh a year)'), input('hosts', 'ESXi hosts retired')] : null}
             </div>
           </Panel>
           <Panel title="Shared assumptions" right={<span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>Used by all three</span>}>
@@ -130,9 +185,34 @@ export function CalculatorBody({ toast, inConsole, extra, lead }: { toast: (m: s
               <Facts items={[...(inConsole ? [{ k: 'Same as', v: 'The estimates in Mobility › Assessment use this engine with each server’s own size' }] : []), { k: 'Formula', v: 'Data ÷ copy rate; final sync = change since the last pass ÷ copy rate + 12 min to boot and check' }]} />
             </>
           ) : null}
+          {calc === 'backup' ? <BackupOutputs d={engine.backupDesign(a, num(f.source), b, num(f.window), num(f.lock), num(f.monthly), f.copy === 'Yes')} b={b} a={a} f={f} priced={!!inConsole} /> : null}
+          {calc === 'dr' ? <DrOutputs x={engine.drDesign(a, d, num(f.storage), num(f.link), Math.max(1, num(f.rpo)), num(f.hist), num(f.rev))} f={f} priced={!!inConsole} /> : null}
+          {calc === 'mig' ? <MigOutputs x={engine.migCost(num(f.tb), Math.max(1, num(f.servers)), m.waves, num(f.vmw), num(f.hosts))} f={f} priced={!!inConsole} /> : null}
+          {ctx ? (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <Btn kind="primary" icon="receipt" perm={ctx.can('configure', 'Making quotes')} onClick={() => quote.open(calc)}>Make a quote…</Btn>
+              <CopyCurl ctx={ctx} method="POST" path="/sizing/quotes" body={{ calculator: calc, inputs: f, assumptions: a }} />
+              <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>The public page, partners and the quoting API use this same engine.</span>
+            </div>
+          ) : null}
           {lead ? lead(calc, calc === 'backup' ? `${fmt(b.total)} TB of repository for ${f.source} TB protected` : calc === 'dr' ? `${d.vcpu} vCPU, ${fmt(d.ram, 0)} GB and ${fmt(d.storage)} TB at the recovery site` : `${m.waves} waves over ${m.weeks} weeks, ${m.downtimeMin} min downtime per server`) : null}
         </div>
       </div>
+      {ctx && quote.value ? (
+        <QuoteDialog
+          ctx={ctx}
+          calc={quote.value as 'backup' | 'dr' | 'mig'}
+          lines={
+            quote.value === 'backup'
+              ? (x => [['Aegis Protection', `${f.source} TB protected × ₹3,800 a month`, x.price.software, 'month'], ['Repository storage', `${fmt(b.total)} TB stored × ₹1,450 a month`, x.price.storage, 'month'], ['Managed proxies', `${x.proxies} × ₹9,500 a month`, x.price.infra, 'month'], ['Restore egress (estimate)', '3 % of stored data a month', x.price.egress, 'month'], ['Onboarding', 'Professional services, 3 days', 135000, 'once']])(engine.backupDesign(a, num(f.source), b, num(f.window), num(f.lock), num(f.monthly), f.copy === 'Yes'))
+              : quote.value === 'dr'
+                ? (x => [['Aegis Resilience (DRaaS)', `${f.storage} TB replicated, ${fmt(x.journal)} TB journal, ${d.vcpu} vCPU reserved`, x.draas, 'month'], ['Drills', 'Four a year with an evidence pack', 0, 'month'], ['Runbook design', 'Professional services, 5 days', 225000, 'once']])(engine.drDesign(a, d, num(f.storage), num(f.link), Math.max(1, num(f.rpo)), num(f.hist), num(f.rev)))
+                : (x => [['Migration', `${f.servers} servers, ${m.waves} waves`, x.oneOff, 'once'], ['Run on Host360 after cutover', `${f.servers} servers, rightsized`, x.target, 'month']])(engine.migCost(num(f.tb), Math.max(1, num(f.servers)), m.waves, num(f.vmw), num(f.hosts)))
+          }
+          closing={quote.closing}
+          onClose={quote.close}
+        />
+      ) : null}
     </>
   );
 }

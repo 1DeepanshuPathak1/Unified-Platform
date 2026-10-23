@@ -15,6 +15,7 @@ import { FailbackDialog, FailoverDialog, RunPanel, runCell } from './Failover';
 import { Meter, scoreTone } from './Overview';
 import { stepText } from './runner';
 import { DrillCalendar, Reconciliations } from './Drills';
+import { DrillHistory } from './DrillEvidence';
 import { ComplianceTab } from './Compliance';
 import { DnsMapping } from './Dns';
 
@@ -361,12 +362,7 @@ function PlanPage({ ctx, rb, onBack }: { ctx: Ctx; rb: Runbook; onBack: () => vo
         {tab === 'runs' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <Reconciliations ctx={ctx} rb={rb} />
-          <MiniTable
-            label="Runs and drills"
-            cols={[{ label: 'When', w: '176px' }, { label: 'Kind', w: '150px' }, { label: 'Result', w: '150px' }, { label: 'Took', w: '120px' }, { label: 'By', w: '190px' }, { label: 'Evidence' }]}
-            rows={s.drills.filter(d => d.plan === rb.id).map(d => [d.when, d.kind, <Status key="r" icon={d.r === 'ok' ? 'circle-check' : d.r === 'warn' ? 'triangle-alert' : 'circle-x'} tone={d.r} label={d.r === 'ok' ? 'Passed' : d.r === 'warn' ? 'Passed, warnings' : 'Failed'} />, <span key="t" data-tip={d.rtoMet ? `Within the RTO target of ${rb.rtoTarget}` : `Over the RTO target of ${rb.rtoTarget}`}>{d.dur}</span>, d.by, <span key="e" data-tip={d.evidence} data-tip-overflow="" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{d.evidence}</span>])}
-            empty="Never run. Test the plan on the isolated network to record its first drill."
-          />
+          <DrillHistory ctx={ctx} rb={rb} />
           </div>
         ) : null}
       </div>

@@ -165,7 +165,10 @@ export const KB = [
   { id: 'KB-1075', title: 'Change tracking reset after a host crash', code: 'AEG-BK-1022', product: 'Protection', views: 731 },
   { id: 'KB-1061', title: 'Windows guest does not boot after migration: inject VirtIO storage', code: 'AEG-MG-4003', product: 'Mobility', views: 955 },
   { id: 'KB-1049', title: 'Certificate fingerprint changed after a vCenter renewal', code: 'AEG-PF-0108', product: 'Platform', views: 389 },
-  { id: 'KB-1032', title: 'Recovery point locked in compliance mode cannot be deleted', code: 'AEG-BK-1200', product: 'Protection', views: 204 }
+  { id: 'KB-1032', title: 'Recovery point locked in compliance mode cannot be deleted', code: 'AEG-BK-1200', product: 'Protection', views: 204 },
+  { id: 'KB-1097', title: 'Oracle backups fall back to crash-consistent: turn on archive log mode', code: 'AEG-BK-1310', product: 'Protection', views: 143 },
+  { id: 'KB-1113', title: 'A replication pass took longer than the RPO target', code: 'AEG-DR-2210', product: 'Resilience', views: 96 },
+  { id: 'KB-1188', title: 'Export NetBackup MSDP images so Aegis can read them', code: 'AEG-BK-5102', product: 'Protection', views: 37 }
 ];
 
 export const STATUS = [

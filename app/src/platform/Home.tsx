@@ -7,6 +7,7 @@ import { Btn, Tag } from '../ui/controls';
 import { Bar, MiniTable, Page, PageHeader, Panel, StateBlock, Status, Tiles, plural, type Kpi } from '../ui/layout';
 import type { Ctx } from '../ui/ctx';
 import { GetStarted } from './GetStarted';
+import { SelfRestorePanel } from './SelfRestore';
 import { custName, Go, inr, inScope, scopeCustomers } from './common';
 import { inboxItems } from './Inbox';
 import { useStore } from './store';
@@ -231,10 +232,11 @@ function SelfService({ ctx }: { ctx: Ctx }) {
             { label: 'Open requests', value: `${tickets.filter(t => t.state !== 'Resolved').length}`, icon: 'ticket', sub: tickets[0] ? tickets[0].title : 'No open requests' }
           ]}
         />
+        <SelfRestorePanel ctx={ctx} customer={cid} />
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
           <Panel title="Your workloads" right={<Go ctx={ctx} to="workloads">All workloads</Go>}>
             <div style={{ padding: '0 16px 4px' }}>
-              <MiniTable label="Workloads" cols={[{ label: 'Workload' }, { label: 'Backup', w: '150px' }, { label: 'Disaster recovery', w: '150px' }]} rows={ws.map(w => [<strong key="n" style={{ fontWeight: 600 }}>{w.name}</strong>, w.backup.s === 'protected' ? <Status key="b" icon="circle-check" tone="ok" label="Protected" /> : <Status key="b" icon="minus" tone="tx" label="Not included" />, w.dr.s === 'protected' ? <Status key="d" icon="circle-check" tone="ok" label={`Within ${w.dr.target}`} /> : <Status key="d" icon="minus" tone="tx" label="Not included" />])} />
+              <MiniTable label="Workloads" cols={[{ label: 'Workload' }, { label: 'Backup', w: '150px' }, { label: 'Disaster recovery', w: '150px' }]} rows={ws.map(w => [<strong key="n" style={{ fontWeight: 600 }}>{w.name}</strong>, w.backup.s === 'protected' ? <Status key="b" icon="circle-check" tone="ok" label="Protected, checked" tip="Last night’s backup was test-restored: it started and its files opened" /> : <Status key="b" icon="minus" tone="tx" label="Not included" />, w.dr.s === 'protected' ? <Status key="d" icon="circle-check" tone="ok" label={`Within ${w.dr.target}`} /> : <Status key="d" icon="minus" tone="tx" label="Not included" />])} />
             </div>
           </Panel>
           <Panel title="Invoices" right={<Go ctx={ctx} to="billing/entitlements">Billing</Go>}>

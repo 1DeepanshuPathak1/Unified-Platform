@@ -8,6 +8,7 @@ import { useStore } from '../../platform/store';
 /** Downtime reads best in hours and minutes, never in days. */
 const fmtMin = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
 import { UnprotectedBar, UnprotectedPanel } from './Protect';
+import { engine } from '../../platform/Calculators';
 import { BURN, BURN_WEEKS, INVENTORY, IN_PROGRESS, STAGE_LABEL, WAVES, verdict } from './data';
 
 /** Mobility › Overview: the migration programme at a glance, for the customers in scope. */
@@ -64,6 +65,7 @@ export default function MobilityOverview({ ctx }: { ctx: Ctx }) {
       <div style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Tiles items={tiles} />
         {ui === 'live' ? <UnprotectedBar ctx={ctx} /> : null}
+        {ui === 'live' && inv.length ? <BusinessCase ctx={ctx} servers={inv.length} tb={inv.reduce((a, v) => a + v.disks.reduce((x, y) => x + y, 0), 0) / 1024} migrated={migrated.length} moving={progress.length} waves={waves.length} health={[['Schedule', behindBy > 0 ? -behindBy * 4 : 0, behindBy > 0 ? `${plural(behindBy, 'server')} behind the burn-down` : 'On or ahead of plan'], ['Rolled back', -failed.length * 6, failed.length ? failed.map(v => v.name).join(', ') : 'None'], ['Blocked', -blocked.length * 5, blocked.length ? plural(blocked.length, 'server') : 'None'], ['At risk', -risk.length * 3, risk.length ? plural(risk.length, 'server') : 'None'], ['Downtime budget', used / Math.max(1, budget) > 0.8 ? -10 : 0, `${Math.round((used / Math.max(1, budget)) * 100)} % used`]]} /> : null}
         {ui === 'unreach' ? <Bar tone="warn">Could not be read: Chennai vCenter did not answer within 30 s. Progress is not shown until it can be read.</Bar> : null}
         {ui === 'empty' ? (
           <Panel title="Migration">
@@ -291,6 +293,45 @@ function BurnDown({ weeks, planned, actual }: { weeks: string[]; planned: number
           </div>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+/** The executive view: one health score with what pulls it down, and the money: spent, saved and when it pays back. */
+function BusinessCase({ ctx, servers, tb, migrated, moving, waves, health }: { ctx: Ctx; servers: number; tb: number; migrated: number; moving: number; waves: number; health: [string, number, string][] }) {
+  const x = engine.migCost(tb, servers, Math.max(1, waves), 64, 6);
+  const score = Math.max(0, Math.min(100, 100 + health.reduce((a, h) => a + h[1], 0)));
+  const done = migrated / servers;
+  const spent = x.oneOff * ((migrated + moving * 0.5) / servers);
+  const lakh = (n: number) => (Math.abs(n) >= 1e7 ? `₹${(n / 1e7).toFixed(2)} crore` : `₹${(n / 1e5).toFixed(1)} lakh`);
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
+      <Panel title="Programme health" right={<span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>Starts at 100; each problem takes points off</span>}>
+        <div style={{ padding: '12px 16px 4px', display: 'grid', gridTemplateColumns: '120px minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
+          <div>
+            <div style={{ font: '600 40px/48px var(--f-head)', color: `var(--${score >= 80 ? 'ok' : score >= 60 ? 'warn' : 'err'})` }}>{score}</div>
+            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>{score >= 80 ? 'Healthy' : score >= 60 ? 'Needs attention' : 'At risk'}</div>
+          </div>
+          <MiniTable label="What sets the score" cols={[{ label: 'Factor' }, { label: 'Points', w: '64px', r: true }, { label: 'Now', w: '48%' }]} rows={health.map(([k, v, t]) => [k, v ? String(v) : '0', <span key="t" style={{ whiteSpace: 'normal', padding: '6px 0', color: v ? 'var(--tx)' : 'var(--tx-3)' }}>{t}</span>])} />
+        </div>
+      </Panel>
+      <Panel title="Business case" right={<Go ctx={ctx} to="support/calculators">Calculators</Go>}>
+        <div style={{ padding: '0 16px 4px' }}>
+          <MiniTable
+            label="Business case"
+            cols={[{ label: 'Item' }, { label: 'Amount', w: '220px', r: true }]}
+            rows={[
+              ['Migration budget (one-off)', lakh(x.oneOff)],
+              ['Spent so far', `${lakh(spent)} · ${Math.round((spent / x.oneOff) * 100)} %`],
+              ['Saving now, a month', lakh(x.saving * done)],
+              ['Saving a month once all have moved', lakh(x.saving)],
+              ['Pays back', Number.isFinite(x.payback) ? `${x.payback.toFixed(1)} months after the last wave` : 'Does not pay back'],
+              ['Net present value, 3 years', lakh(x.npv)]
+            ]}
+          />
+          <p style={{ padding: '8px 0 12px', font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Same engine as Support › Calculators, with this programme’s servers and sizes: VMware licences ₹64 lakh a year and 6 hosts retired.</p>
+        </div>
+      </Panel>
     </div>
   );
 }

@@ -343,7 +343,7 @@ export default class AegisConsole extends DC {
   }
 
   can(action, verb) {
-    if (this.state.selfView) return { ok: false, dis: 'true', why: `Self-service users can look but not change anything. ${verb || 'This'} needs an administrator; ask in Support.`, op: 0.45 };
+    if (this.state.selfView) return { ok: false, dis: 'true', why: `Self-service users can get their own data back from Home but cannot change anything else. ${verb || 'This'} needs an administrator; ask in Support.`, op: 0.45 };
     const role = this.props.role || 'Owner';
     const ok = (ROLE_CAN[action] || []).includes(role);
     const need = (ROLE_CAN[action] || []).join(' or ').replace(/, (?=[^,]*$)/, ' or ');

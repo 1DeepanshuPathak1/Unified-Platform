@@ -25,26 +25,26 @@ export const CATALOGUES: Catalogue[] = [
   {
     id: 'fc-1', vendor: 'Veeam', product: 'Veeam Backup & Replication 12.1', customer: 'mer', location: '\\\\mer-veeam-repo01\\Backups (SMB 3.1)', how: 'Backup files read directly', more: 34, points: 1842, tb: 96.4, oldest: '03 Jan 2023', state: 'Indexed', keep: 'Each point until its original expiry; the last yearly points expire 31 Mar 2033 (RBI 10-year rule)', enc: 'Veeam job password supplied once; kept in Settings › Keys',
     machines: [
-      { name: 'MBK-FIN-APP01', os: 'Windows Server 2016', gb: 412, points: 186, newest: '22 Oct, 23:00', oldest: '03 Jan 2023' },
-      { name: 'MBK-HR-DB01', os: 'SQL Server 2016 on Windows Server 2016', gb: 1126, points: 214, newest: '22 Oct, 23:00', oldest: '03 Jan 2023' },
-      { name: 'MBK-SWIFT-GW', os: 'Red Hat Enterprise Linux 7.9', gb: 96, points: 120, newest: '22 Oct, 23:00', oldest: '11 Jul 2023' },
-      { name: 'MBK-LOS-APP02', os: 'Windows Server 2012 R2', gb: 280, points: 186, newest: '22 Oct, 23:00', oldest: '03 Jan 2023' }
+      { name: 'MBK-FIN-APP01', os: 'Windows Server 2016', gb: 412, points: 186, newest: '20 Oct, 23:00', oldest: '03 Jan 2023' },
+      { name: 'MBK-HR-DB01', os: 'SQL Server 2016 on Windows Server 2016', gb: 1126, points: 214, newest: '20 Oct, 23:00', oldest: '03 Jan 2023' },
+      { name: 'MBK-SWIFT-GW', os: 'Red Hat Enterprise Linux 7.9', gb: 96, points: 120, newest: '20 Oct, 23:00', oldest: '11 Jul 2023' },
+      { name: 'MBK-LOS-APP02', os: 'Windows Server 2012 R2', gb: 280, points: 186, newest: '20 Oct, 23:00', oldest: '03 Jan 2023' }
     ]
   },
   {
     id: 'fc-2', vendor: 'Commvault', product: 'Commvault 11.32', customer: 'h360', location: 'CV-DL-CHN-01 through media agent cv-ma-02', how: 'Disk library read through the media agent; catalogue from the CommServe API', more: 9, points: 640, tb: 31.8, oldest: '14 Feb 2024', state: 'Indexing', pct: 58, keep: 'Each point until its original expiry', enc: 'Not encrypted at rest by Commvault',
     machines: [
-      { name: 'oracle-legacy-01', os: 'Oracle Linux 7.9', gb: 2380, points: 96, newest: '22 Oct, 21:00', oldest: '14 Feb 2024' },
-      { name: 'tally-arch-01', os: 'Windows Server 2012 R2', gb: 140, points: 64, newest: '22 Oct, 21:00', oldest: '14 Feb 2024' },
+      { name: 'oracle-legacy-01', os: 'Oracle Linux 7.9', gb: 2380, points: 96, newest: '20 Oct, 21:00', oldest: '14 Feb 2024' },
+      { name: 'tally-arch-01', os: 'Windows Server 2012 R2', gb: 140, points: 64, newest: '20 Oct, 21:00', oldest: '14 Feb 2024' },
       { name: 'exch-2013-01', os: 'Exchange 2013 on Windows Server 2012 R2', gb: 860, points: 72, newest: '30 Jun 2026, 21:00', oldest: '14 Feb 2024' }
     ]
   },
   {
     id: 'fc-3', vendor: 'Acronis', product: 'Acronis Cyber Protect 16', customer: 'kav', location: 'kav-nas-02:/acronis (NFS 4.1)', how: 'TIBX archives read directly', more: 6, points: 412, tb: 4.6, oldest: '01 Apr 2025', state: 'Indexed', keep: 'Each point until its original expiry', enc: 'Archive password supplied once; kept in Settings › Keys',
     machines: [
-      { name: 'kav-scanner-gw', os: 'Windows Server 2016', gb: 64, points: 180, newest: '22 Oct, 22:30', oldest: '01 Apr 2025' },
-      { name: 'KAV-DOCK-PC07', os: 'Windows 10 Pro', gb: 210, points: 92, newest: '21 Oct, 19:10', oldest: '01 Apr 2025' },
-      { name: 'kav-wms-old', os: 'CentOS 7.9', gb: 340, points: 140, newest: '22 Oct, 22:30', oldest: '01 Apr 2025' }
+      { name: 'kav-scanner-gw', os: 'Windows Server 2016', gb: 64, points: 180, newest: '20 Oct, 22:30', oldest: '01 Apr 2025' },
+      { name: 'KAV-DOCK-PC07', os: 'Windows 10 Pro', gb: 210, points: 92, newest: '20 Oct, 19:10', oldest: '01 Apr 2025' },
+      { name: 'kav-wms-old', os: 'CentOS 7.9', gb: 340, points: 140, newest: '20 Oct, 22:30', oldest: '01 Apr 2025' }
     ]
   },
   {
@@ -54,8 +54,8 @@ export const CATALOGUES: Catalogue[] = [
   {
     id: 'fc-5', vendor: 'Rubrik', product: 'Rubrik CDM 9.1', customer: 'atl', location: 'https://rubrik-fra.atlas-freight.de', how: 'Read through the Rubrik API while the cluster runs', more: 14, points: 1210, tb: 22.3, oldest: '09 Sep 2024', state: 'Through the vendor API', keep: 'Each point until its original expiry, as long as the Rubrik cluster is running; copy into Aegis to keep them after it is switched off', enc: 'Rubrik holds the key; reads go through its API',
     machines: [
-      { name: 'atl-sap-app01', os: 'SUSE Linux Enterprise 15 SP5', gb: 520, points: 168, newest: '22 Oct, 20:00', oldest: '09 Sep 2024' },
-      { name: 'atl-tms-db', os: 'PostgreSQL 14 on Debian 11', gb: 380, points: 168, newest: '22 Oct, 20:00', oldest: '09 Sep 2024' }
+      { name: 'atl-sap-app01', os: 'SUSE Linux Enterprise 15 SP5', gb: 520, points: 168, newest: '20 Oct, 20:00', oldest: '09 Sep 2024' },
+      { name: 'atl-tms-db', os: 'PostgreSQL 14 on Debian 11', gb: 380, points: 168, newest: '20 Oct, 20:00', oldest: '09 Sep 2024' }
     ]
   }
 ];
@@ -195,7 +195,7 @@ function ReadVendorDialog({ ctx, closing, onClose, onDone }: { ctx: Ctx; closing
   const locOk = v.re.test(loc.trim());
   const err = !loc.trim() ? 'Give the location of the backups.' : !locOk ? `Write it as ${v.loc}.` : !acct.trim() ? 'Give the read-only account.' : null;
   const finish = () => {
-    const c: Catalogue = { id: 'fc-' + Date.now(), vendor, product: v.title, customer: cust, location: loc.trim(), how: v.reads, machines: [{ name: 'found-01', os: 'Windows Server 2019', gb: 220, points: 30, newest: '22 Oct, 23:00', oldest: '23 Sep 2026' }], more: 11, points: 360, tb: 5.2, oldest: '23 Sep 2026', state: 'Indexing', pct: 4, keep, enc: pw ? 'Password supplied; kept in Settings › Keys' : 'Not encrypted' };
+    const c: Catalogue = { id: 'fc-' + Date.now(), vendor, product: v.title, customer: cust, location: loc.trim(), how: v.reads, machines: [{ name: 'found-01', os: 'Windows Server 2019', gb: 220, points: 30, newest: '20 Oct, 23:00', oldest: '23 Sep 2026' }], more: 11, points: 360, tb: 5.2, oldest: '23 Sep 2026', state: 'Indexing', pct: 4, keep, enc: pw ? 'Password supplied; kept in Settings › Keys' : 'Not encrypted' };
     audit({ who: 'priya.raman', customer: cust, what: `Connected ${v.title} backups`, object: loc.trim(), when: ctx.now(), r: 'ok', after: [['Vendor', v.title], ['Account', acct.trim()], ['Retention', keep]] });
     ctx.toast(`${v.title}: 12 machines and 360 points found; indexing started`, 'ok');
     onDone(c);
@@ -255,7 +255,7 @@ function ForeignRestoreDialog({ ctx, cat, closing, onClose }: { ctx: Ctx; cat: C
   const [pt, setPt] = useState(mm.newest);
   const [what, setWhat] = useState<'machine' | 'files' | 'disks'>('machine');
   const [dest, setDest] = useState('production-openstack');
-  const pts = [mm.newest, '21 Oct, 23:00', '20 Oct, 23:00', '30 Sep, 23:00 (monthly)', '31 Mar, 23:00 (yearly)', `${mm.oldest} (oldest)`];
+  const pts = [mm.newest, '19 Oct, 23:00', '18 Oct, 23:00', '30 Sep, 23:00 (monthly)', '31 Mar, 23:00 (yearly)', `${mm.oldest} (oldest)`];
   const go = () => {
     ctx.startJob({ name: 'Restore from another vendor', object: `${m} (${cat.vendor})`, product: 'Backup', phases: ['Read the chain', 'Convert disks', 'Inject drivers', 'Start', 'Done'], speed: 10, doneToast: `${m} restored from ${cat.vendor} point ${pt} to ${dest}` });
     audit({ who: 'priya.raman', customer: cat.customer, what: `Restored from ${cat.product}`, object: m, when: ctx.now(), r: 'ok', after: [['Point', pt], ['What', what], ['To', dest]] });
