@@ -25,6 +25,25 @@ const EDITIONS: Edition[] = [
   { id: 't-30', product: 'Protection', name: 'Trial (30 days)', unit: '10 workloads', price: 0, features: ['Scheduled backups', 'Application-consistent databases', 'Immutable copies'], version: 1, note: 'Converts to Business at the end unless cancelled' }
 ];
 
+/** Paid add-ons on top of an edition: each switches on features and adds its own meter. */
+const ADDONS: { name: string; on: string; unit: string; price: number; what: string; customers: string[] }[] = [
+  { name: 'Disaster recovery for backups', on: 'Protection Business and Enterprise', unit: 'workload-day', price: 38, what: 'Replicate backed-up VMs to a recovery site and run recovery plans, without a separate Resilience contract', customers: ['kav'] },
+  { name: 'Cyber recovery', on: 'Every Protection edition', unit: 'VM-month', price: 120, what: 'Threat detection, clean-point scores, clean-room recovery and scan before restore', customers: ['mer', 'h360'] },
+  { name: 'Microsoft 365 and Google Workspace', on: 'Every Protection edition', unit: 'user-month', price: 85, what: 'Mail, files, sites, Teams and the directory', customers: ['mer', 'kav'] },
+  { name: 'Kubernetes', on: 'Protection Business', unit: 'namespace-month', price: 1200, what: 'Included in Enterprise', customers: ['h360'] },
+  { name: 'Extra immutable copy', on: 'Every Protection edition', unit: 'TB-month', price: 1100, what: 'A third copy in another Host360 region, locked', customers: ['mer'] },
+  { name: 'Premium support', on: 'Every edition', unit: 'month', price: 25000, what: '15-minute response for Severity 1, a named engineer, quarterly reviews', customers: ['mer'] }
+];
+const MODELS: [string, string, string][] = [
+  ['Per VM or workload', 'Protection, Resilience', 'The default: highest daily count in the month'],
+  ['Per front-end TB', 'Protection', 'Size of the protected data before reduction; suits few large servers'],
+  ['Per user', 'Microsoft 365 and Google Workspace, endpoints', 'Licensed users in the tenant'],
+  ['Per socket', 'Enterprise bundle', 'Every product on one meter'],
+  ['Pay as you go', 'Every edition', 'No commitment; 15 % above the committed price, billed monthly'],
+  ['Committed with overage', 'Every edition', 'Annual commitment drawn down; overage at the list price'],
+  ['Perpetual with support', 'On-premises installations', 'One-time licence plus 20 % a year for updates and support']
+];
+
 const short = (e: Edition) => (e.product === 'Bundle' ? 'Bundle' : e.name.startsWith('Trial') ? 'Trial' : `${e.product.slice(0, 3)}. ${e.name.split(' ·')[0]}`);
 
 /** Billing › Plans: editions with their price and features, and the cross-product bundle on one contract. */
@@ -75,6 +94,21 @@ export function PlanCatalogue({ ctx }: { ctx: Ctx }) {
               cols={[{ label: 'Feature', w: '230px' }, ...rows.map(e => ({ label: short(e), w: 'minmax(96px,1fr)' }))]}
               rows={FEATURES.map(f => [f, ...rows.map(e => (e.features.includes(f) ? <Icon key={e.id} name="check" style={{ color: 'var(--ok)' }} aria-label="Included" /> : <Icon key={e.id} name="minus" style={{ color: 'var(--tx-3)' }} aria-label="Not included" />))])}
             />
+          </div>
+        </Panel>
+        <Panel title="Add-ons">
+          <div style={{ padding: '4px 16px 12px' }}>
+            <MiniTable
+              label="Add-ons"
+              cols={[{ label: 'Add-on', w: '270px' }, { label: 'On top of', w: '180px' }, { label: 'Price', w: '200px', r: true }, { label: 'What it adds', w: 'minmax(0,1fr)' }, { label: 'Customers', w: '90px', r: true }]}
+              rows={ADDONS.map(a => [<strong key="n" style={{ fontWeight: 600 }}>{a.name}</strong>, <span key="o" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={a.on} data-tip-overflow="">{a.on}</span>, `${inr(a.price)} / ${a.unit}`, <span key="w" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={a.what} data-tip-overflow="">{a.what}</span>, <span key="c" data-tip={a.customers.map(custName).join(', ')}>{provider ? a.customers.length : a.customers.includes(ctx.actingAs!.customer) ? 'Yours' : '—'}</span>])}
+            />
+          </div>
+        </Panel>
+        <Panel title="How it can be billed">
+          <div style={{ padding: '4px 16px 12px' }}>
+            <MiniTable label="Licensing models" cols={[{ label: 'Model', w: '200px' }, { label: 'For', w: 'minmax(0,1fr)' }, { label: 'How', w: 'minmax(0,1.4fr)' }]} rows={MODELS.map(([m, f, h]) => [<strong key="m" style={{ fontWeight: 600 }}>{m}</strong>, f, h])} />
+            <p style={{ marginTop: 8, font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Every dimension is metered whichever model a contract uses (Usage and rating › Every meter), so a customer can change model at renewal using its own history.</p>
           </div>
         </Panel>
         <Panel title="The bundle: one contract, one renewal date">

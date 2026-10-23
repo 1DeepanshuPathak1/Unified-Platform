@@ -3,6 +3,8 @@ import AegisTable from '../components/AegisTable';
 import { Icon } from '../lib/Icon';
 import { pc } from '../lib/pseudo';
 import { PARTNERS, POLICIES, type Customer, type CustomerStatus, type ProductName } from '../data/platform';
+
+const DISTRIBUTOR = { id: 'redington', name: 'Redington Cloud Services', since: '02 Jan 2026', margin: '6 % on partner billing' };
 import { Btn, CheckBox, Field, FilterInput, InfoTip, RadioCard, Seg, SelectInput, TextInput, Toggle, Tag } from '../ui/controls';
 import { Bar, DrawerTiles, Facts, H3, MiniTable, Page, PageHeader, Section, Spacer, TableArea, Toolbar, plural } from '../ui/layout';
 import { DangerDialog, Dialog, Drawer, Wizard, useClosable } from '../ui/overlay';
@@ -311,9 +313,11 @@ function Hierarchy({ ctx }: { ctx: Ctx }) {
     });
   };
   direct.forEach(c => cust(c, 1));
+  // Channel: Host360 → distributor → partner → customer → department or site → project.
+  tree.push(row('ds:' + DISTRIBUTOR.id, 1, 'globe', DISTRIBUTOR.name, 'Distributor'));
   PARTNERS.forEach(p => {
-    tree.push(row('pt:' + p.id, 1, 'network', p.name, 'Partner'));
-    s.customers.filter(c => c.partner === p.name && c.status !== 'archived').forEach(c => cust(c, 2));
+    tree.push(row('pt:' + p.id, 2, 'network', p.name, 'Partner'));
+    s.customers.filter(c => c.partner === p.name && c.status !== 'archived').forEach(c => cust(c, 3));
   });
   const [kind, cid, rest] = sel.split(':');
   const c = cid ? s.customers.find(x => x.id === cid) : null;
@@ -338,6 +342,12 @@ function Hierarchy({ ctx }: { ctx: Ctx }) {
           <>
             <H3>Host360 Managed Services</H3>
             <Facts items={[{ k: 'Role', v: 'Provider' }, { k: 'Time zone', v: 'Asia/Kolkata (IST)' }, { k: 'Customers', v: String(s.customers.filter(x => x.status !== 'archived').length) }, { k: 'Partners', v: PARTNERS.map(p => p.name).join(', ') }, { k: 'Sets for everyone', v: 'Global policies, alert rules, approval rules, MFA enforcement' }]} />
+          </>
+        ) : kind === 'ds' ? (
+          <>
+            <H3>{DISTRIBUTOR.name}</H3>
+            <Facts items={[{ k: 'Kind', v: 'Distributor' }, { k: 'Partners', v: PARTNERS.map(p => p.name).join(', ') }, { k: 'Customers', v: String(s.customers.filter(x => x.partner && x.status !== 'archived').length) }, { k: 'Since', v: DISTRIBUTOR.since }, { k: 'Margin', v: DISTRIBUTOR.margin }, { k: 'Sees', v: 'Partners, their price lists, orders, usage and invoices; never customer data or recovery points' }]} />
+            <p style={{ fontSize: 13, lineHeight: '18px', color: 'var(--tx-2)' }}>A distributor signs partners up, sets their price lists inside Host360’s floor prices and is invoiced for all of them on one statement.</p>
           </>
         ) : kind === 'pt' ? (
           <>
