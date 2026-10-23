@@ -1,6 +1,7 @@
 import type { Ctx, LiveJob } from '../ui/ctx';
 import { Section } from '../ui/layout';
 import { AlertRulesTab, AlertsTab, MaintenanceTab } from './Alerts';
+import { FleetTab, TicketsTab } from './Fleet';
 import { ApprovalRulesTab, ApprovalsTab } from './Approvals';
 import { WorkflowsTab } from './Workflows';
 import { IntegrationsTab } from './Integrations';
@@ -12,12 +13,12 @@ import Policies from './Policies';
 import { useStore } from './store';
 import { inScope } from './common';
 
-type ActivityTab = 'alerts' | 'rules' | 'maintenance' | 'jobs' | 'audit' | 'health';
+type ActivityTab = 'alerts' | 'fleet' | 'tickets' | 'rules' | 'maintenance' | 'jobs' | 'audit' | 'health';
 
 /** Alerts & Activity: alerts, the rules and windows that shape them, every job, and the audit log. */
 export function ActivitySection({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pause' | 'resume' | 'cancel') => void }) {
   const s = useStore();
-  const tab = (['alerts', 'rules', 'maintenance', 'jobs', 'audit', ...(ctx.actingAs ? [] : ['health'])].includes(ctx.tab) ? ctx.tab : 'alerts') as ActivityTab;
+  const tab = (['alerts', 'tickets', 'rules', 'maintenance', 'jobs', 'audit', ...(ctx.actingAs ? [] : ['fleet', 'health'])].includes(ctx.tab) ? ctx.tab : 'alerts') as ActivityTab;
   const open = s.alerts.filter(a => inScope(ctx, a.customer) && (a.state === 'open' || a.state === 'escalated')).length;
   const running = ctx.jobs.filter((j: LiveJob) => j.status === 'run').length;
   return (
@@ -29,6 +30,8 @@ export function ActivitySection({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string
       onTab={t => ctx.go(`activity/${t}`)}
       tabs={[
         { v: 'alerts', label: 'Alerts', count: open },
+        ...(ctx.actingAs ? [] : [{ v: 'fleet' as ActivityTab, label: 'Fleet' }]),
+        { v: 'tickets', label: 'Tickets' },
         { v: 'rules', label: 'Alert rules' },
         { v: 'maintenance', label: 'Maintenance windows' },
         { v: 'jobs', label: 'Jobs', count: running ? `${running} running` : undefined },
@@ -37,6 +40,8 @@ export function ActivitySection({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string
       ]}
     >
       {tab === 'alerts' ? <AlertsTab ctx={ctx} /> : null}
+      {tab === 'fleet' ? <FleetTab ctx={ctx} /> : null}
+      {tab === 'tickets' ? <TicketsTab ctx={ctx} /> : null}
       {tab === 'rules' ? <AlertRulesTab ctx={ctx} /> : null}
       {tab === 'maintenance' ? <MaintenanceTab ctx={ctx} /> : null}
       {tab === 'jobs' ? <JobsTab ctx={ctx} jobCtl={jobCtl} /> : null}

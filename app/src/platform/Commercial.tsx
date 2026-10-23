@@ -16,7 +16,44 @@ const amountOf = (u: Usage) => Math.round(u.qty * u.rate);
 
 /* ---------------------------------------------------------------- Usage and rating (3.16) */
 
-type Group = 'records' | 'customer' | 'product';
+type Group = 'records' | 'customer' | 'product' | 'meters';
+
+type MeterUse = 'Priced' | 'Collected' | 'None yet';
+/** Every dimension the platform meters, priced or not, so any pricing model can be applied to past usage. */
+const METERS: { m: string; product: string; unit: string; how: string; v: Record<string, number> }[] = [
+  { m: 'Virtual machines', product: 'Protection', unit: 'VM-months', how: 'Highest daily count of protected VMs in the month', v: { mer: 38, kav: 22, sah: 18, nil: 6, h360: 58 } },
+  { m: 'Physical and cloud servers', product: 'Protection', unit: 'server-months', how: 'Servers protected through the Windows or Linux agent', v: { mer: 3, sah: 1 } },
+  { m: 'Endpoints', product: 'Protection', unit: 'endpoint-months', how: 'Laptops and desktops with the endpoint agent', v: { mer: 112, h360: 6 } },
+  { m: 'Databases (application-consistent)', product: 'Protection', unit: 'database-months', how: 'Databases with log backups or a database plug-in', v: { mer: 4, kav: 2 } },
+  { m: 'Kubernetes namespaces', product: 'Protection', unit: 'namespace-months', how: 'Namespaces protected by the operator', v: { mer: 6 } },
+  { m: 'Microsoft 365 users', product: 'Protection', unit: 'user-months', how: 'Licensed mailboxes, OneDrive and Teams users in a connected tenant', v: {} },
+  { m: 'Front-end TB', product: 'Protection', unit: 'TB', how: 'Size of the protected source data, before reduction (the basis for per-TB front-end pricing)', v: { mer: 41.2, kav: 9.8, sah: 14.1, nil: 1.2, h360: 22.4 } },
+  { m: 'Back-end TB stored', product: 'Protection', unit: 'TB-months', how: 'Average stored after deduplication and compression', v: { mer: 18.6, kav: 4.2, sah: 6.8, nil: 0.4, h360: 9.1 } },
+  { m: 'Immutable TB', product: 'Protection', unit: 'TB-months', how: 'Stored under Object Lock, a hardened repository or WORM tape', v: { mer: 14.2, kav: 1.1, sah: 6.8, h360: 3 } },
+  { m: 'Archive TB', product: 'Protection', unit: 'TB-months', how: 'Stored in a cold tier (Glacier, Azure Archive, tape)', v: { mer: 2.4 } },
+  { m: 'Copies', product: 'Protection', unit: 'TB-months', how: 'Second and third copies in another region or provider', v: { mer: 18.6, sah: 6.8 } },
+  { m: 'Restores', product: 'Protection', unit: 'restores', how: 'Restores started, of any kind', v: { mer: 9, kav: 3, sah: 2, h360: 14 } },
+  { m: 'Restored data', product: 'Protection', unit: 'GB', how: 'Data written by restores', v: { mer: 820, kav: 140, sah: 64, h360: 310 } },
+  { m: 'Egress', product: 'Protection', unit: 'GB', how: 'Data sent out of Host360 regions (restores to customer sites, exports)', v: { kav: 140 } },
+  { m: 'Protected workloads (replication)', product: 'Resilience', unit: 'workload-days', how: 'Workloads replicating each day, by tier', v: { mer: 483, kav: 42 } },
+  { m: 'Replicated TB', product: 'Resilience', unit: 'TB-months', how: 'Replica disks at the DR site', v: { mer: 12.4, kav: 1.6 } },
+  { m: 'Journal TB', product: 'Resilience', unit: 'TB-months', how: 'Continuous-replication journal kept for point-in-time recovery', v: { mer: 1.9 } },
+  { m: 'Reserved DR capacity', product: 'Resilience', unit: 'vCPU-days', how: 'Compute held for Tier 0 and Tier 1 at the DR site', v: { mer: 2016 } },
+  { m: 'DR compute', product: 'Resilience', unit: 'vCPU-hours', how: 'Compute used by failovers and tests while they run', v: { mer: 46 } },
+  { m: 'Failover events', product: 'Resilience', unit: 'events', how: 'Planned, unplanned and partial failovers (pilot-light plans are charged per event)', v: {} },
+  { m: 'DR tests', product: 'Resilience', unit: 'tests', how: 'Drills run, with or without evidence', v: {} },
+  { m: 'Servers discovered', product: 'Mobility', unit: 'servers', how: 'Servers found by discovery in the month', v: { mer: 64, kav: 31 } },
+  { m: 'Servers migrated', product: 'Mobility', unit: 'servers', how: 'Charged at commit', v: {} },
+  { m: 'Data moved', product: 'Mobility', unit: 'TB', how: 'Initial copy plus changes sent to the target', v: { mer: 3.8 } },
+  { m: 'Migration days', product: 'Mobility', unit: 'server-days', how: 'Days each server spent replicating before commit', v: { mer: 84 } },
+  { m: 'Test cutovers', product: 'Mobility', unit: 'tests', how: 'Test failovers of migrating servers', v: { mer: 4 } },
+  { m: 'Rollbacks', product: 'Mobility', unit: 'rollbacks', how: 'Cutovers rolled back to the source', v: { mer: 1 } },
+  { m: 'Staging storage', product: 'Mobility', unit: 'TB-months', how: 'Replica disks waiting for cutover', v: { mer: 2.1 } },
+  { m: 'Console users', product: 'Platform', unit: 'users', how: 'People who signed in during the month', v: { mer: 14, kav: 6, sah: 4, nil: 2, h360: 9 } },
+  { m: 'API calls', product: 'Platform', unit: 'calls', how: 'Requests to the public API, by token', v: { mer: 182400, kav: 9100, h360: 640000 } },
+  { m: 'Support tickets', product: 'Platform', unit: 'tickets', how: 'Tickets opened by or for the customer', v: { mer: 3, kav: 1 } }
+];
+const PRICED = new Set(['Virtual machines', 'Physical and cloud servers', 'Endpoints', 'Databases (application-consistent)', 'Kubernetes namespaces', 'Back-end TB stored', 'Egress', 'Protected workloads (replication)', 'Reserved DR capacity', 'DR compute', 'Failover events', 'DR tests', 'Servers migrated', 'Microsoft 365 users']);
 
 /**
  * Usage and rating: every metered quantity for the open billing period, the rate applied and the
@@ -56,14 +93,44 @@ export function MeteringTab({ ctx }: { ctx: Ctx }) {
         />
       </div>
       <Toolbar>
-        <Seg label="Group by" value={group} onChange={setGroup} options={[{ v: 'records', label: 'Every metric' }, ...(custCol ? [{ v: 'customer' as Group, label: 'By customer' }] : []), { v: 'product', label: 'By product' }]} />
+        <Seg label="Group by" value={group} onChange={setGroup} options={[{ v: 'records', label: 'Billed usage' }, ...(custCol ? [{ v: 'customer' as Group, label: 'By customer' }] : []), { v: 'product', label: 'By product' }, { v: 'meters', label: 'Every meter', count: METERS.length }]} />
         <FilterInput value={q} onChange={setQ} placeholder="Filter by customer, project or metric" label="Filter usage" />
         <Spacer />
         <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>Period: Oct 2026, open</span>
         <Btn kind="outline" icon="download" onClick={() => ctx.toast(`Exported ${plural(rows.length, 'usage record')} to CSV`, 'ok')}>Export CSV</Btn>
       </Toolbar>
       <TableArea>
-        {group === 'records' ? (
+        {group === 'meters' ? (
+          <AegisTable
+            label="Every meter"
+            cols={[
+              { k: 'm', label: 'Meter', w: 'minmax(200px,1.6fr)' },
+              { k: 'prod', label: 'Product', w: '110px' },
+              { k: 'qty', label: 'This month', w: '170px', r: true },
+              { k: 'n', label: 'Customers', w: '100px', r: true, dim: true },
+              { k: 'use', label: 'On the price list', w: '180px' }
+            ]}
+            rows={METERS.filter(x => !ql || `${x.m} ${x.product} ${x.how}`.toLowerCase().includes(ql)).map(x => {
+              const vs = Object.entries(x.v).filter(([c]) => inScope(ctx, c));
+              const tot = Math.round(vs.reduce((a, [, n]) => a + n, 0) * 10) / 10;
+              const use: MeterUse = !tot ? 'None yet' : PRICED.has(x.m) ? 'Priced' : 'Collected';
+              return {
+                id: x.m,
+                m: { v: x.m, strong: true, tip: x.how },
+                prod: x.product,
+                qty: { v: `${tot.toLocaleString('en-IN')} ${tot === 1 ? x.unit.replace(/s$/, '') : x.unit}`, s: tot, muted: !tot },
+                n: { v: String(vs.filter(([, n]) => n > 0).length), s: vs.length },
+                use: use === 'Priced' ? { t: 'status', i: 'file-text', c: 'run', l: 'Priced', tip: 'Rated on the draft invoice' } : use === 'Collected' ? { t: 'status', i: 'gauge', c: 'tx', l: 'Collected, not priced', tip: 'Kept so a new pricing model can be applied to past usage' } : { t: 'status', i: 'circle-minus', c: 'tx', l: PRICED.has(x.m) ? 'Priced · no usage' : 'No usage yet' }
+              };
+            })}
+            state={ctx.ui}
+            unit={['meter', 'meters']}
+            filtered={!!ql}
+            onClear={() => setQ('')}
+            emptyText="No meter matches."
+            footR="Metered hourly from the first day; kept for 7 years"
+          />
+        ) : group === 'records' ? (
           <AegisTable
             label="Usage records"
             cols={[

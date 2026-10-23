@@ -5,6 +5,8 @@ import { pc } from '../lib/pseudo';
 import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
 import { AEGIS } from '../data/aegis';
+import { Btn, Toggle } from '../ui/controls';
+import { ForeignRepoDialog, RestorePreflight } from '../products/protection/RestoreExtras';
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = n => String(n).padStart(2, '0');
@@ -70,7 +72,14 @@ export default class AegisRestore extends DC {
     path: '/',
     picked: {},
     disks: {},
-    jobId: null
+    jobId: null,
+    rollback: true,
+    foreign: false,
+    foreignClosing: false
+  };
+  closeForeign = () => {
+    this.setState({ foreignClosing: true });
+    window.setTimeout(() => this.setState({ foreign: false, foreignClosing: false }), 160);
   };
   logRef = React.createRef<any>();
   componentDidMount() {
@@ -158,8 +167,17 @@ export default class AegisRestore extends DC {
         desc:
           s.kind === 'Files'
             ? 'Existing files with the same name are renamed with a .restored suffix.'
-            : `Replaces ${g.name} on ${g.site}. The current VM is powered off first.`
+            : `Replaces ${g.name} on ${g.site}. The current VM is powered off first${s.rollback ? ' and kept as a snapshot for 24 h, so you can roll back' : ''}.`
       },
+      ...(s.kind === 'Whole VM'
+        ? [
+            {
+              id: 'instant',
+              label: 'Run it from the backup (instant recovery)',
+              desc: `Boots ${g.name} straight from ${pol.dest} in about 3 minutes, then moves its disks to production storage while it runs. Use it when every minute counts.`
+            }
+          ]
+        : []),
       {
         id: 'new',
         label: s.kind === 'Files' ? `Into ${g.name}, a new folder` : `${g.site}, as a new VM`,
@@ -185,7 +203,9 @@ export default class AegisRestore extends DC {
             : `Another site (${s.site})`
         : s.target === 'orig'
           ? `${g.name} on ${g.site} (replaced)`
-          : s.target === 'new'
+          : s.target === 'instant'
+            ? `${g.name} on ${g.site}, running from ${pol.dest}`
+            : s.target === 'new'
             ? `${g.name}-restored on ${g.site}`
             : `${g.name} on ${s.site}${s.site.includes('openstack') !== g.site.includes('openstack') ? ', converted' : ''}`;
     return {
@@ -212,7 +232,7 @@ export default class AegisRestore extends DC {
         icon,
         on: s.kind === label,
         fg: s.kind === label ? 'var(--tx)' : 'var(--tx-2)',
-        onClick: () => this.setState({ kind: label })
+        onClick: () => this.setState(st => ({ kind: label, target: label !== 'Whole VM' && st.target === 'instant' ? 'orig' : st.target }))
       })),
       isVm: s.kind === 'Whole VM',
       isDisks: s.kind === 'Disks',
@@ -298,8 +318,18 @@ export default class AegisRestore extends DC {
               : 'Whole VM'
         ],
         ['To', targetLabel],
-        ['From', `${pol.dest}${pol.lock ? ', immutable' : ''}${pol.enc ? ', encrypted' : ''}`]
+        ['From', `${pol.dest}${pol.lock ? ', immutable' : ''}${pol.enc ? ', encrypted' : ''}`],
+        ...(s.target === 'orig' && s.kind !== 'Files' ? [['Rollback', s.rollback ? 'Snapshot of the current VM kept for 24 h' : 'None: the current VM is overwritten']] : []),
+        ...(s.target === 'instant' ? [['Then', 'Live move to local-zfs; the VM keeps running']] : [])
       ].map(([k, v]) => ({ k, v })),
+      showRollback: s.target === 'orig' && s.kind !== 'Files',
+      rollback: s.rollback,
+      setRollback: (on: boolean) => this.setState({ rollback: on }),
+      preflight: { guest: g.name, kind: s.kind, target: s.target, site: s.site, sizeGB: s.kind === 'Disks' ? g.disks.filter(([n]) => s.disks[n] !== false).reduce((a, d) => a + d[1], 0) : g.size, dest: pol.dest, locked: !!pol.lock },
+      foreign: s.foreign,
+      foreignClosing: s.foreignClosing,
+      openForeign: () => this.setState({ foreign: true }),
+      closeForeign: this.closeForeign,
       startDis: canStart ? undefined : 'true',
       startWhy: canStart ? undefined : why,
       startOp: canStart ? 1 : 0.45,
@@ -312,13 +342,17 @@ export default class AegisRestore extends DC {
           object: g.name,
           product: 'Backup',
           type: 'Restore',
-          phases: [
-            'Queued',
-            'Mount point',
-            s.kind === 'Files' ? 'Copy files' : 'Write disks',
-            s.kind === 'Whole VM' ? 'Register VM' : 'Check',
-            'Done'
-          ],
+          phases:
+            s.target === 'instant'
+              ? ['Queued', 'Mount from repository', 'Boot', 'Running from backup', 'Move to production storage', 'Done']
+              : [
+                  'Queued',
+                  ...(s.target === 'orig' && s.kind !== 'Files' && s.rollback ? ['Snapshot current VM'] : []),
+                  'Mount point',
+                  s.kind === 'Files' ? 'Copy files' : 'Write disks',
+                  s.kind === 'Whole VM' ? 'Register VM' : 'Check',
+                  'Done'
+                ],
           speed: 14,
           rate: '220 MB/s',
           firstLine: `Restore of ${g.name} from ${pts[pIdx].t} started`,
@@ -347,10 +381,15 @@ export default class AegisRestore extends DC {
     const v = this.vals();
     return (
       <div style={{ height: '100%', minHeight: 0, overflow: 'auto', animation: 'ae-page 150ms var(--ease)' }}>
-        <div style={{ padding: '20px 24px 16px' }}>
-          <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Protection</div>
-          <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Restore</h1>
-          <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Bring back a whole VM, single disks or files from a recovery point.</p>
+        <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Protection</div>
+            <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Restore</h1>
+            <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Bring back a whole VM, single disks or files from a recovery point.</p>
+          </div>
+          <Btn kind="outline" icon="link" onClick={v.openForeign}>
+            Restore from another account…
+          </Btn>
         </div>
         <div
           style={{ padding: '0 24px 24px', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 360px', gap: '16px', alignItems: 'start' }}
@@ -677,6 +716,13 @@ export default class AegisRestore extends DC {
                     </span>
                   </button>
                 ))}
+                {v.showRollback ? (
+                  <div style={{ padding: '4px 0 0 28px' }}>
+                    <Toggle on={v.rollback} onChange={v.setRollback} label="Keep a rollback snapshot">
+                      Keep a snapshot of the current VM for 24 h so the restore can be rolled back
+                    </Toggle>
+                  </div>
+                ) : null}
                 {v.showSite ? (
                   <div
                     style={{
@@ -756,6 +802,7 @@ export default class AegisRestore extends DC {
                 </Fragment>
               ))}
             </dl>
+            {v.preflight ? <RestorePreflight {...v.preflight} /> : null}
             <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
                 onClick={v.start}
@@ -831,6 +878,7 @@ export default class AegisRestore extends DC {
             </div>
           </aside>
         </div>
+        {v.foreign ? <ForeignRepoDialog ctx={this.props.ctx} closing={v.foreignClosing} onClose={v.closeForeign} /> : null}
       </div>
     );
   }

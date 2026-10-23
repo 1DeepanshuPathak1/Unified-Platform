@@ -10,6 +10,7 @@ import { custName, inScope, showCustomerCol } from '../../platform/common';
 import { audit } from '../../platform/store';
 import { DeployDialog } from '../../platform/Agents';
 import AegisGuests from '../../screens/AegisGuests';
+import { PlatformObjectsView } from './PlatformObjects';
 
 /** A machine protected through the Aegis agent: a physical or cloud server, or a laptop or desktop. */
 export interface Protected {
@@ -56,24 +57,33 @@ export function protectedMachines(): Protected[] {
 
 /** Protection › Protected guests: hypervisor guests (the original screen) and machines protected through the agent, as two tabs. */
 export function GuestsPage({ ctx }: { ctx: Ctx }) {
-  const tab = ctx.tab === 'endpoints' ? 'endpoints' : 'guests';
+  const tab = ctx.tab === 'endpoints' || ctx.tab === 'platform' ? ctx.tab : 'guests';
   const n = protectedMachines().filter(p => inScope(ctx, p.a.customer)).length;
   const tabs = (
     <Tabs
       label="Protected guests sections"
       value={tab}
-      onChange={t => ctx.go(t === 'endpoints' ? 'guests/endpoints' : 'guests')}
-      tabs={[{ v: 'guests', label: 'Hypervisor guests', tip: 'Proxmox VE and OpenStack guests, backed up without an agent' }, { v: 'endpoints', label: 'Agents and endpoints', count: n, tip: 'Physical and cloud servers, laptops and desktops with the Aegis agent' }]}
+      onChange={t => ctx.go(t === 'guests' ? 'guests' : `guests/${t}`)}
+      tabs={[
+        { v: 'guests', label: 'Hypervisor guests', tip: 'Proxmox VE and OpenStack guests, backed up without an agent' },
+        { v: 'platform', label: 'Containers and platform', tip: 'LXC containers, cluster configuration, OpenStack projects, Heat stacks and networks' },
+        { v: 'endpoints', label: 'Agents and endpoints', count: n, tip: 'Physical and cloud servers, laptops and desktops with the Aegis agent' }
+      ]}
       style={{ margin: '0 24px 12px', padding: 0 }}
     />
   );
   if (tab === 'guests') return <AegisGuests ctx={ctx} tabs={tabs} />;
   return (
     <Page>
-      <PageHeader kicker="Protection" title="Protected guests" sub="Servers, laptops and desktops backed up through the Aegis agent, wherever they are." actions={<Btn kind="outline" icon="clipboard-list" onClick={() => ctx.go('policies')}>Policies</Btn>} />
+      <PageHeader
+        kicker="Protection"
+        title="Protected guests"
+        sub={tab === 'endpoints' ? 'Servers, laptops and desktops backed up through the Aegis agent, wherever they are.' : 'Containers and the platforms’ own configuration, kept so a whole cluster or project can be rebuilt.'}
+        actions={<Btn kind="outline" icon="clipboard-list" onClick={() => ctx.go('policies')}>Policies</Btn>}
+      />
       {tabs}
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', animation: 'ae-fade 150ms var(--ease)' }}>
-        <EndpointsView ctx={ctx} />
+      <div key={tab} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', animation: 'ae-fade 150ms var(--ease)' }}>
+        {tab === 'endpoints' ? <EndpointsView ctx={ctx} /> : <PlatformObjectsView ctx={ctx} />}
       </div>
     </Page>
   );
