@@ -6,6 +6,7 @@ import { FINDINGS, TICKETS } from '../data/ops';
 import { Btn, Tag } from '../ui/controls';
 import { Bar, MiniTable, Page, PageHeader, Panel, StateBlock, Status, Tiles, plural, type Kpi } from '../ui/layout';
 import type { Ctx } from '../ui/ctx';
+import { GetStarted } from './GetStarted';
 import { custName, Go, inr, inScope, scopeCustomers } from './common';
 import { inboxItems } from './Inbox';
 import { useStore } from './store';
@@ -28,6 +29,7 @@ const LOCATIONS = [
 /** Home: role-aware. Providers see every customer and the commercial view; customers see their own estate. */
 export default function Home({ ctx }: { ctx: Ctx }) {
   const s = useStore();
+  if (ctx.tab === 'start') return <GetStarted ctx={ctx} />;
   if (ctx.audience === 'self') return <SelfService ctx={ctx} />;
   const provider = ctx.audience === 'provider';
   const first = ctx.actingAs ? ctx.actingAs.owner.split(' ')[0] : 'Priya';
@@ -67,9 +69,12 @@ export default function Home({ ctx }: { ctx: Ctx }) {
         title={`Good afternoon, ${first}`}
         sub={provider && !ctx.actingAs ? `Protection, resilience and migration for ${plural(custs.length, 'customer')}, and what needs you.` : 'Your workloads across Protection, Resilience and Mobility, and what needs you.'}
         actions={
-          <Btn kind="outline" icon="mail" onClick={() => ctx.go('inbox')}>
-            Inbox {items.length ? `(${items.length})` : ''}
-          </Btn>
+          <>
+            <Btn kind="ghost" icon="list-ordered" onClick={() => ctx.go('home/start')}>Get started</Btn>
+            <Btn kind="outline" icon="mail" onClick={() => ctx.go('inbox')}>
+              Inbox {items.length ? `(${items.length})` : ''}
+            </Btn>
+          </>
         }
       />
       <div style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>

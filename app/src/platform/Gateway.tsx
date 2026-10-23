@@ -253,7 +253,50 @@ resource "aegis_recovery_plan" "erp" {
         <pre style={{ margin: 0, padding: 16, font: '12px/18px var(--f-ui)', whiteSpace: 'pre-wrap', userSelect: 'text' }}>{tf}</pre>
         <p style={{ padding: '0 16px 12px', font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>One provider for every product, so a recovery plan can refer to the policy and tenant it depends on. {plural(TOOLS.length, 'tool')} built from the same OpenAPI v2 document on every release.</p>
       </Panel>
+      <div style={{ gridColumn: '1 / -1' }}>
+        <DriftPanel ctx={ctx} />
+      </div>
     </div>
+  );
+}
+
+/** Objects managed as code: where the console and the Git repository disagree. */
+const DRIFT: [string, string, string, string, 'drift' | 'ok' | 'console'][] = [
+  ['aegis_backup_policy.erp', 'host360/aegis-config · main', 'Retention monthly 12 → 6, changed in the console by arun.kumar on 20 Oct', 'Console differs', 'drift'],
+  ['aegis_recovery_plan.core', 'host360/aegis-config · main', 'Matches (version 7)', 'In step', 'ok'],
+  ['aegis_protection_plan.meridian_t0', 'meridian/dr-as-code · prod', 'Matches (version 6)', 'In step', 'ok'],
+  ['aegis_bandwidth_schedule.chennai_mumbai', '—', 'Created in the console; not in any repository', 'Console only', 'console']
+];
+
+function DriftPanel({ ctx }: { ctx: Ctx }) {
+  const [rows, setRows] = useState(DRIFT);
+  const fix = (name: string, how: 'code' | 'console') => {
+    setRows(r => r.map(x => (x[0] === name ? [x[0], x[1], how === 'code' ? 'Console set back to the code' : 'Pull request opened with the console value', 'In step', 'ok'] : x)));
+    audit({ who: 'priya.raman', customer: 'h360', what: how === 'code' ? 'Reapplied configuration from code' : 'Opened a pull request from the console value', object: name, when: ctx.now(), r: 'ok' });
+    ctx.toast(how === 'code' ? `${name} set back to what the repository says` : `Pull request opened in host360/aegis-config for ${name}`, 'ok');
+  };
+  return (
+    <Panel title="Managed as code" right={<span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>Compared with Terraform state every 15 min</span>}>
+      <div style={{ padding: '4px 16px 12px' }}>
+        <MiniTable
+          label="Configuration drift"
+          cols={[{ label: 'Resource', w: 'minmax(0,1fr)' }, { label: 'Repository', w: '220px' }, { label: 'Difference', w: 'minmax(0,1.4fr)' }, { label: '', w: '260px' }]}
+          rows={rows.map(([n, repo, diff, , st]) => [
+            <code key="n" style={{ font: '12px var(--f-mono)', overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={n}>{n}</code>,
+            repo,
+            <span key="d" style={{ overflow: 'hidden', textOverflow: 'ellipsis', color: st === 'ok' ? 'var(--tx-2)' : undefined }} data-tip={diff} data-tip-overflow="">{diff}</span>,
+            st === 'ok' ? (
+              <Status key="s" icon="circle-check" tone="ok" label="In step" />
+            ) : (
+              <span key="s" style={{ display: 'flex', gap: 4 }}>
+                {st === 'drift' ? <Btn kind="ghost" size="sm" icon="undo-2" perm={ctx.can('configure', 'Reapplying configuration')} onClick={() => fix(n, 'code')}>Apply code</Btn> : null}
+                <Btn kind="ghost" size="sm" icon="git-branch" onClick={() => fix(n, 'console')}>{st === 'drift' ? 'Keep console' : 'Add to code'}</Btn>
+              </span>
+            )
+          ])}
+        />
+      </div>
+    </Panel>
   );
 }
 

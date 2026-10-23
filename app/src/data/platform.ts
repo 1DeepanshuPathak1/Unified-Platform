@@ -552,7 +552,12 @@ export const APPROVAL_RULES = [
   { id: 'r6', action: 'Restore', scope: 'Sensitive workloads', approvers: 'Owner plus a sensitive-workload approver', expiry: '24 h', mandatory: true },
   { id: 'r7', action: 'Change a global policy', scope: 'Global policies', approvers: '1 second Admin', expiry: '24 h', mandatory: false },
   { id: 'r8', action: 'Unlock compliance mode', scope: 'Customer', approvers: '3: provider security officer, customer owner, customer DPO', expiry: '72 h', mandatory: true },
-  { id: 'r9', action: 'Log in as owner', scope: 'Regulated customers (RBI, IRDAI)', approvers: '1 customer owner', expiry: '4 h', mandatory: false }
+  { id: 'r9', action: 'Log in as owner', scope: 'Regulated customers (RBI, IRDAI)', approvers: '1 customer owner', expiry: '4 h', mandatory: false },
+  { id: 'r10', action: 'Shorten retention', scope: 'Every backup and DR policy', approvers: '2 of: Owner, Admin, security officer', expiry: '24 h', mandatory: true },
+  { id: 'r11', action: 'Turn off or shorten immutability', scope: 'Every repository and policy', approvers: '2, one of them the customer owner', expiry: '24 h', mandatory: true },
+  { id: 'r12', action: 'Delete a repository', scope: 'Every repository', approvers: '2 of: Owner, Admin; waits 72 h after approval', expiry: '72 h', mandatory: true },
+  { id: 'r13', action: 'Remove protection from a workload', scope: 'Tier 0 and Tier 1 workloads', approvers: '1 Owner or Admin', expiry: '24 h', mandatory: true },
+  { id: 'r14', action: 'Change encryption keys or KMS', scope: 'Customer keys', approvers: '2: security officer and customer owner', expiry: '24 h', mandatory: true }
 ];
 
 // ---- extended audit ----

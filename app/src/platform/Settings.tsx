@@ -13,11 +13,12 @@ import { NotificationsTab } from './Notifications';
 import { BrandingTab } from './Branding';
 import { DataMovementTab } from './DataMovement';
 import { Host360PortalsTab } from './Host360Portals';
+import { TelemetryTab } from './GetStarted';
 import { UpdatesTab } from './Updates';
 import { inScope } from './common';
 import { useStore } from './store';
 
-type Tab = 'users' | 'roles' | 'delegation' | 'signin' | 'sso' | 'service' | 'breakglass' | 'vault' | 'keys' | 'notifications' | 'branding' | 'governor' | 'datamove' | 'portals' | 'updates' | 'backup' | 'tunables';
+type Tab = 'users' | 'roles' | 'delegation' | 'signin' | 'sso' | 'service' | 'breakglass' | 'vault' | 'keys' | 'notifications' | 'branding' | 'governor' | 'datamove' | 'portals' | 'updates' | 'backup' | 'tunables' | 'telemetry';
 type Group = 'identity' | 'security' | 'operations';
 const LEGACY: Partial<Record<Tab, string>> = { backup: 'Aegis backup', tunables: 'Tunables' };
 const GROUPS: Record<Group, { label: string; tabs: { v: Tab; label: string; provider?: boolean }[] }> = {
@@ -50,7 +51,8 @@ const GROUPS: Record<Group, { label: string; tabs: { v: Tab; label: string; prov
       { v: 'portals', label: 'Host360 portals', provider: true },
       { v: 'updates', label: 'Updates', provider: true },
       { v: 'backup', label: 'Aegis backup', provider: true },
-      { v: 'tunables', label: 'Tunables', provider: true }
+      { v: 'tunables', label: 'Tunables', provider: true },
+      { v: 'telemetry', label: 'Telemetry' }
     ]
   }
 };
@@ -92,6 +94,7 @@ export default function SettingsSection({ ctx }: { ctx: Ctx }) {
       {tab === 'updates' ? <UpdatesTab ctx={ctx} /> : null}
       {tab === 'datamove' ? <DataMovementTab ctx={ctx} /> : null}
       {tab === 'portals' ? <Host360PortalsTab ctx={ctx} /> : null}
+      {tab === 'telemetry' ? <TelemetryTab ctx={ctx} /> : null}
       {LEGACY[tab] ? (
         <div style={{ flex: 1, minHeight: 0 }}>
           <AegisSettings ctx={ctx} embedTab={LEGACY[tab]} />

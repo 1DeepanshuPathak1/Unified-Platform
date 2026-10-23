@@ -18,8 +18,19 @@ const SC = { ok: 'var(--ok)', warn: 'var(--warn)', err: 'var(--err)', run: 'var(
 const PLATFORMS = [
   { id: 'pve', label: 'Proxmox VE', icon: 'server', desc: 'A Proxmox VE cluster or single node, version 8 or 9.' },
   { id: 'os', label: 'OpenStack', icon: 'layers', desc: 'Instances in one OpenStack project, read through Keystone.' },
-  { id: 'vmw', label: 'VMware vCenter or ESXi', icon: 'monitor', desc: 'A source platform for Disaster Recovery and Migration.' }
+  { id: 'vmw', label: 'VMware vCenter or ESXi', icon: 'monitor', desc: 'A source platform for Disaster Recovery and Migration.' },
+  { id: 'hv', label: 'Microsoft Hyper-V or Azure Local', icon: 'monitor', desc: 'Hyper-V hosts, failover clusters or SCVMM. Resilient Change Tracking; no agent.' },
+  { id: 'ntx', label: 'Nutanix AHV', icon: 'database', desc: 'AHV clusters through Prism Central. Changed regions through the v4 API.' },
+  { id: 'kv', label: 'KubeVirt or OpenShift Virtualization', icon: 'container', desc: 'Virtual machines on Kubernetes. CSI snapshots and changed blocks.' }
 ];
+/** Platforms added through the generic address-and-account form, with what each needs and finds. */
+const GENERIC: Record<string, { label: string; fam: string; version: string; method: string; issuer: string; caps: [string, string, string, string][]; found: string }> = {
+  vmw: { label: 'VMware vCenter', fam: 'VMware', version: '8.0.3', method: 'vSphere API', issuer: 'VMware Certificate Authority', caps: [['circle-check', 'ok', 'Version', 'VMware vCenter Server 8.0.3'], ['circle-check', 'ok', 'Hosts', '3'], ['circle-check', 'ok', 'Datastores', '3'], ['circle-check', 'ok', 'Virtual machines', '41'], ['circle-check', 'ok', 'Missing permissions', 'None']], found: '3 hosts, 41 VMs' },
+  hv: { label: 'Microsoft Hyper-V', fam: 'Hyper-V', version: 'Windows Server 2022', method: 'WinRM (HTTPS) and WMI', issuer: 'Customer AD Certificate Services', caps: [['circle-check', 'ok', 'Version', 'Windows Server 2022, failover cluster of 4 nodes'], ['circle-check', 'ok', 'Virtual machines', '58 (configuration version 10)'], ['circle-check', 'ok', 'Cluster shared volumes', '3'], ['circle-check', 'ok', 'Change tracking', 'Resilient Change Tracking on every VM'], ['triangle-alert', 'warn', 'Missing permissions', '2 VMs on a host outside the cluster were not read']], found: '4 hosts, 58 VMs' },
+  ntx: { label: 'Nutanix AHV', fam: 'Nutanix AHV', version: 'AOS 6.8', method: 'Prism Central v4 API', issuer: 'Nutanix Prism Central', caps: [['circle-check', 'ok', 'Version', 'AOS 6.8, Prism Central pc.2024.2'], ['circle-check', 'ok', 'Clusters', '2'], ['circle-check', 'ok', 'Virtual machines', '73'], ['circle-check', 'ok', 'Change tracking', 'Changed regions available'], ['circle-check', 'ok', 'Missing roles', 'None']], found: '2 clusters, 73 VMs' },
+  kv: { label: 'KubeVirt', fam: 'KubeVirt', version: 'OpenShift Virtualization 4.15', method: 'Kubernetes API with the Aegis operator', issuer: 'OpenShift ingress CA', caps: [['circle-check', 'ok', 'Version', 'OpenShift Virtualization 4.15'], ['circle-check', 'ok', 'Virtual machines', '24 in 6 namespaces'], ['circle-check', 'ok', 'Storage', 'Ceph RBD CSI with snapshots'], ['circle-check', 'ok', 'Missing permissions', 'None']], found: '24 VMs in 6 namespaces' }
+};
+const gen = (p: string) => GENERIC[p] || GENERIC.vmw;
 const METHODS = [
   {
     id: 'apissh',
@@ -285,7 +296,7 @@ export default class AegisSites extends DC {
     ];
     const ids = tableRows.map(r => r.id);
     const selIds = ids.filter(id => s.sel[id]);
-    const plats = ['All', 'Proxmox VE', 'OpenStack', 'VMware']
+    const plats = ['All', 'Proxmox VE', 'OpenStack', 'VMware', ...['Hyper-V', 'Nutanix AHV', 'KubeVirt'].filter(f => all.some(x => x.fam === f))]
       .filter(p => !backup || p !== 'VMware')
       .map(p => ({
         label: p,
@@ -395,11 +406,11 @@ export default class AegisSites extends DC {
     const isEdit = !!w.editId;
     const existing = all.find(x => x.addr && w.f.host && x.addr.split(':')[0] === w.f.host.trim());
     const existingV = all.find(x => x.addr && w.f.addr && x.addr.split(':')[0] === w.f.addr.trim());
-    const clash = !isEdit && (w.platform === 'pve' ? existing : w.platform === 'vmw' ? existingV : null);
+    const clash = !isEdit && (w.platform === 'pve' ? existing : w.platform !== 'os' ? existingV : null);
     const fieldsList = this.fields(w);
     const missing = w.platform !== 'os' || w.osMode === 'fields' ? fieldsList.filter(f => !f.value).length : !w.file || !w.f.pw ? 1 : 0;
     const host =
-      w.platform === 'pve' ? w.f.host : w.platform === 'vmw' ? w.f.addr : (w.f.authUrl || '').replace(/^https?:\/\//, '').split('/')[0];
+      w.platform === 'pve' ? w.f.host : w.platform !== 'os' ? w.f.addr : (w.f.authUrl || '').replace(/^https?:\/\//, '').split('/')[0];
     const suggested = w.platform === 'pve' ? 'Chennai-proxmox-dr' : w.platform === 'os' ? 'dr-openstack' : w.f.display;
     const nameVal = w.name || suggested;
     const nameClash = all.some(x => x.name.toLowerCase() === nameVal.trim().toLowerCase() && x.id !== w.editId);
@@ -426,13 +437,7 @@ export default class AegisSites extends DC {
               ['circle-check', 'ok', 'Flavors', '12'],
               ['circle-check', 'ok', 'Missing roles', 'None']
             ]
-          : [
-              ['circle-check', 'ok', 'Version', 'VMware vCenter Server 8.0.3'],
-              ['circle-check', 'ok', 'Hosts', '3'],
-              ['circle-check', 'ok', 'Datastores', '3'],
-              ['circle-check', 'ok', 'Virtual machines', '41'],
-              ['circle-check', 'ok', 'Missing permissions', 'None']
-            ];
+          : gen(w.platform).caps;
     const radio = on => ({
       bd: on ? 'var(--acc)' : 'var(--ln)',
       bg: on ? 'var(--acc-soft)' : 'var(--panel-2)',
@@ -492,7 +497,7 @@ export default class AegisSites extends DC {
                   tested: false,
                   trusted: false,
                   checked: false,
-                  usedBy: p.id === 'vmw' ? { Backup: false, DR: true, Migration: true } : { Backup: true, DR: true, Migration: false }
+                  usedBy: p.id === 'vmw' ? { Backup: false, DR: true, Migration: true } : p.id === 'pve' || p.id === 'os' ? { Backup: true, DR: true, Migration: false } : { Backup: true, DR: true, Migration: true }
                 }
               }));
           }
@@ -548,7 +553,7 @@ export default class AegisSites extends DC {
                   ? 'Proxmox Virtual Environment CA'
                   : w.platform === 'os'
                     ? 'Host360 Internal CA'
-                    : 'VMware Certificate Authority',
+                    : gen(w.platform).issuer,
               ls: '0'
             },
             { k: 'Valid until', v: '12 Mar 2028', ls: '0' },
@@ -593,7 +598,7 @@ export default class AegisSites extends DC {
         ['Platform', PLATFORMS.find(p => p.id === w.platform).label],
         [
           'Access method',
-          w.platform === 'pve' ? METHODS.find(m => m.id === w.method).label : w.platform === 'os' ? 'Keystone v3, password' : 'vSphere API'
+          w.platform === 'pve' ? METHODS.find(m => m.id === w.method).label : w.platform === 'os' ? 'Keystone v3, password' : gen(w.platform).method
         ],
         ['Address', host],
         [
@@ -607,7 +612,7 @@ export default class AegisSites extends DC {
               : w.f.vuser
         ],
         ['Certificate', ssh ? 'Host key trusted' : 'Trusted, SHA-256 9C:4E:…:7E:D2'],
-        ['Found', w.platform === 'pve' ? '3 nodes, 41 guests' : w.platform === 'os' ? '18 instances' : '3 hosts, 41 VMs']
+        ['Found', w.platform === 'pve' ? '3 nodes, 41 guests' : w.platform === 'os' ? '18 instances' : gen(w.platform).found]
       ].map(([k, v]) => ({ k, v })),
       stepLabel: `Step ${w.step + 1} of 4`,
       canBack: w.step > 0,
@@ -754,17 +759,17 @@ export default class AegisSites extends DC {
         const site = {
           id,
           name: nameVal.trim(),
-          platform: w.platform === 'pve' ? 'Proxmox VE' : w.platform === 'os' ? 'OpenStack' : 'VMware vCenter',
-          fam: w.platform === 'pve' ? 'Proxmox VE' : w.platform === 'os' ? 'OpenStack' : 'VMware',
-          version: w.platform === 'pve' ? '9.2.2' : w.platform === 'os' ? '2025.1' : '8.0.3',
+          platform: w.platform === 'pve' ? 'Proxmox VE' : w.platform === 'os' ? 'OpenStack' : gen(w.platform).label,
+          fam: w.platform === 'pve' ? 'Proxmox VE' : w.platform === 'os' ? 'OpenStack' : gen(w.platform).fam,
+          version: w.platform === 'pve' ? '9.2.2' : w.platform === 'os' ? '2025.1' : gen(w.platform).version,
           access:
             w.platform === 'pve'
               ? METHODS.find(m => m.id === w.method).label
               : w.platform === 'os'
                 ? 'Keystone v3, password'
-                : 'vSphere API',
+                : gen(w.platform).method,
           nodes: 3,
-          guests: w.platform === 'os' ? 18 : 41,
+          guests: w.platform === 'os' ? 18 : w.platform === 'hv' ? 58 : w.platform === 'ntx' ? 73 : w.platform === 'kv' ? 24 : 41,
           usedBy,
           status: 'ok',
           seen: ctx.now(),
@@ -817,7 +822,7 @@ export default class AegisSites extends DC {
   editAccess(id) {
     const site = this.sites().find(x => x.id === id);
     if (!site) return;
-    const platform = site.fam === 'Proxmox VE' ? 'pve' : site.fam === 'OpenStack' ? 'os' : 'vmw';
+    const platform = site.fam === 'Proxmox VE' ? 'pve' : site.fam === 'OpenStack' ? 'os' : Object.keys(GENERIC).find(k => GENERIC[k].fam === site.fam) || 'vmw';
     const method = site.access === 'SSH only' ? 'ssh' : site.access === 'Proxmox API only' ? 'api' : 'apissh';
     const b = blankW();
     this.setState({
