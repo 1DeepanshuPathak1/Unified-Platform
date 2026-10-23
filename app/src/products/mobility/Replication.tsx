@@ -10,7 +10,7 @@ import { audit } from '../../platform/store';
 import { INVENTORY, IN_PROGRESS, STAGE_LABEL, type SourceVm } from './data';
 
 type Method = 'Agentless (VMware CBT)' | 'Agent in the guest';
-interface Rep { vm: SourceVm; method: Method; mode: 'Continuous' | 'Scheduled passes'; lagS: number; cbt: 'On' | 'Reset, resynced' | 'Reset, resync running'; cbtNote?: string; snapAgeH: number; rate: string }
+interface Rep { vm: SourceVm; method: Method; mode: 'Continuous' | 'Scheduled passes'; lagS: number; eta: string; cbt: 'On' | 'Reset, resynced' | 'Reset, resync running'; cbtNote?: string; snapAgeH: number; rate: string }
 const SNAP_LIMIT_H = 24;
 
 /** Replication state of every server that is moving. Agent for physical and non-VMware sources, CBT otherwise. */
@@ -23,6 +23,7 @@ function reps(ctx: Ctx): Rep[] {
       method: agent ? 'Agent in the guest' : 'Agentless (VMware CBT)',
       mode: vm.stage === 'synced' || vm.stage === 'ready' || vm.stage === 'testing' ? 'Continuous' : 'Scheduled passes',
       lagS: vm.stage === 'first' ? 0 : [12, 40, 9, 220, 31, 18][i % 6],
+      eta: vm.stage === 'first' ? `First pass ${34 + (i % 3) * 11} % · ${45 + (i % 4) * 20} min left` : [12, 40, 9, 220, 31, 18][i % 6] > 120 ? 'Catching up · 6 min' : 'In sync',
       cbt: reset ? (i % 2 ? 'Reset, resync running' : 'Reset, resynced') : 'On',
       cbtNote: reset ? (i % 2 ? 'Storage vMotion on 21 Oct, 11:40 reset CBT; full read 62 % done' : 'Snapshot consolidation on 19 Oct reset CBT; full read finished 19 Oct, 23:10') : undefined,
       snapAgeH: vm.stage === 'first' ? 3 : [0.2, 0.1, 30, 0.3, 0.2, 0.1][i % 6],
@@ -108,6 +109,7 @@ function ReplicationView({ ctx }: { ctx: Ctx }) {
             { k: 'm', label: 'Method', w: '170px' },
             { k: 'mode', label: 'Mode', w: '130px', dim: true },
             { k: 'lag', label: 'Lag', w: '80px', r: true },
+            { k: 'eta', label: 'Ready in', w: '190px', dim: true },
             { k: 'cbt', label: 'Change tracking', w: '180px' },
             { k: 'snap', label: 'Snapshot age', w: '120px', r: true }
           ]}
@@ -118,6 +120,7 @@ function ReplicationView({ ctx }: { ctx: Ctx }) {
             st: STAGE_LABEL[r.vm.stage],
             m: r.method,
             mode: r.mode,
+            eta: r.eta,
             lag: r.vm.stage === 'first' ? { v: 'First pass', muted: true, s: -1 } : { v: fmtLag(r.lagS), s: r.lagS, tip: r.lagS > 120 ? 'Behind: the source is writing faster than the link carries' : undefined },
             cbt: r.cbt === 'On' ? { t: 'status', i: 'circle-check', c: 'ok', l: 'On' } : { t: 'status', i: r.cbt === 'Reset, resynced' ? 'circle-check' : 'loader-circle', c: 'warn', l: r.cbt, tip: r.cbtNote },
             snap: r.snapAgeH > SNAP_LIMIT_H ? { v: `${Math.round(r.snapAgeH)} h`, s: r.snapAgeH, tip: `Over the ${SNAP_LIMIT_H} h limit` } : { v: r.snapAgeH < 1 ? `${Math.round(r.snapAgeH * 60)} min` : `${Math.round(r.snapAgeH)} h`, s: r.snapAgeH, muted: true }

@@ -19,6 +19,12 @@ const KINDS: { k: Kind; icon: string; title: string; note: string; version: stri
   { k: 'Proxmox VE', icon: 'box', title: 'Proxmox VE', note: 'Move between Proxmox clusters or out of Proxmox. Dirty bitmaps; no agent.', version: 'Proxmox VE 8.2', user: 'aegis-mig@pve!token', how: 'An API token with PVEVMAdmin on the VMs to move.' },
   { k: 'OpenStack', icon: 'cloud', title: 'OpenStack', note: 'Projects, instances, volumes and networks through Keystone. Ceph RBD diffs when available.', version: 'OpenStack 2023.2 (Bobcat)', user: 'aegis-mig (project admin)', how: 'An application credential with the admin role on the projects to move.' },
   { k: 'XCP-ng', icon: 'server', title: 'XCP-ng or Citrix Hypervisor', note: 'Pools and VMs through XAPI. Changed-block tracking on XCP-ng 8.3.', version: 'XCP-ng 8.3', user: 'aegis-mig', how: 'A pool user with the VM Operator role.' },
+  { k: 'AWS', icon: 'cloud', title: 'Amazon Web Services (EC2)', note: 'Bring instances back from AWS: EBS direct APIs read changed blocks, no agent.', version: 'AWS EC2, ap-south-1', user: 'arn:aws:iam::…:role/aegis-mig-read', how: 'An IAM role with EC2 and EBS direct read access, assumed with an external ID.' },
+  { k: 'Azure', icon: 'cloud', title: 'Microsoft Azure (VMs)', note: 'Bring VMs back from Azure: incremental snapshots of managed disks.', version: 'Azure, Central India', user: 'aegis-mig (app registration)', how: 'An app registration with Reader and Disk Snapshot Contributor on the resource groups.' },
+  { k: 'Google Cloud', icon: 'cloud', title: 'Google Cloud (Compute Engine)', note: 'Bring instances back from Google Cloud through snapshot diffs.', version: 'Google Cloud, asia-south1', user: 'aegis-mig@…iam.gserviceaccount.com', how: 'A service account with Compute Viewer and Storage Admin on the snapshot bucket.' },
+  { k: 'Oracle Cloud', icon: 'cloud', title: 'Oracle Cloud Infrastructure', note: 'Instances and block volumes through volume backups.', version: 'OCI, Mumbai', user: 'aegis-mig (API key)', how: 'An OCI user in a group with read and volume-backup policies.' },
+  { k: 'Database', icon: 'database', title: 'Database server (native migration)', note: 'SQL Server, Oracle, PostgreSQL or MySQL moved with their own replication, then switched over.', version: 'Native replication', user: 'aegis_mig (database login)', how: 'A login allowed to set up replication; the target is created on Host360 first.' },
+  { k: 'Kubernetes', icon: 'container', title: 'Kubernetes cluster', note: 'Namespaces with their resources and volumes, to a Host360 cluster.', version: 'Kubernetes 1.27 or later', user: 'Aegis operator (Helm)', how: 'Install the operator; it registers the cluster with a one-time token.' },
   { k: 'Physical', icon: 'hard-drive', title: 'Physical servers (P2V)', note: 'Windows and Linux servers with the Aegis agent. Also for VMs on platforms not listed.', version: 'Aegis agent 4.2', user: 'Agent registration token', how: 'Deploy the agent; each server registers itself with a one-time token.' }
 ];
 const kindOf = (k: Kind) => KINDS.find(x => x.k === k)!;
@@ -52,7 +58,7 @@ export default function Sources({ ctx }: { ctx: Ctx }) {
       <PageHeader
         kicker="Mobility"
         title="Sources"
-        sub="VMware, Hyper-V, Nutanix, Proxmox, OpenStack, XCP-ng and physical servers Aegis reads from, and every server found on them with what stands in the way of moving it."
+        sub="VMware, Hyper-V, Nutanix, Proxmox, OpenStack, XCP-ng, public clouds, databases, Kubernetes and physical servers Aegis reads from, and what stands in the way of moving each server."
         actions={
           <Btn kind="primary" icon="plus" perm={ctx.can('configure', 'Adding a source')} onClick={() => add.open(true)}>
             Add a source

@@ -142,7 +142,7 @@ export function WitnessView({ ctx }: { ctx: Ctx }) {
         </Panel>
         <Panel title="Partitions, last 90 days">
           <div style={{ padding: '4px 16px 12px' }}>
-            <MiniTable label="Partition events" cols={[{ label: 'When', w: '110px' }, { label: 'What happened' }]} rows={EVENTS.map(([w, p, t]) => [w, <span key="t" style={{ whiteSpace: 'normal' }} data-tip={p}>{t}</span>])} />
+            <MiniTable label="Partition events" cols={[{ label: 'When', w: '110px' }, { label: 'What happened' }]} rows={EVENTS.map(([w, p, t]) => [w, <span key="t" style={{ whiteSpace: 'normal', padding: '6px 0' }} data-tip={p}>{t}</span>])} />
           </div>
         </Panel>
       </div>

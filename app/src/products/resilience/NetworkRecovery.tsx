@@ -263,7 +263,7 @@ function NetworkView({ ctx }: { ctx: Ctx }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.3fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
         <Panel title="Routes (BGP)">
           <div style={{ padding: '4px 16px 12px' }}>
-            <MiniTable label="BGP prefixes" cols={[{ label: 'Prefix', w: 'minmax(0,1fr)' }, { label: 'At failover', w: 'minmax(0,1.3fr)' }]} rows={PREFIXES.map(([p, now, fo]) => [<span key="p" style={{ whiteSpace: 'normal' }} data-tip={now}><strong style={{ fontWeight: 600 }}>{p}</strong></span>, <span key="f" style={{ whiteSpace: 'normal' }}>{fo}</span>])} />
+            <MiniTable label="BGP prefixes" cols={[{ label: 'Prefix', w: 'minmax(0,1fr)' }, { label: 'At failover', w: 'minmax(0,1.3fr)' }]} rows={PREFIXES.map(([p, now, fo]) => [<span key="p" style={{ whiteSpace: 'normal', padding: '6px 0' }} data-tip={now}><strong style={{ fontWeight: 600 }}>{p}</strong></span>, <span key="f" style={{ whiteSpace: 'normal', padding: '6px 0' }}>{fo}</span>])} />
             <p style={{ marginTop: 8, font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Route changes run as steps of the recovery plan and are skipped in tests.</p>
           </div>
         </Panel>
@@ -275,7 +275,7 @@ function NetworkView({ ctx }: { ctx: Ctx }) {
       </div>
       <Panel title="Addresses per application">
         <div style={{ padding: '4px 16px 12px' }}>
-          <MiniTable label="Stretched or re-addressed" cols={[{ label: 'Application', w: '200px' }, { label: 'At the DR site', w: 'minmax(0,1.3fr)' }, { label: 'Why', w: 'minmax(0,1fr)' }]} rows={L2.map(([a, h, w]) => [<strong key="a" style={{ fontWeight: 600 }}>{a}</strong>, <span key="h" style={{ whiteSpace: 'normal' }}>{h}</span>, w])} />
+          <MiniTable label="Stretched or re-addressed" cols={[{ label: 'Application', w: '200px' }, { label: 'At the DR site', w: 'minmax(0,1.3fr)' }, { label: 'Why', w: 'minmax(0,1fr)' }]} rows={L2.map(([a, h, w]) => [<strong key="a" style={{ fontWeight: 600 }}>{a}</strong>, <span key="h" style={{ whiteSpace: 'normal', padding: '6px 0' }}>{h}</span>, w])} />
           <p style={{ marginTop: 8, font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Firewall rules and security groups are copied with the servers (Mappings › Re-IP and names applies the address changes to them); load balancer health checks at the DR site are part of the readiness score.</p>
         </div>
       </Panel>

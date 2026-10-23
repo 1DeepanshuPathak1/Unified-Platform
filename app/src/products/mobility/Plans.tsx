@@ -12,9 +12,10 @@ import { audit } from '../../platform/store';
 import { ProfilesView, profileFor } from './Profiles';
 import { ValidationTab } from './Validation';
 import { TargetTab } from './Target';
+import { CutoverRunbook, ProjectView } from './Project';
 import { BLACKOUTS, FLOWS, INVENTORY, IN_PROGRESS, STAGE_LABEL, SUGGESTED_APPS, WAVES, verdict, type Blackout, type SourceVm, type Wave } from './data';
 
-type Tab = 'waves' | 'map' | 'calendar' | 'profiles';
+type Tab = 'waves' | 'map' | 'calendar' | 'profiles' | 'project';
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const fmtMin = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} h${m % 60 ? ` ${m % 60} min` : ''}`);
@@ -37,9 +38,9 @@ const needs = (name: string) => FLOWS.filter(f => f.to === name).map(f => f.from
  * map that decides what moves together and in what order, and the calendar of blackout periods.
  */
 export default function Plans({ ctx }: { ctx: Ctx }) {
-  const [tab, setTab] = useState<Tab>((['waves', 'map', 'calendar', 'profiles'] as Tab[]).includes(ctx.tab as Tab) ? (ctx.tab as Tab) : 'waves');
+  const [tab, setTab] = useState<Tab>((['waves', 'map', 'calendar', 'profiles', 'project'] as Tab[]).includes(ctx.tab as Tab) ? (ctx.tab as Tab) : 'waves');
   useEffect(() => {
-    if ((['waves', 'map', 'calendar', 'profiles'] as string[]).includes(ctx.tab)) setTab(ctx.tab as Tab);
+    if ((['waves', 'map', 'calendar', 'profiles', 'project'] as string[]).includes(ctx.tab)) setTab(ctx.tab as Tab);
   }, [ctx.tab]);
   const [waves, setWaves] = useState<Wave[]>(WAVES);
   const [member, setMember] = useState<Record<string, string | undefined>>({});
@@ -66,11 +67,12 @@ export default function Plans({ ctx }: { ctx: Ctx }) {
           </>
         }
       />
-      <Tabs label="Migration plans" value={tab} onChange={go} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'waves', label: 'Waves', count: ws.length }, { v: 'map', label: 'Dependency map' }, { v: 'calendar', label: 'Calendar', count: bos.length }, { v: 'profiles', label: 'Transformation profiles' }]} />
+      <Tabs label="Migration plans" value={tab} onChange={go} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'waves', label: 'Waves', count: ws.length }, { v: 'map', label: 'Dependency map' }, { v: 'calendar', label: 'Calendar', count: bos.length }, { v: 'profiles', label: 'Transformation profiles' }, { v: 'project', label: 'Project' }]} />
       {tab === 'waves' ? <WaveList ctx={ctx} waves={ws} inv={inv} blackouts={bos} onEdit={w => create.open({ wave: w })} /> : null}
       {tab === 'map' ? <MapView ctx={ctx} inv={inv} kept={kept} onKeep={id => setKept(k => [...k, id])} onPlan={(customer, preset) => create.open({ customer, preset })} /> : null}
       {tab === 'calendar' ? <CalendarView ctx={ctx} waves={ws} blackouts={bos} /> : null}
       {tab === 'profiles' ? <ProfilesView ctx={ctx} /> : null}
+      {tab === 'project' ? <ProjectView ctx={ctx} /> : null}
       {create.value ? (
         <WaveDialog
           ctx={ctx}
@@ -200,7 +202,7 @@ function WaveList({ ctx, waves, inv, blackouts, onEdit }: { ctx: Ctx; waves: Wav
               <Btn kind="ghost" icon="server" onClick={() => ctx.go('mig/servers')}>Servers</Btn>
             </>
           }
-          tabs={[{ v: 'Servers', label: 'Servers', count: dc.mine.length }, { v: 'Order', label: 'Dependencies', count: dc.out.filter(c => !c.ok).length || undefined }, { v: 'Target', label: 'Target' }, { v: 'Validation', label: 'Validation' }, { v: 'Window', label: 'Window' }]}
+          tabs={[{ v: 'Servers', label: 'Servers', count: dc.mine.length }, { v: 'Order', label: 'Dependencies', count: dc.out.filter(c => !c.ok).length || undefined }, { v: 'Target', label: 'Target' }, { v: 'Runbook', label: 'Cutover runbook' }, { v: 'Validation', label: 'Validation' }, { v: 'Window', label: 'Window' }]}
           tab={tab}
           onTab={setTab}
           closing={drawer.closing}
@@ -221,6 +223,7 @@ function WaveList({ ctx, waves, inv, blackouts, onEdit }: { ctx: Ctx; waves: Wav
             </div>
           ) : null}
           {tab === 'Target' ? <TargetTab ctx={ctx} wave={d} servers={dc.mine} /> : null}
+          {tab === 'Runbook' ? <CutoverRunbook ctx={ctx} wave={d} servers={dc.mine} /> : null}
           {tab === 'Validation' ? <ValidationTab ctx={ctx} wave={d} servers={dc.mine} /> : null}
           {tab === 'Window' ? (
             <Facts
