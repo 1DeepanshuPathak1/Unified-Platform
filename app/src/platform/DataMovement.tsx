@@ -53,9 +53,9 @@ export function DataMovementTab({ ctx }: { ctx: Ctx }) {
         <div style={{ padding: '4px 16px 12px' }}>
           <MiniTable
             label="Change tracking"
-            cols={[{ label: 'Platform', w: '190px' }, { label: 'Method', w: 'minmax(0,1fr)' }, { label: 'If it is lost', w: 'minmax(0,1fr)' }, { label: 'Used by', w: '140px' }, { label: 'Last 7 days', w: '180px' }]}
+            cols={[{ label: 'Platform', w: '220px' }, { label: 'Method', w: 'minmax(0,1fr)' }, { label: 'If it is lost', w: 'minmax(0,1fr)' }, { label: 'Used by', w: '170px' }, { label: 'Last 7 days', w: '150px' }]}
             rows={TRACKING.map(t => [
-              <strong key="p" style={{ fontWeight: 600 }} data-tip={t.sites}>{t.platform}</strong>,
+              <strong key="p" style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={`${t.platform} · ${t.sites}`}>{t.platform}</strong>,
               <span key="h" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={t.how} data-tip-overflow="">{t.how}</span>,
               <span key="f" style={{ color: 'var(--tx-2)', overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={t.fallback} data-tip-overflow="">{t.fallback}</span>,
               t.used,

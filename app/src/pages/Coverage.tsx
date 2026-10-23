@@ -76,14 +76,14 @@ export default function Coverage({ hub }: { hub?: boolean }) {
         <section style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 880 }}>
           <h1 style={{ font: '500 28px/36px var(--f-head)' }}>Unified Platform coverage</h1>
           <p style={{ color: 'var(--tx-2)', textWrap: 'pretty' } as CSSProperties}>
-            Every item in Parts 2 to 7 of the brief, the screens that serve it, how far it is designed, its priority and the platform object it reads. Items are built in priority order, P0 first. This page is updated at the end of every turn; turn {CURRENT_TURN} is the latest.
+            Every item in Parts 2 to 7 of the brief and every requirement group of the requirements workbook (Part 8, with the workbook’s own priorities), the screens that serve it, how far it is designed, its priority and the platform object it reads. Items are built in priority order, P0 first. This page is updated at the end of every turn; turn {CURRENT_TURN} is the latest.
           </p>
         </section>
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(5,minmax(0,1fr))', background: 'var(--panel)', border: '1px solid var(--ln)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px', minWidth: 0 }}>
             <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>Items</span>
             <span style={{ font: '500 28px/36px var(--f-head)' }}>{COVERAGE.length}</span>
-            <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Parts 2 to 7</span>
+            <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Parts 2 to 8</span>
           </div>
           {tile('Designed', String(count('Designed')), `${Math.round((count('Designed') / COVERAGE.length) * 100)} % of the brief`, 'var(--ok)')}
           {tile('Partly designed', String(count('Partly designed')), 'Some screens or states exist', 'var(--warn)')}
@@ -108,7 +108,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
                         <Icon name="arrow-right" style={{ color: 'var(--tx-3)' }} />
                       </>
                     ) : (
-                      <span style={{ color: 'var(--tx-3)' }}>Gaps closed ·</span>
+                      <span style={{ color: 'var(--tx-3)' }}>{c.added ? 'Gaps closed ·' : 'From the workbook ·'}</span>
                     )}
                     <StatusL s={c.now} />
                   </span>
@@ -122,7 +122,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
             <Seg label="Status" value={status} onChange={setStatus} options={[{ v: 'All', label: 'All', count: COVERAGE.length }, ...(['Designed', 'Partly designed', 'Not designed'] as CovStatus[]).map(s => ({ v: s, label: s, count: count(s) }))]} />
             <SelectFilter label="Priority" value={prio} onChange={setPrio} options={['All', 'P0', 'P1', 'P2', 'P3', 'P4']} />
-            <SelectFilter label="Part" value={part} onChange={setPart} options={[{ v: 'All', label: 'All' }, { v: '2', label: '2 · Navigation and shell' }, { v: '3', label: '3 · Platform' }, { v: '4', label: '4 · Resilience' }, { v: '5', label: '5 · Mobility' }, { v: '6', label: '6 · Internal Admin Portal' }, { v: '7', label: '7 · Rules' }]} />
+            <SelectFilter label="Part" value={part} onChange={setPart} options={[{ v: 'All', label: 'All' }, { v: '2', label: '2 · Navigation and shell' }, { v: '3', label: '3 · Platform' }, { v: '4', label: '4 · Resilience' }, { v: '5', label: '5 · Mobility' }, { v: '6', label: '6 · Internal Admin Portal' }, { v: '7', label: '7 · Rules' }, { v: '8', label: '8 · Requirements workbook' }]} />
             <FilterInput value={q} onChange={setQ} placeholder="Filter by text or object" label="Filter items" width={240} />
             <Toggle on={changed} onChange={setChanged} label="Only changed this turn">
               Only changed in turn {CURRENT_TURN}
