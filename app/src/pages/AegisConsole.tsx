@@ -8,7 +8,7 @@ import { AEGIS } from '../data/aegis';
 import AegisSites from '../screens/AegisSites';
 import { GuestsPage } from '../products/protection/Endpoints';
 import { DrServersPage } from '../products/resilience/ReplicaChecks';
-import AegisMigServers from '../screens/AegisMigServers';
+import { MigServersPage } from '../products/mobility/Replication';
 import AegisList from '../screens/AegisList';
 import AegisOverview from '../screens/AegisOverview';
 import { MappingsPage } from '../products/resilience/NetworkRecovery';
@@ -1289,7 +1289,7 @@ export default class AegisConsole extends DC {
             ) : null}
             {v.is?.migServers ? (
               <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisMigServers ctx={v.ctx} />
+                <MigServersPage ctx={v.ctx} />
               </div>
             ) : null}
             {v.is?.list ? (

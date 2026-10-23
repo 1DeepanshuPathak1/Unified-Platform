@@ -9,13 +9,40 @@ import { custName, inScope, scopeCustomers, showCustomerCol } from '../../platfo
 import { audit } from '../../platform/store';
 import { INVENTORY, IN_PROGRESS, SOURCES, STAGE_LABEL, VERDICT, WAVES, verdict, type Source, type SourceVm } from './data';
 
-type Tab = 'inventory' | 'sources';
+type Tab = 'inventory' | 'sources' | 'layout';
+type Kind = Source['kind'];
+const KINDS: { k: Kind; icon: string; title: string; note: string; version: string; user: string; how: string }[] = [
+  { k: 'vCenter', icon: 'layers', title: 'VMware vCenter Server', note: 'Every host, cluster, resource pool, folder and tag the account can see. Agentless with CBT.', version: 'vCenter Server 8.0 Update 3', user: 'svc-aegis-mig@vsphere.local', how: 'Use an account with the Aegis Migration role: read, snapshot and change tracking only.' },
+  { k: 'ESXi', icon: 'server', title: 'Standalone VMware ESXi host', note: 'For hosts not managed by a vCenter. Change tracking works the same.', version: 'ESXi 8.0 Update 2 (standalone)', user: 'svc-aegis-mig', how: 'A local account with read, snapshot and change tracking rights.' },
+  { k: 'Hyper-V', icon: 'monitor', title: 'Microsoft Hyper-V or SCVMM', note: 'Hyper-V hosts, clusters or System Center VMM. Agentless with Resilient Change Tracking.', version: 'Windows Server 2022 Hyper-V (SCVMM 2022)', user: 'CORP\\svc-aegis-mig', how: 'A domain account in Hyper-V Administrators on each host, over WinRM.' },
+  { k: 'Nutanix AHV', icon: 'database', title: 'Nutanix AHV (Prism Central)', note: 'Clusters, categories and projects. Changed regions through the Prism v4 API.', version: 'AOS 6.8, Prism Central pc.2024.2', user: 'svc-aegis-mig', how: 'A Prism Central user with the Backup Admin role.' },
+  { k: 'Proxmox VE', icon: 'box', title: 'Proxmox VE', note: 'Move between Proxmox clusters or out of Proxmox. Dirty bitmaps; no agent.', version: 'Proxmox VE 8.2', user: 'aegis-mig@pve!token', how: 'An API token with PVEVMAdmin on the VMs to move.' },
+  { k: 'OpenStack', icon: 'cloud', title: 'OpenStack', note: 'Projects, instances, volumes and networks through Keystone. Ceph RBD diffs when available.', version: 'OpenStack 2023.2 (Bobcat)', user: 'aegis-mig (project admin)', how: 'An application credential with the admin role on the projects to move.' },
+  { k: 'XCP-ng', icon: 'server', title: 'XCP-ng or Citrix Hypervisor', note: 'Pools and VMs through XAPI. Changed-block tracking on XCP-ng 8.3.', version: 'XCP-ng 8.3', user: 'aegis-mig', how: 'A pool user with the VM Operator role.' },
+  { k: 'Physical', icon: 'hard-drive', title: 'Physical servers (P2V)', note: 'Windows and Linux servers with the Aegis agent. Also for VMs on platforms not listed.', version: 'Aegis agent 4.2', user: 'Agent registration token', how: 'Deploy the agent; each server registers itself with a one-time token.' }
+];
+const kindOf = (k: Kind) => KINDS.find(x => x.k === k)!;
+/** The vCenter layout discovery reads, so waves can follow clusters, folders or tags. */
+const LAYOUT: { kind: 'Datacenter' | 'Cluster' | 'Resource pool' | 'Folder' | 'Tag'; name: string; path: string; vms: number; note: string }[] = [
+  { kind: 'Datacenter', name: 'Chennai-DC1', path: 'Chennai vCenter', vms: 27, note: '4 hosts, 3 datastores, 2 distributed switches' },
+  { kind: 'Cluster', name: 'PROD-CL01', path: 'Chennai-DC1', vms: 21, note: 'HA on, DRS fully automated (DRS is paused for a VM while its pass runs)' },
+  { kind: 'Cluster', name: 'EDGE-CL02', path: 'Chennai-DC1', vms: 6, note: 'esxi-edge-07, standalone in the cluster view' },
+  { kind: 'Resource pool', name: 'Production', path: 'PROD-CL01', vms: 14, note: 'Shares High; reservations copied to the target as flavor sizes' },
+  { kind: 'Resource pool', name: 'Reporting', path: 'PROD-CL01', vms: 5, note: 'Shares Normal' },
+  { kind: 'Folder', name: '/Core banking', path: 'Chennai-DC1/vm', vms: 6, note: 'Matches the Meridian waves' },
+  { kind: 'Folder', name: '/Finance', path: 'Chennai-DC1/vm', vms: 4, note: '' },
+  { kind: 'Folder', name: '/Infra', path: 'Chennai-DC1/vm', vms: 7, note: 'Domain controllers, DNS, print' },
+  { kind: 'Tag', name: 'Tier: 0', path: 'Category Tier', vms: 5, note: 'Mapped to Mission Critical in Workloads' },
+  { kind: 'Tag', name: 'Owner: CBS', path: 'Category Owner', vms: 6, note: 'Becomes the application Core banking' },
+  { kind: 'Tag', name: 'Backup: Veeam', path: 'Category Backup', vms: 11, note: 'Protection follows the workload after cutover; the Veeam job can be retired' },
+  { kind: 'Tag', name: 'Migrate: no', path: 'Category Migrate', vms: 2, note: 'Excluded from waves' }
+];
 const gb = (n: number) => (n >= 1024 ? `${(n / 1024).toFixed(2)} TB` : `${n.toFixed(0)} GB`);
 const short = (t: string) => t.replace(' 2026', '').replace(' IST', '');
 
 /** Mobility › Sources: VMware sources with their certificates, and everything found on them. */
 export default function Sources({ ctx }: { ctx: Ctx }) {
-  const [tab, setTab] = useState<Tab>(ctx.tab === 'sources' ? 'sources' : 'inventory');
+  const [tab, setTab] = useState<Tab>(ctx.tab === 'sources' || ctx.tab === 'layout' ? ctx.tab : 'inventory');
   const [sources, setSources] = useState<Source[]>(SOURCES);
   const [over, setOver] = useState<Record<string, Partial<SourceVm>>>({});
   const add = useClosable<boolean>();
@@ -25,7 +52,7 @@ export default function Sources({ ctx }: { ctx: Ctx }) {
       <PageHeader
         kicker="Mobility"
         title="Sources"
-        sub="VMware vCenter and ESXi hosts Aegis reads from, and every server found on them with what stands in the way of moving it."
+        sub="VMware, Hyper-V, Nutanix, Proxmox, OpenStack, XCP-ng and physical servers Aegis reads from, and every server found on them with what stands in the way of moving it."
         actions={
           <Btn kind="primary" icon="plus" perm={ctx.can('configure', 'Adding a source')} onClick={() => add.open(true)}>
             Add a source
@@ -39,10 +66,11 @@ export default function Sources({ ctx }: { ctx: Ctx }) {
         style={{ margin: '0 24px 12px', padding: 0 }}
         tabs={[
           { v: 'inventory', label: 'Inventory', count: inv.length },
-          { v: 'sources', label: 'Sources', count: sources.length }
+          { v: 'sources', label: 'Sources', count: sources.length },
+          { v: 'layout', label: 'vCenter layout', tip: 'Clusters, resource pools, folders and tags' }
         ]}
       />
-      {tab === 'inventory' ? <Inventory ctx={ctx} inv={inv} setOver={(id, p) => setOver(o => ({ ...o, [id]: { ...(o[id] || {}), ...p } }))} /> : <SourceList ctx={ctx} sources={sources} />}
+      {tab === 'inventory' ? <Inventory ctx={ctx} inv={inv} setOver={(id, p) => setOver(o => ({ ...o, [id]: { ...(o[id] || {}), ...p } }))} /> : tab === 'layout' ? <LayoutView /> : <SourceList ctx={ctx} sources={sources} />}
       {add.value ? (
         <AddSourceWizard
           ctx={ctx}
@@ -427,9 +455,29 @@ function CertDialog({ ctx, src, onClose }: { ctx: Ctx; src: Source; onClose: () 
   );
 }
 
+function LayoutView() {
+  const [kind, setKind] = useState<'all' | 'Cluster' | 'Resource pool' | 'Folder' | 'Tag'>('all');
+  const rows = LAYOUT.filter(x => kind === 'all' || x.kind === kind);
+  return (
+    <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <Toolbar style={{ padding: 0 }}>
+        <Seg label="Show" value={kind} onChange={setKind} options={[{ v: 'all', label: 'Everything' }, { v: 'Cluster', label: 'Clusters' }, { v: 'Resource pool', label: 'Resource pools' }, { v: 'Folder', label: 'Folders' }, { v: 'Tag', label: 'Tags' }]} />
+        <Spacer />
+        <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>Chennai vCenter · read 21 Oct, 15:30</span>
+      </Toolbar>
+      <MiniTable
+        label="vCenter layout"
+        cols={[{ label: 'Kind', w: '120px' }, { label: 'Name', w: '170px' }, { label: 'In', w: '160px' }, { label: 'VMs', w: '60px', r: true }, { label: 'What Aegis does with it' }]}
+        rows={rows.map(x => [x.kind, <strong key="n" style={{ fontWeight: 600 }}>{x.name}</strong>, <span key="p" style={{ color: 'var(--tx-2)' }}>{x.path}</span>, String(x.vms), <span key="w" style={{ color: 'var(--tx-2)' }}>{x.note || '—'}</span>])}
+      />
+      <p style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Waves can be built from a cluster, a folder or a tag in Migration plans; servers added to them later in vCenter join the wave at the next scan.</p>
+    </div>
+  );
+}
+
 function AddSourceWizard({ ctx, closing, onClose, onAdded }: { ctx: Ctx; closing: boolean; onClose: () => void; onAdded: (s: Source) => void }) {
   const [step, setStep] = useState(0);
-  const [kind, setKind] = useState<'vCenter' | 'ESXi'>('vCenter');
+  const [kind, setKind] = useState<Kind>('vCenter');
   const [name, setName] = useState('');
   const [addr, setAddr] = useState('');
   const [user, setUser] = useState('svc-aegis-mig@vsphere.local');
@@ -446,15 +494,15 @@ function AddSourceWizard({ ctx, closing, onClose, onAdded }: { ctx: Ctx; closing
   const valid = [true, name.trim() && /^[\w.-]+(:\d+)?$/.test(addr.trim()) && user.trim() && pw, same, found >= 4][step];
   const why = ['', 'Fill in the name, a host name or IP address, the account and its password.', 'Confirm the fingerprint matches.', 'Scanning…'][step];
   const finish = () => {
-    const src: Source = { id: 's' + Date.now(), name: name.trim(), kind, version: kind === 'vCenter' ? 'vCenter Server 8.0 Update 3' : 'ESXi 8.0 Update 2 (standalone)', addr: addr.includes(':') ? addr : `${addr}:443`, hosts: kind === 'vCenter' ? 3 : 1, datastores: 2, networks: 2, cert: { fp, issuer: kind === 'vCenter' ? `VMware Certificate Authority (${name.trim()})` : `Self-signed (${addr})`, valid: '21 Oct 2026 to 21 Oct 2028', expiresDays: 730, confirmedBy: 'priya.raman', confirmed: ctx.now() }, account: user, lastScan: ctx.now(), state: 'ok' };
-    audit({ who: 'priya.raman', customer: 'h360', what: `Added a VMware ${kind} source`, object: src.name, when: ctx.now(), r: 'ok', note: `Certificate ${fp.slice(0, 23)}… confirmed` });
+    const src: Source = { id: 's' + Date.now(), name: name.trim(), kind, version: kindOf(kind).version, addr: addr.includes(':') ? addr : `${addr}:443`, hosts: kind === 'vCenter' ? 3 : 1, datastores: 2, networks: 2, cert: { fp, issuer: kind === 'vCenter' ? `VMware Certificate Authority (${name.trim()})` : `Self-signed (${addr})`, valid: '21 Oct 2026 to 21 Oct 2028', expiresDays: 730, confirmedBy: 'priya.raman', confirmed: ctx.now() }, account: user, lastScan: ctx.now(), state: 'ok' };
+    audit({ who: 'priya.raman', customer: 'h360', what: `Added a ${kindOf(kind).title} source`, object: src.name, when: ctx.now(), r: 'ok', note: `Certificate ${fp.slice(0, 23)}… confirmed` });
     ctx.toast(`${src.name} added. 27 servers found; migratability is checked in the background.`, 'ok');
     onAdded(src);
   };
   return (
     <Wizard
-      title="Add a VMware source"
-      sub="Aegis reads inventory and takes snapshots for sync passes. It never changes VM settings without asking."
+      title="Add a source"
+      sub="Aegis reads inventory and copies changed blocks for sync passes. It never changes a source server’s settings without asking."
       steps={['Platform', 'Address and account', 'Certificate', 'Discover']}
       step={step}
       closing={closing}
@@ -474,9 +522,10 @@ function AddSourceWizard({ ctx, closing, onClose, onAdded }: { ctx: Ctx; closing
       }
     >
       {step === 0 ? (
-        <div role="radiogroup" aria-label="Platform" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <RadioCard on={kind === 'vCenter'} onClick={() => setKind('vCenter')} icon="layers" title="vCenter Server" note="Reads every host, datastore and network the account can see. Recommended." />
-          <RadioCard on={kind === 'ESXi'} onClick={() => setKind('ESXi')} icon="server" title="Standalone ESXi host" note="For hosts that are not managed by a vCenter. Change tracking works the same." />
+        <div role="radiogroup" aria-label="Platform" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          {KINDS.map(x => (
+            <RadioCard key={x.k} on={kind === x.k} onClick={() => { setKind(x.k); setUser(x.user); }} icon={x.icon} title={x.title} note={x.note} />
+          ))}
         </div>
       ) : null}
       {step === 1 ? (
@@ -487,7 +536,7 @@ function AddSourceWizard({ ctx, closing, onClose, onAdded }: { ctx: Ctx; closing
           <Field id="as-addr" label="Host name or IP address">
             <TextInput id="as-addr" value={addr} onChange={setAddr} placeholder="172.25.20.10" mono />
           </Field>
-          <Field id="as-user" label="Account" hint="Use an account with the Aegis Migration role: read, snapshot and change tracking only.">
+          <Field id="as-user" label="Account" hint={kindOf(kind).how}>
             <TextInput id="as-user" value={user} onChange={setUser} />
           </Field>
           <Field id="as-pw" label="Password" hint="Stored in the credential vault; never shown again.">
@@ -501,7 +550,7 @@ function AddSourceWizard({ ctx, closing, onClose, onAdded }: { ctx: Ctx; closing
           <div style={{ padding: 12, border: '1px solid var(--ln)', background: 'var(--panel-2)', font: '13px/22px var(--f-ui)', wordBreak: 'break-all' }}>{fp}</div>
           <Facts labelW={110} items={[{ k: 'Issuer', v: kind === 'vCenter' ? `VMware Certificate Authority (${name})` : `Self-signed (${addr})` }, { k: 'Valid', v: '21 Oct 2026 to 21 Oct 2028' }]} />
           <CheckBox on={same} onChange={setSame}>
-            It matches the fingerprint shown {kind === 'vCenter' ? 'in the vCenter appliance management (port 5480)' : 'on the ESXi host client'}
+            It matches the fingerprint shown {kind === 'vCenter' ? 'in the vCenter appliance management (port 5480)' : kind === 'ESXi' ? 'on the ESXi host client' : kind === 'Physical' ? 'on the Aegis agent gateway' : `in the ${kindOf(kind).title} management console`}
           </CheckBox>
         </>
       ) : null}
@@ -510,8 +559,8 @@ function AddSourceWizard({ ctx, closing, onClose, onAdded }: { ctx: Ctx; closing
           <ul style={{ listStyle: 'none', padding: 0, border: '1px solid var(--ln)' }}>
             {[
               ['Signed in as ' + user, 'Permissions match the Aegis Migration role'],
-              [kind === 'vCenter' ? '3 hosts, 2 datastores, 2 networks' : '1 host, 2 datastores, 2 networks', 'Read'],
-              ['27 virtual machines', '25 powered on, 2 off'],
+              [kind === 'Physical' ? 'Agent gateway reachable' : kind === 'ESXi' ? '1 host, 2 datastores, 2 networks' : '3 hosts, 2 datastores, 2 networks', 'Read'],
+              [kind === 'Physical' ? 'Ready for agents' : '27 virtual machines', kind === 'Physical' ? 'Servers appear here as their agents register' : '25 powered on, 2 off'],
               ['Migratability checked', '19 ready, 6 with warnings, 2 blocked']
             ].map(([a, b], i) => (
               <li key={a} style={{ display: 'grid', gridTemplateColumns: '20px minmax(0,1fr)', gap: 10, padding: '10px 12px', borderBottom: i < 3 ? '1px solid var(--ln)' : 'none', opacity: i <= found ? 1 : 0.45 }}>

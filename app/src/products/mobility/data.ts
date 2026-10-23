@@ -5,7 +5,7 @@ import { T } from '../../data/platform';
 export interface Source {
   id: string;
   name: string;
-  kind: 'vCenter' | 'ESXi';
+  kind: 'vCenter' | 'ESXi' | 'Hyper-V' | 'Nutanix AHV' | 'Proxmox VE' | 'OpenStack' | 'XCP-ng' | 'Physical';
   version: string;
   addr: string;
   hosts: number;

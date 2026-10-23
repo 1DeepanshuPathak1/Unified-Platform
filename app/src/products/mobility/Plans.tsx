@@ -11,6 +11,7 @@ import { custName, inScope, scopeCustomers, showCustomerCol } from '../../platfo
 import { audit } from '../../platform/store';
 import { ProfilesView, profileFor } from './Profiles';
 import { ValidationTab } from './Validation';
+import { TargetTab } from './Target';
 import { BLACKOUTS, FLOWS, INVENTORY, IN_PROGRESS, STAGE_LABEL, SUGGESTED_APPS, WAVES, verdict, type Blackout, type SourceVm, type Wave } from './data';
 
 type Tab = 'waves' | 'map' | 'calendar' | 'profiles';
@@ -199,7 +200,7 @@ function WaveList({ ctx, waves, inv, blackouts, onEdit }: { ctx: Ctx; waves: Wav
               <Btn kind="ghost" icon="server" onClick={() => ctx.go('mig/servers')}>Servers</Btn>
             </>
           }
-          tabs={[{ v: 'Servers', label: 'Servers', count: dc.mine.length }, { v: 'Order', label: 'Dependencies', count: dc.out.filter(c => !c.ok).length || undefined }, { v: 'Validation', label: 'Validation' }, { v: 'Window', label: 'Window' }]}
+          tabs={[{ v: 'Servers', label: 'Servers', count: dc.mine.length }, { v: 'Order', label: 'Dependencies', count: dc.out.filter(c => !c.ok).length || undefined }, { v: 'Target', label: 'Target' }, { v: 'Validation', label: 'Validation' }, { v: 'Window', label: 'Window' }]}
           tab={tab}
           onTab={setTab}
           closing={drawer.closing}
@@ -219,6 +220,7 @@ function WaveList({ ctx, waves, inv, blackouts, onEdit }: { ctx: Ctx; waves: Wav
               <MiniTable label="Dependencies" cols={[{ label: 'Server', w: '140px' }, { label: 'Needs', w: '140px' }, { label: 'Result' }]} rows={dc.out.map(c => [c.server, c.dep, <Status key="r" icon={c.ok ? 'circle-check' : 'triangle-alert'} tone={c.ok ? 'ok' : 'warn'} label={c.text} />])} empty="No dependencies found for these servers." />
             </div>
           ) : null}
+          {tab === 'Target' ? <TargetTab ctx={ctx} wave={d} servers={dc.mine} /> : null}
           {tab === 'Validation' ? <ValidationTab ctx={ctx} wave={d} servers={dc.mine} /> : null}
           {tab === 'Window' ? (
             <Facts

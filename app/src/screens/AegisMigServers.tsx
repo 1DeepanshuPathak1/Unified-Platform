@@ -756,6 +756,7 @@ export default class AegisMigServers extends DC {
             Migration plans
           </a>
         </div>
+        {this.props.tabs}
         <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px' }}>
           {arr(v.filters).map((fl: any, i: number) => (
             <label

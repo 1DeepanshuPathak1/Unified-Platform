@@ -8,7 +8,21 @@ import { audit } from '../../platform/store';
 import { INVENTORY, type SourceVm } from './data';
 
 export interface TStep { id: string; name: string; detail: string; on: boolean; locked?: boolean }
-export interface Profile { id: string; name: string; os: 'Windows' | 'Linux'; dest: string; match: string; version: number; defaultFor?: string; steps: TStep[]; runs: { ok: number; warn: number; err: number }; note?: string }
+export interface Profile { id: string; name: string; os: 'Windows' | 'Linux'; dest: string; match: string; version: number; defaultFor?: string; steps: TStep[]; runs: { ok: number; warn: number; err: number }; note?: string; tx?: Tx }
+/** Boot, disk and network changes a profile makes, beyond its driver steps. */
+export interface Tx { firmware: string; secureBoot: string; vtpm: string; partition: string; repair: string; controller: string; provisioning: string; resize: string; encryption: string; reip: string; hostname: string; dns: string; domain: string; mac: string }
+const TX_WIN: Tx = { firmware: 'Keep (BIOS stays BIOS, UEFI stays UEFI)', secureBoot: 'On for UEFI servers', vtpm: 'Add a vTPM when the source has one', partition: 'Keep MBR; convert to GPT only when moving to UEFI', repair: 'Rebuild the BCD store after the driver injection', controller: 'VirtIO SCSI (single queue per disk)', provisioning: 'Thin', resize: 'Keep sizes', encryption: 'BitLocker: suspend for the first boot with the recovery key from the vault, resume after', reip: 'From Mappings › Re-IP and names', hostname: 'Keep', dns: 'Update A and PTR records', domain: 'Stay joined; re-register the machine account if the secure channel breaks', mac: 'New MAC unless the licence is bound to it' };
+const TX_LIN: Tx = { firmware: 'Keep (BIOS stays BIOS, UEFI stays UEFI)', secureBoot: 'Off (custom kernels are not signed)', vtpm: 'No', partition: 'Keep', repair: 'Reinstall GRUB and regenerate grub.cfg', controller: 'VirtIO SCSI', provisioning: 'Thin', resize: 'Keep sizes; grow the root file system if the target disk is larger', encryption: 'LUKS: unlock with the key from the vault during conversion; Clevis/Tang re-bound at the target', reip: 'From Mappings › Re-IP and names', hostname: 'Keep', dns: 'Update A and PTR records', domain: 'SSSD realm kept; keytab refreshed', mac: 'New MAC' };
+export const txOf = (p: Profile): Tx => p.tx || (p.os === 'Windows' ? TX_WIN : TX_LIN);
+/** What discovery found inside each server that the conversion has to handle. */
+const FOUND: Record<string, string[]> = {
+  SQL01: ['BitLocker on D: (data); recovery key in the vault', '4 disks, GPT', 'UEFI with Secure Boot'],
+  'crm-db-01': ['Dynamic disk (spanned E:); converted to basic during the first pass', '3 disks'],
+  'rhel-oracle-01': ['LVM: vg_oracle across 3 disks', 'LUKS on /u02; key in the vault', 'UEFI'],
+  'legacy-erp': ['MBR with GRUB legacy (CentOS 7)', 'Software RAID 1 (md0) across 2 disks'],
+  'win-ts-01': ['MBR, BIOS'],
+  'hr-portal': ['LVM root, ext4']
+};
 
 const OS = 'production-openstack';
 const PVE = 'Chennai-proxmox-prod';
@@ -129,6 +143,30 @@ export function ProfilesView({ ctx }: { ctx: Ctx }) {
             cols={[{ label: '#', w: '28px' }, { label: 'Step', w: 'minmax(200px,1fr)' }, { label: 'Detail', w: 'minmax(200px,1.3fr)' }, { label: '', w: '96px' }]}
             rows={p.steps.map((s, i) => [String(i + 1), <span key="n" style={{ color: s.on ? 'var(--tx)' : 'var(--tx-3)' }}>{s.name}</span>, <span key="d" style={{ color: 'var(--tx-2)', overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={s.detail}>{s.detail}</span>, s.locked ? <Status key="s" icon="pin" tone="tx" label="Required" tip="The server does not boot on the destination without it" /> : s.on ? <Status key="s" icon="check" tone="ok" label="On" /> : <span key="s" style={{ color: 'var(--tx-3)' }}>Off</span>])}
           />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16 }}>
+            {[
+              ['Boot and firmware', [['Firmware', txOf(p).firmware], ['Secure Boot', txOf(p).secureBoot], ['vTPM', txOf(p).vtpm], ['Partition table', txOf(p).partition], ['Boot loader', txOf(p).repair]]],
+              ['Disks', [['Controller', txOf(p).controller], ['Provisioning', txOf(p).provisioning], ['Size', txOf(p).resize], ['Encrypted volumes', txOf(p).encryption]]],
+              ['Network and identity', [['Addresses', txOf(p).reip], ['Host name', txOf(p).hostname], ['DNS', txOf(p).dns], ['Domain', txOf(p).domain], ['MAC address', txOf(p).mac]]]
+            ].map(([title, items]) => (
+              <div key={title as string} style={{ border: '1px solid var(--ln)', padding: '10px 12px', minWidth: 0 }}>
+                <h3 style={{ font: '600 13px/18px var(--f-ui)', marginBottom: 6 }}>{title as string}</h3>
+                {(items as [string, string][]).map(([k, v]) => (
+                  <div key={k} style={{ padding: '4px 0', borderTop: '1px solid var(--ln)', font: '12px/16px var(--f-ui)' }}>
+                    <span style={{ display: 'block', color: 'var(--tx-3)' }}>{k}</span>
+                    <span>{v}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          {using.some(v => FOUND[v.name]) ? (
+            <MiniTable
+              label="Found inside the servers"
+              cols={[{ label: 'Server', w: '140px' }, { label: 'Found by discovery, handled by this profile' }]}
+              rows={using.filter(v => FOUND[v.name]).map(v => [<strong key="n" style={{ fontWeight: 600 }}>{v.name}</strong>, FOUND[v.name].join(' · ')])}
+            />
+          ) : null}
           <p style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Steps run on a copy of the disks during the first sync and again before cutover. The source server is never changed, so a rollback starts the original unchanged.</p>
         </div>
       </Panel>
@@ -141,7 +179,13 @@ function ProfileDialog({ ctx, p, isNew, closing, onClose, onSave }: { ctx: Ctx; 
   const [name, setName] = useState(p.name);
   const [steps, setSteps] = useState(p.steps);
   const [virtio, setVirtio] = useState(p.id === 'legacy' ? VIRTIO[2] : VIRTIO[0]);
-  const changed = isNew || name !== p.name || JSON.stringify(steps) !== JSON.stringify(p.steps) || virtio !== (p.id === 'legacy' ? VIRTIO[2] : VIRTIO[0]);
+  const [tx, setTx] = useState<Tx>(txOf(p));
+  const changed = isNew || name !== p.name || JSON.stringify(steps) !== JSON.stringify(p.steps) || virtio !== (p.id === 'legacy' ? VIRTIO[2] : VIRTIO[0]) || JSON.stringify(tx) !== JSON.stringify(txOf(p));
+  const opt = (k: keyof Tx, label: string, options: string[]) => (
+    <Field id={`pf-${k}`} label={label}>
+      <SelectInput id={`pf-${k}`} value={tx[k]} onChange={v => setTx(t => ({ ...t, [k]: v }))} options={options.includes(tx[k]) ? options : [tx[k], ...options]} />
+    </Field>
+  );
   const err = name.trim().length < 6 ? 'Name the profile.' : !changed ? 'Nothing changed.' : null;
   return (
     <Dialog
@@ -153,7 +197,7 @@ function ProfileDialog({ ctx, p, isNew, closing, onClose, onSave }: { ctx: Ctx; 
       footer={
         <>
           <Btn kind="ghost" onClick={onClose}>Cancel</Btn>
-          <Btn kind="primary" icon="check" disabled={!!err} why={err || undefined} perm={ctx.can('configure', 'Changing transformation profiles')} onClick={() => onSave({ ...p, name: name.trim(), steps: steps.map(s => (s.id === 'v' ? { ...s, detail: s.detail.replace(/VirtIO [\d.]+/, `VirtIO ${virtio.split(' ')[0]}`) } : s)), version: isNew ? 1 : p.version + 1 })}>
+          <Btn kind="primary" icon="check" disabled={!!err} why={err || undefined} perm={ctx.can('configure', 'Changing transformation profiles')} onClick={() => onSave({ ...p, tx, name: name.trim(), steps: steps.map(s => (s.id === 'v' ? { ...s, detail: s.detail.replace(/VirtIO [\d.]+/, `VirtIO ${virtio.split(' ')[0]}`) } : s)), version: isNew ? 1 : p.version + 1 })}>
             {isNew ? 'Create profile' : `Save as version ${p.version + 1}`}
           </Btn>
         </>
@@ -173,6 +217,16 @@ function ProfileDialog({ ctx, p, isNew, closing, onClose, onSave }: { ctx: Ctx; 
             {s.locked ? <Status icon="pin" tone="tx" label="Required" /> : <Toggle on={s.on} label={s.name} onChange={v => setSteps(x => x.map(y => (y.id === s.id ? { ...y, on: v } : y)))} />}
           </div>
         ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 12 }}>
+        {opt('firmware', 'Firmware', ['Keep (BIOS stays BIOS, UEFI stays UEFI)', 'Convert BIOS to UEFI', 'Force BIOS (SeaBIOS)'])}
+        {opt('partition', 'Partition table', ['Keep MBR; convert to GPT only when moving to UEFI', 'Keep', 'Convert MBR to GPT'])}
+        {opt('secureBoot', 'Secure Boot', ['On for UEFI servers', 'Off (custom kernels are not signed)', 'Off'])}
+        {opt('vtpm', 'vTPM', ['Add a vTPM when the source has one', 'Always add a vTPM', 'No'])}
+        {opt('controller', 'Disk controller', ['VirtIO SCSI (single queue per disk)', 'VirtIO SCSI', 'VirtIO block', 'SATA (compatibility)'])}
+        {opt('resize', 'Disk size', ['Keep sizes', 'Keep sizes; grow the root file system if the target disk is larger', 'Grow every disk by 20 %'])}
+        {opt('hostname', 'Host name', ['Keep', 'Add the suffix -h360', 'From the wave’s naming rule'])}
+        {opt('mac', 'MAC address', ['New MAC unless the licence is bound to it', 'New MAC', 'Keep'])}
       </div>
     </Dialog>
   );
