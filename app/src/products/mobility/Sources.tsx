@@ -7,9 +7,10 @@ import { Dialog, Drawer, StepUp, Wizard, useClosable } from '../../ui/overlay';
 import type { Ctx } from '../../ui/ctx';
 import { custName, inScope, scopeCustomers, showCustomerCol } from '../../platform/common';
 import { audit } from '../../platform/store';
+import { ImagesView } from './Images';
 import { INVENTORY, IN_PROGRESS, SOURCES, STAGE_LABEL, VERDICT, WAVES, verdict, type Source, type SourceVm } from './data';
 
-type Tab = 'inventory' | 'sources' | 'layout';
+type Tab = 'inventory' | 'sources' | 'layout' | 'images';
 type Kind = Source['kind'];
 const KINDS: { k: Kind; icon: string; title: string; note: string; version: string; user: string; how: string }[] = [
   { k: 'vCenter', icon: 'layers', title: 'VMware vCenter Server', note: 'Every host, cluster, resource pool, folder and tag the account can see. Agentless with CBT.', version: 'vCenter Server 8.0 Update 3', user: 'svc-aegis-mig@vsphere.local', how: 'Use an account with the Aegis Migration role: read, snapshot and change tracking only.' },
@@ -48,7 +49,7 @@ const short = (t: string) => t.replace(' 2026', '').replace(' IST', '');
 
 /** Mobility › Sources: VMware sources with their certificates, and everything found on them. */
 export default function Sources({ ctx }: { ctx: Ctx }) {
-  const [tab, setTab] = useState<Tab>(ctx.tab === 'sources' || ctx.tab === 'layout' ? ctx.tab : 'inventory');
+  const [tab, setTab] = useState<Tab>(ctx.tab === 'sources' || ctx.tab === 'layout' || ctx.tab === 'images' ? ctx.tab : 'inventory');
   const [sources, setSources] = useState<Source[]>(SOURCES);
   const [over, setOver] = useState<Record<string, Partial<SourceVm>>>({});
   const add = useClosable<boolean>();
@@ -73,10 +74,11 @@ export default function Sources({ ctx }: { ctx: Ctx }) {
         tabs={[
           { v: 'inventory', label: 'Inventory', count: inv.length },
           { v: 'sources', label: 'Sources', count: sources.length },
-          { v: 'layout', label: 'vCenter layout', tip: 'Clusters, resource pools, folders and tags' }
+          { v: 'layout', label: 'vCenter layout', tip: 'Clusters, resource pools, folders and tags' },
+          { v: 'images', label: 'Images and backups', tip: 'Disk images, machines built from a backup, and seed disks' }
         ]}
       />
-      {tab === 'inventory' ? <Inventory ctx={ctx} inv={inv} setOver={(id, p) => setOver(o => ({ ...o, [id]: { ...(o[id] || {}), ...p } }))} /> : tab === 'layout' ? <LayoutView /> : <SourceList ctx={ctx} sources={sources} />}
+      {tab === 'inventory' ? <Inventory ctx={ctx} inv={inv} setOver={(id, p) => setOver(o => ({ ...o, [id]: { ...(o[id] || {}), ...p } }))} /> : tab === 'layout' ? <LayoutView /> : tab === 'images' ? <ImagesView ctx={ctx} /> : <SourceList ctx={ctx} sources={sources} />}
       {add.value ? (
         <AddSourceWizard
           ctx={ctx}

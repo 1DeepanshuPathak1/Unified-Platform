@@ -340,6 +340,11 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
   const [atRest, setAtRest] = useState('AES-256, tenant key from Settings › Keys');
   const [dest, setDest] = useState('production-openstack');
   const [versions, setVersions] = useState('2, one every 4 h');
+  const [ckpt, setCkpt] = useState('Every hour');
+  const [quiesceFail, setQuiesceFail] = useState('Take a crash-consistent point and warn');
+  const [seed, setSeed] = useState<'network' | 'disk'>('network');
+  const ckOpts = mode === 'Scheduled' ? ['Every snapshot', 'Every 4th snapshot', 'Off'] : ['Every 15 min', 'Every hour', 'Every 4 h', 'Daily at 01:00 IST', 'Off'];
+  const ck = ckOpts.includes(ckpt) ? ckpt : ckOpts[0];
   const [refused, setRefused] = useState<string | null>(null);
   const cust = CUSTOMERS.find(c => c.name === tenant)!;
   const repoInfo = REPOS.find(r => r.name === repo)!;
@@ -376,7 +381,7 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
     }
     const settings: [string, string][] =
       type === 'DR'
-        ? [['Criticality tier', `${tier} (${TIER_SHORT[tier]})`], ['Recovery target (RPO)', rpo === 'Seconds' ? 'Seconds' : rpo], ['Recovery time (RTO)', rto], ['Replication mode', mode === 'Continuous' ? MODE_LABEL.Continuous : mode === 'Scheduled' ? `Scheduled every ${rpo}: snapshot and changed blocks` : `${mode} (round trip ${site.rtt} ms)`], ['DR topology', `${topo}: ${TOPO_NOTE[topo]}`], ['Write-order consistency', group], ['Encryption at the DR site', atRest], ['Recovery site', `${dest} (${site.where})`], ['Versions kept', versions], ['Drill cadence', TIER_TARGET[tier]?.drill || 'Not required'], ['Price', `₹${price} a workload a day, ${TOPO_PRICE[topo]}`]]
+        ? [['Criticality tier', `${tier} (${TIER_SHORT[tier]})`], ['Recovery target (RPO)', rpo === 'Seconds' ? 'Seconds' : rpo], ['Recovery time (RTO)', rto], ['Replication mode', mode === 'Continuous' ? MODE_LABEL.Continuous : mode === 'Scheduled' ? `Scheduled every ${rpo}: snapshot and changed blocks` : `${mode} (round trip ${site.rtt} ms)`], ['DR topology', `${topo}: ${TOPO_NOTE[topo]}`], ['Write-order consistency', group], ['Encryption at the DR site', atRest], ['Recovery site', `${dest} (${site.where})`], ['Versions kept', versions], ['Application-consistent checkpoints', ck === 'Off' ? 'Off: crash-consistent only' : `${ck}: VSS on Windows, quiesce hooks on Linux; if quiescing fails: ${quiesceFail.toLowerCase()}`], ['First full copy', seed === 'disk' ? 'By disk: an encrypted seed disk is shipped to the recovery site, then only changes are sent' : 'Over the network, throttled by the Data movement schedule'], ['Drill cadence', TIER_TARGET[tier]?.drill || 'Not required'], ['Price', `₹${price} a workload a day, ${TOPO_PRICE[topo]}`]]
         : type === 'Backup'
           ? [['Inherits from', tpl], ['Repository', `${repo} (${repoInfo.where})`], ['Immutability', immut]]
           : [['Inherits from', tpl]];
@@ -474,6 +479,19 @@ function PolicyDialog({ ctx, fixedType, closing, onClose }: { ctx: Ctx; fixedTyp
             <Field id="po-enc" label="Encryption at the DR site" hint="Replicas, journals and test copies at rest.">
               <SelectInput id="po-enc" value={atRest} onChange={setAtRest} options={['AES-256, tenant key from Settings › Keys', 'AES-256, the customer’s own KMS key', 'AES-256, a key held only at the DR site']} />
             </Field>
+            <Field id="po-ck" label="Application-consistent checkpoints" hint={mode === 'Scheduled' ? 'Taken with the snapshot: VSS on Windows, pre-freeze and post-thaw hooks on Linux.' : 'Alongside the continuous crash-consistent stream: VSS on Windows, pre-freeze and post-thaw hooks on Linux. A failover can choose either.'}>
+              <SelectInput id="po-ck" value={ck} onChange={setCkpt} options={ckOpts.map(o => ({ v: o, label: o === 'Off' ? 'Off: crash-consistent only' : o }))} />
+            </Field>
+            <Field id="po-qf" label="If quiescing does not finish in 60 s" hint="Domain controllers and busy databases sometimes need longer; the alert names the writer that held it up.">
+              <SelectInput id="po-qf" value={quiesceFail} onChange={setQuiesceFail} disabled={ck === 'Off'} options={['Take a crash-consistent point and warn', 'Skip this checkpoint and raise an alert', 'Retry once after 5 min, then warn']} />
+            </Field>
+            <div role="radiogroup" aria-label="First full copy" style={{ gridColumn: 'span 2', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <RadioCard on={seed === 'network'} onClick={() => setSeed('network')} icon="network" title="First copy over the network" note="Throttled by the Data movement schedule. 10 TB takes about 6 days at 200 Mbit/s." />
+              <RadioCard on={seed === 'disk'} onClick={() => setSeed('disk')} icon="hard-drive" title="First copy by disk (offline seed)" note="An encrypted seed disk goes to the recovery site by courier; only changes cross the link afterwards. About 4 days for any size." />
+            </div>
+            {seed === 'disk' ? (
+              <div style={{ gridColumn: 'span 2', font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>After saving, request the seed kit in Protected servers › Initial sync. The disk is encrypted with this plan’s key, which never travels with it. Workloads are not counted as protected until the seed is imported and the changes since the copy have caught up.</div>
+            ) : null}
             <Field id="po-ver" label="Versions kept at the recovery site">
               <SelectInput id="po-ver" value={versions} onChange={setVersions} options={['1', '2, one every 4 h', '4, one every 6 h', '24, one every hour']} />
             </Field>

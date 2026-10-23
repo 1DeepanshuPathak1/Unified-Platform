@@ -12,6 +12,7 @@ import { DeployDialog } from '../../platform/Agents';
 import AegisGuests from '../../screens/AegisGuests';
 import { PlatformObjectsView } from './PlatformObjects';
 import { KubernetesView, SaasView, SharesView } from './MoreSources';
+import { ForeignView } from './ForeignBackups';
 
 /** A machine protected through the Aegis agent: a physical or cloud server, or a laptop or desktop. */
 export interface Protected {
@@ -62,7 +63,8 @@ const SUBS: Record<string, string> = {
   platform: 'Containers and the platforms’ own configuration, kept so a whole cluster or project can be rebuilt.',
   kubernetes: 'Namespaces with their resources and persistent volumes, restored to the same cluster or another.',
   saas: 'Mail, files, sites, Teams and the directory of Microsoft 365 and Google Workspace tenants.',
-  shares: 'NAS and file server shares, with their permissions.'
+  shares: 'NAS and file server shares, with their permissions.',
+  foreign: 'Veeam, Commvault, Acronis, NetBackup and Rubrik backups read in place: restore from years of history without keeping the old product.'
 };
 export function GuestsPage({ ctx }: { ctx: Ctx }) {
   const tab = SUBS[ctx.tab] ? ctx.tab : 'guests';
@@ -78,7 +80,8 @@ export function GuestsPage({ ctx }: { ctx: Ctx }) {
         { v: 'endpoints', label: 'Agents and endpoints', count: n, tip: 'Physical and cloud servers, laptops and desktops with the Aegis agent' },
         { v: 'kubernetes', label: 'Kubernetes', tip: 'Namespaces, resources and persistent volumes' },
         { v: 'saas', label: 'Microsoft 365 and Google', tip: 'Mail, OneDrive and Drive, SharePoint, Teams and the directory' },
-        { v: 'shares', label: 'File shares', tip: 'NAS shares over NDMP, SMB and NFS' }
+        { v: 'shares', label: 'File shares', tip: 'NAS shares over NDMP, SMB and NFS' },
+        { v: 'foreign', label: 'Other vendors’ backups', tip: 'Veeam, Commvault, Acronis, NetBackup and Rubrik backups, restored from here' }
       ]}
       style={{ margin: '0 24px 12px', padding: 0 }}
     />
@@ -94,7 +97,7 @@ export function GuestsPage({ ctx }: { ctx: Ctx }) {
       />
       {tabs}
       <div key={tab} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', animation: 'ae-fade 150ms var(--ease)' }}>
-        {tab === 'endpoints' ? <EndpointsView ctx={ctx} /> : tab === 'kubernetes' ? <KubernetesView ctx={ctx} /> : tab === 'saas' ? <SaasView ctx={ctx} /> : tab === 'shares' ? <SharesView ctx={ctx} /> : <PlatformObjectsView ctx={ctx} />}
+        {tab === 'endpoints' ? <EndpointsView ctx={ctx} /> : tab === 'kubernetes' ? <KubernetesView ctx={ctx} /> : tab === 'saas' ? <SaasView ctx={ctx} /> : tab === 'shares' ? <SharesView ctx={ctx} /> : tab === 'foreign' ? <ForeignView ctx={ctx} /> : <PlatformObjectsView ctx={ctx} />}
       </div>
     </Page>
   );

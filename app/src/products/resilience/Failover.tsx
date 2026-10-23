@@ -60,6 +60,15 @@ function preflight(ctx: Ctx, rb: Runbook, kind: RunKind, stageIds: string[]): Pr
  * Fail over, plan or test, in one dialog: what and how, pre-flight, blast radius, then
  * step-up MFA and a recorded approval. The run continues on the plan page and in the jobs tray.
  */
+/** Newest application-consistent checkpoint per server: VSS on Windows, quiesce hooks on Linux, the database's own on databases. */
+function appCheckpoint(w: { id: string; os: string; type: string }): { v: string; tip: string; warn?: boolean } {
+  if (w.id === 'ad-dc-01') return { v: '21 Oct 11:00 · VSS (12:25 timed out)', tip: 'The 12:25 checkpoint timed out in VMware Tools quiesce after 600 s; the 11:00 one is the newest good one', warn: true };
+  if (w.type === 'Kubernetes workload') return { v: '21 Oct 14:00 · pre-hook (fsfreeze)', tip: 'Velero-style pre and post hooks run in the pods before the volume snapshot' };
+  if (w.type === 'Database') return { v: '21 Oct 14:00 · database checkpoint', tip: 'Taken by the database plug-in: the log is flushed and the point is marked in the journal' };
+  if (/windows/i.test(w.os)) return { v: '21 Oct 14:00 · VSS', tip: 'Volume Shadow Copy with every registered writer (SQL Server, Exchange, Active Directory)' };
+  return { v: '21 Oct 14:00 · pre-freeze and post-thaw hooks', tip: 'Scripts in /etc/aegis/hooks run before fsfreeze and after thaw; 60 s limit' };
+}
+
 export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ctx; rb: Runbook; initial: Exclude<RunKind, 'Failback'>; closing: boolean; onClose: () => void }) {
   const [step, setStep] = useState(0);
   const [kind, setKind] = useState<Exclude<RunKind, 'Failback'>>(initial);
@@ -73,7 +82,7 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
   const [how, setHow] = useState<'present' | 'request'>('present');
   const [approver, setApprover] = useState((APPROVERS[rb.customer] || APPROVERS.h360)[0].email);
   const [approverOk, setApproverOk] = useState(false);
-  const [pointMode, setPointMode] = useState<'newest' | 'time'>('newest');
+  const [pointMode, setPointMode] = useState<'newest' | 'app' | 'time'>('newest');
   const [pointAt, setPointAt] = useState('21 Oct 2026, 14:52:30');
   const stageIds = rb.stages.filter(s => scope === 'all' || picked[s.id]).map(s => s.id);
   const checks = preflight(ctx, rb, kind, stageIds);
@@ -126,7 +135,7 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
       onClose();
       return;
     }
-    startRun(ctx, rb, kind, stageIds, { approvedBy: test ? undefined : `${approverName} (${approver}), confirmed with their MFA code at ${ctx.hms()} IST`, reason: reason.trim() || undefined, pointAt: pointMode === 'time' ? pointAt : undefined });
+    startRun(ctx, rb, kind, stageIds, { approvedBy: test ? undefined : `${approverName} (${approver}), confirmed with their MFA code at ${ctx.hms()} IST`, reason: reason.trim() || undefined, pointAt: pointMode === 'time' ? pointAt : undefined, appConsistent: pointMode === 'app' });
     ctx.toast(test ? `Test of ${rb.name} started on ${rb.testNet}` : `${KIND_LABEL[kind]} of ${rb.name} started`, test ? 'info' : 'warn');
     onClose();
   };
@@ -189,9 +198,10 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>Recovery point</span>
-            <div role="radiogroup" aria-label="Recovery point" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-              <RadioCard on={pointMode === 'newest'} onClick={() => setPointMode('newest')} icon="clock" title="Newest point" note="Each server from its newest replica point; consistency groups from their newest group point." />
-              <RadioCard on={pointMode === 'time'} onClick={() => setPointMode('time')} icon="history" title="A moment in time" note="Rewind to any second in the journal, for example just before ransomware started." />
+            <div role="radiogroup" aria-label="Recovery point" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
+              <RadioCard on={pointMode === 'newest'} onClick={() => setPointMode('newest')} icon="clock" title="Newest point" note="Each server from its newest replica point; groups from their newest group point." />
+              <RadioCard on={pointMode === 'app'} onClick={() => setPointMode('app')} icon="database" title="Application-consistent" note="The newest VSS or quiesce checkpoint; databases skip crash recovery." />
+              <RadioCard on={pointMode === 'time'} onClick={() => setPointMode('time')} icon="history" title="A moment in time" note="Any second in the journal, for example just before ransomware started." />
             </div>
             {pointMode === 'time' ? (
               <div style={{ display: 'grid', gridTemplateColumns: '240px minmax(0,1fr)', gap: 12, alignItems: 'start' }}>
@@ -207,6 +217,16 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
                   })}
                 />
               </div>
+            ) : null}
+            {pointMode === 'app' ? (
+              <MiniTable
+                label="Checkpoint per server"
+                cols={[{ label: 'Server' }, { label: 'Newest checkpoint', w: '260px' }]}
+                rows={servers.map(w => {
+                  const ck = appCheckpoint(w);
+                  return [w.name, <span key="p" style={{ overflow: 'hidden', textOverflow: 'ellipsis', color: ck.warn ? 'var(--warn)' : undefined }} data-tip={ck.tip}>{ck.v}</span>];
+                })}
+              />
             ) : null}
             {pointMode === 'time' ? <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Journals keep 24 h (20 Oct 16:05:00 to now). Servers replicated on a schedule come back from their nearest earlier snapshot.</span> : null}
           </div>
