@@ -8,6 +8,7 @@ import AegisDrServers from '../../screens/AegisDrServers';
 import { WORKLOADS } from '../../data/platform';
 import { custName, inScope } from '../../platform/common';
 import { DR_INFO, fmtMin, rpoOf, wl } from './data';
+import { AppDrView } from './AppDr';
 
 type Check = { sum: 'Matched' | 'Mismatch, resynced' | 'Not run'; sumWhen: string; boot: 'Booted' | 'Booted, no network' | 'Not scheduled'; bootWhen: string; resets: [string, string][]; enc: string };
 /** Replica correctness per server: sampled checksums against the source, weekly test boots, and every resync with its reason. */
@@ -36,13 +37,13 @@ const GROUPS: { id: string; name: string; customer: string; plan: string; member
 
 /** Resilience › Protected servers: the original list, consistency groups and replica checks, as tabs. */
 export function DrServersPage({ ctx }: { ctx: Ctx }) {
-  const tab = ctx.tab === 'checks' || ctx.tab === 'groups' ? ctx.tab : 'servers';
+  const tab = ctx.tab === 'checks' || ctx.tab === 'groups' || ctx.tab === 'apps' ? ctx.tab : 'servers';
   const tabs = (
     <Tabs
       label="Protected servers sections"
       value={tab}
       onChange={t => ctx.go(t === 'servers' ? 'servers' : `servers/${t}`)}
-      tabs={[{ v: 'servers', label: 'Replication' }, { v: 'groups', label: 'Consistency groups', count: GROUPS.filter(g => inScope(ctx, g.customer)).length, tip: 'Servers that share each recovery point, and the group’s RPO' }, { v: 'checks', label: 'Replica checks', tip: 'Checksums, test boots, resyncs and encryption at the recovery site' }]}
+      tabs={[{ v: 'servers', label: 'Replication' }, { v: 'groups', label: 'Consistency groups', count: GROUPS.filter(g => inScope(ctx, g.customer)).length, tip: 'Servers that share each recovery point, and the group’s RPO' }, { v: 'apps', label: 'Databases and Kubernetes', tip: 'DR done by the database or the cluster itself: Always On, Data Guard, streaming replication, namespaces' }, { v: 'checks', label: 'Replica checks', tip: 'Checksums, test boots, resyncs and encryption at the recovery site' }]}
       style={{ margin: '0 24px 12px', padding: 0 }}
     />
   );
@@ -52,11 +53,11 @@ export function DrServersPage({ ctx }: { ctx: Ctx }) {
       <div style={{ flex: 'none', padding: '20px 24px 16px' }}>
         <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 4 }}>Resilience</div>
         <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Protected servers</h1>
-        <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{tab === 'groups' ? 'Servers that must come back from the same moment, so a database and its application never disagree.' : 'Proof that each replica would start and holds the same data as its source.'}</p>
+        <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{tab === 'groups' ? 'Servers that must come back from the same moment, so a database and its application never disagree.' : tab === 'apps' ? 'Databases and Kubernetes namespaces replicated by their own tools; Aegis watches the lag and runs the switch.' : 'Proof that each replica would start and holds the same data as its source.'}</p>
       </div>
       {tabs}
       <div key={tab} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-fade 150ms var(--ease)' }}>
-        {tab === 'groups' ? <GroupsView ctx={ctx} /> : <ReplicaChecksView ctx={ctx} />}
+        {tab === 'groups' ? <GroupsView ctx={ctx} /> : tab === 'apps' ? <AppDrView ctx={ctx} /> : <ReplicaChecksView ctx={ctx} />}
       </div>
     </div>
   );

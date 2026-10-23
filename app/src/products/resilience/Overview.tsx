@@ -3,6 +3,7 @@ import { Icon } from '../../lib/Icon';
 import { pc } from '../../lib/pseudo';
 import { Btn, Seg, Tabs, Tag } from '../../ui/controls';
 import { SiteCapacity } from './Capacity';
+import { WitnessView } from './AppDr';
 import { Bar, MiniTable, Page, PageHeader, Panel, StateBlock, Status, Tiles, plural, type Kpi } from '../../ui/layout';
 import type { Ctx } from '../../ui/ctx';
 import { custName, D_ST, Go, inScope, showCustomerCol, TierTag } from '../../platform/common';
@@ -17,6 +18,14 @@ const short = (t: string) => t.replace(' 2026', '').replace(' IST', '');
 
 /** Resilience › Overview, with Site capacity as a second view for the provider. */
 export default function ResilienceOverview({ ctx }: { ctx: Ctx }) {
+  if (ctx.tab === 'witness' && !ctx.actingAs)
+    return (
+      <Page scroll>
+        <PageHeader kicker="Resilience" title="Overview" sub="Witnesses, heartbeat paths and fencing that stop both sites acting as the primary at once." />
+        <OverviewTabs ctx={ctx} value="witness" />
+        <WitnessView ctx={ctx} />
+      </Page>
+    );
   if (ctx.tab === 'capacity' && !ctx.actingAs)
     return (
       <Page scroll>
@@ -28,9 +37,9 @@ export default function ResilienceOverview({ ctx }: { ctx: Ctx }) {
   return <Readiness ctx={ctx} />;
 }
 
-function OverviewTabs({ ctx, value }: { ctx: Ctx; value: 'readiness' | 'capacity' }) {
+function OverviewTabs({ ctx, value }: { ctx: Ctx; value: 'readiness' | 'capacity' | 'witness' }) {
   if (ctx.actingAs) return null;
-  return <Tabs<'readiness' | 'capacity'> label="Overview views" value={value} onChange={v => ctx.go(v === 'capacity' ? 'dr/overview/capacity' : 'dr/overview')} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'readiness', label: 'Readiness' }, { v: 'capacity', label: 'Site capacity' }]} />;
+  return <Tabs<'readiness' | 'capacity' | 'witness'> label="Overview views" value={value} onChange={v => ctx.go(v === 'readiness' ? 'dr/overview' : `dr/overview/${v}`)} style={{ margin: '0 24px 12px', padding: 0 }} tabs={[{ v: 'readiness', label: 'Readiness' }, { v: 'capacity', label: 'Site capacity' }, { v: 'witness', label: 'Split brain' }]} />;
 }
 
 /** Resilience › Overview: replication against target, readiness to fail over, drills and lag. */

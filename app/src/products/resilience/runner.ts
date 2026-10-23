@@ -73,7 +73,7 @@ let timer: number | undefined;
 
 const find = (rb: Runbook, it: Item) => rb.stages.find(s => s.id === it.stage)?.steps.find(x => x.id === it.step);
 
-export function startRun(ctx: Ctx, rb: Runbook, kind: RunKind, stageIds: string[], opts: { approvedBy?: string; reason?: string } = {}) {
+export function startRun(ctx: Ctx, rb: Runbook, kind: RunKind, stageIds: string[], opts: { approvedBy?: string; reason?: string; pointAt?: string } = {}) {
   const stages = rb.stages.filter(s => stageIds.includes(s.id));
   const ordered = kind === 'Failback' ? [...stages].reverse() : stages;
   const flat: Item[] = [];
@@ -128,7 +128,8 @@ export function startRun(ctx: Ctx, rb: Runbook, kind: RunKind, stageIds: string[
       jobId,
       log: [
         { t, text: `${KIND_LABEL[kind]} of ${rb.name} started${kind === 'Test' ? ` on ${rb.testNet}. Production keeps running.` : kind === 'Failback' ? `: ${rb.to} → ${rb.from}` : `: ${rb.from} → ${rb.to}`}`, lv: 'info' },
-        ...(opts.approvedBy ? [{ t, text: `Approval recorded: ${opts.approvedBy}`, lv: 'ok' as const }] : [])
+        ...(opts.approvedBy ? [{ t, text: `Approval recorded: ${opts.approvedBy}`, lv: 'ok' as const }] : []),
+        ...(opts.pointAt ? [{ t, text: `Recovering to ${opts.pointAt}: journal servers to the second, scheduled servers from their nearest earlier snapshot`, lv: 'info' as const }] : [])
       ]
     };
   });

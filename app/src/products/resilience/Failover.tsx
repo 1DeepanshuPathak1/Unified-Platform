@@ -73,6 +73,8 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
   const [how, setHow] = useState<'present' | 'request'>('present');
   const [approver, setApprover] = useState((APPROVERS[rb.customer] || APPROVERS.h360)[0].email);
   const [approverOk, setApproverOk] = useState(false);
+  const [pointMode, setPointMode] = useState<'newest' | 'time'>('newest');
+  const [pointAt, setPointAt] = useState('21 Oct 2026, 14:52:30');
   const stageIds = rb.stages.filter(s => scope === 'all' || picked[s.id]).map(s => s.id);
   const checks = preflight(ctx, rb, kind, stageIds);
   const test = kind === 'Test';
@@ -99,14 +101,15 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
   });
   const missingStages = rb.stages.filter(s => missing.includes(s.id));
 
+  const pointOk = pointMode === 'newest' || /^\d{2} \w{3} \d{4}, \d{2}:\d{2}:\d{2}$/.test(pointAt);
   const canNext = [
-    stageIds.length > 0 && (test || reason.trim().length > 3),
+    stageIds.length > 0 && (test || reason.trim().length > 3) && pointOk,
     doneChecking && !blocks.length && (!warns.length || ack),
     test || typed.trim() === rb.name,
     test || (mfa && (how === 'request' || approverOk))
   ][step];
   const why = [
-    !stageIds.length ? 'Choose at least one stage.' : 'Give a reason or a change or incident number.',
+    !stageIds.length ? 'Choose at least one stage.' : !pointOk ? 'Write the moment as 21 Oct 2026, 14:52:30.' : 'Give a reason or a change or incident number.',
     !doneChecking ? 'Checking…' : blocks.length ? 'Fix what blocks the run first.' : 'Confirm you have read the warnings.',
     `Type ${rb.name} to confirm.`,
     !mfa ? 'Confirm it is you first.' : `${approverName} must confirm with their own code.`
@@ -123,7 +126,7 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
       onClose();
       return;
     }
-    startRun(ctx, rb, kind, stageIds, { approvedBy: test ? undefined : `${approverName} (${approver}), confirmed with their MFA code at ${ctx.hms()} IST`, reason: reason.trim() || undefined });
+    startRun(ctx, rb, kind, stageIds, { approvedBy: test ? undefined : `${approverName} (${approver}), confirmed with their MFA code at ${ctx.hms()} IST`, reason: reason.trim() || undefined, pointAt: pointMode === 'time' ? pointAt : undefined });
     ctx.toast(test ? `Test of ${rb.name} started on ${rb.testNet}` : `${KIND_LABEL[kind]} of ${rb.name} started`, test ? 'info' : 'warn');
     onClose();
   };
@@ -183,6 +186,29 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
                 Later stages may need {missingStages.map(s => s.name).join(', ')}, which you left out.
               </Bar>
             ) : null}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>Recovery point</span>
+            <div role="radiogroup" aria-label="Recovery point" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              <RadioCard on={pointMode === 'newest'} onClick={() => setPointMode('newest')} icon="clock" title="Newest point" note="Each server from its newest replica point; consistency groups from their newest group point." />
+              <RadioCard on={pointMode === 'time'} onClick={() => setPointMode('time')} icon="history" title="A moment in time" note="Rewind to any second in the journal, for example just before ransomware started." />
+            </div>
+            {pointMode === 'time' ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '240px minmax(0,1fr)', gap: 12, alignItems: 'start' }}>
+                <Field id="fo-at" label="Recover to" err={pointOk ? null : 'Write it as 21 Oct 2026, 14:52:30.'}>
+                  <TextInput id="fo-at" value={pointAt} onChange={setPointAt} mono />
+                </Field>
+                <MiniTable
+                  label="Point per server"
+                  cols={[{ label: 'Server' }, { label: 'Comes back from', w: '230px' }]}
+                  rows={servers.map(w => {
+                    const cont = DR_INFO[w.id]?.mode === 'Continuous';
+                    return [w.name, <span key="p" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={cont ? 'Journal: to the second' : `Snapshot taken every ${DR_INFO[w.id]?.every || w.dr.target || '15 min'}`}>{cont ? `${pointAt.replace(' 2026', '')} · journal` : 'Snapshot just before it'}</span>];
+                  })}
+                />
+              </div>
+            ) : null}
+            {pointMode === 'time' ? <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Journals keep 24 h (20 Oct 16:05:00 to now). Servers replicated on a schedule come back from their nearest earlier snapshot.</span> : null}
           </div>
           {!test ? (
             <Field id="fo-reason" label="Reason, with a change or incident number" hint="Goes into the audit log, the approval request and the evidence pack.">

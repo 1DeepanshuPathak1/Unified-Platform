@@ -42,7 +42,7 @@ function newIp(p: Profile, ip: string, name: string): [string, string] {
 
 /** Infrastructure › Mappings: the original site mappings, re-IP rules and identity at the recovery site. */
 export function MappingsPage({ ctx }: { ctx: Ctx }) {
-  const tab = ctx.tab === 'reip' || ctx.tab === 'identity' ? ctx.tab : 'sites';
+  const tab = ctx.tab === 'reip' || ctx.tab === 'identity' || ctx.tab === 'network' ? ctx.tab : 'sites';
   const tabs = (
     <Tabs
       label="Mappings sections"
@@ -51,6 +51,7 @@ export function MappingsPage({ ctx }: { ctx: Ctx }) {
       tabs={[
         { v: 'sites', label: 'Networks, storage and sizes' },
         { v: 'reip', label: 'Re-IP and names', count: PROFILES.length, tip: 'Addresses, host names, DNS, domain and MAC after a failover or a cutover' },
+        { v: 'network', label: 'Network at the recovery site', tip: 'VPN tunnels, BGP routes, certificates, stretched networks and firewall rules' },
         { v: 'identity', label: 'Identity at the recovery site' }
       ]}
       style={{ margin: '0 24px 12px', padding: 0 }}
@@ -62,11 +63,11 @@ export function MappingsPage({ ctx }: { ctx: Ctx }) {
       <div style={{ flex: 'none', padding: '20px 24px 16px' }}>
         <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 4 }}>Infrastructure</div>
         <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Mappings</h1>
-        <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{tab === 'reip' ? 'What a server’s address, name and domain become at the other site. Used by failovers and by migration cutovers.' : 'Who can sign in at each recovery site, kept apart from production so a compromise there does not reach the copies.'}</p>
+        <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{tab === 'reip' ? 'What a server’s address, name and domain become at the other site. Used by failovers and by migration cutovers.' : tab === 'network' ? 'What must be ready on the network so users and partners reach the servers after a failover.' : 'Who can sign in at each recovery site, kept apart from production so a compromise there does not reach the copies.'}</p>
       </div>
       {tabs}
       <div key={tab} style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: 16, animation: 'ae-fade 150ms var(--ease)' }}>
-        {tab === 'reip' ? <ReipView ctx={ctx} /> : <IdentityView ctx={ctx} />}
+        {tab === 'reip' ? <ReipView ctx={ctx} /> : tab === 'network' ? <NetworkView ctx={ctx} /> : <IdentityView ctx={ctx} />}
       </div>
     </div>
   );
@@ -213,6 +214,69 @@ function IdentityView({ ctx }: { ctx: Ctx }) {
       <Panel title="Checks that production credentials stop at the recovery site">
         <div style={{ padding: '4px 16px 12px' }}>
           <MiniTable label="Cross-domain checks" cols={[{ label: 'Attempt' }, { label: 'Result', w: '320px' }]} rows={CANARIES.map(([a, r]) => [a, <Status key="r" icon="circle-check" tone="ok" label={r} />])} />
+        </div>
+      </Panel>
+    </>
+  );
+}
+
+const TUNNELS: [string, string, string, 'ok' | 'warn'][] = [
+  ['region-2-os ↔ Meridian branches (Mumbai hub)', 'IPsec, AES-256-GCM, BGP inside', 'Up, standby; carries traffic after failover', 'ok'],
+  ['region-2-os ↔ NPCI (UPI switch)', 'Leased line with IPsec', 'Up; NPCI allow-list has 10.70.1.11', 'ok'],
+  ['production-openstack ↔ Atlas Frankfurt', 'IPsec over internet', 'Up', 'ok'],
+  ['region-2-os ↔ Kaveri Bengaluru office', 'IPsec over internet', 'Down since 19 Oct, 22:10: peer changed its public address', 'warn']
+];
+const PREFIXES: [string, string, string][] = [
+  ['103.27.84.0/24 (Meridian internet banking)', 'Announced from Mumbai today', 'Withdrawn there and announced from Hyderabad (AS 140231) at failover; propagation about 90 s'],
+  ['103.27.85.0/24 (Meridian UPI)', 'Announced from Mumbai today', 'Same; pre-approved with both upstream carriers'],
+  ['45.112.20.0/23 (Host360 customer edge)', 'Anycast from Chennai and Hyderabad', 'No change needed']
+];
+const CERTS: [string, string, number][] = [
+  ['cbs.meridianbank.in', 'Load balancer at region-2-os', 64],
+  ['upi.meridianbank.in', 'Load balancer at region-2-os', 18],
+  ['erp.host360.ai', 'production-openstack front end', 210],
+  ['mail.host360.ai', 'mail-gw-01 replica', 9]
+];
+const L2: [string, string, string][] = [
+  ['Core banking (Meridian)', 'New addresses (re-IP)', 'Partners reach it by DNS and the moved BGP prefix'],
+  ['Treasury dealing (Meridian)', 'Same addresses: VLAN 210 stretched with EVPN-VXLAN to production-openstack', 'Dealer terminals have hard-coded IPs'],
+  ['ERP (Host360)', 'New addresses (re-IP)', 'DNS TTL 60 s']
+];
+
+function NetworkView({ ctx }: { ctx: Ctx }) {
+  const soon = CERTS.filter(c => c[2] < 30);
+  return (
+    <>
+      <Tiles
+        items={[
+          { label: 'Tunnels ready', value: String(TUNNELS.filter(t => t[3] === 'ok').length), unit: `of ${TUNNELS.length}`, icon: 'link', tone: TUNNELS.some(t => t[3] === 'warn') ? 'warn' : 'ok', sub: 'Checked every 5 min' },
+          { label: 'Routes that move', value: String(PREFIXES.filter(p => !p[2].startsWith('No')).length), icon: 'globe', sub: 'BGP prefixes announced from the DR site at failover' },
+          { label: 'Certificates expiring', value: String(soon.length), unit: 'within 30 days', icon: 'badge-check', tone: soon.length ? 'warn' : 'ok', sub: 'On the DR side; a failover would serve them' },
+          { label: 'Stretched networks', value: String(L2.filter(l => l[1].startsWith('Same')).length), icon: 'network', sub: 'Apps that keep their addresses' }
+        ]}
+      />
+      <Panel title="Tunnels to users and partners">
+        <div style={{ padding: '4px 16px 12px' }}>
+          <MiniTable label="Tunnels" cols={[{ label: 'Tunnel', w: 'minmax(0,1.3fr)' }, { label: 'Type', w: 'minmax(0,1fr)' }, { label: 'State', w: 'minmax(0,1.3fr)' }]} rows={TUNNELS.map(([n, t, st, tone]) => [<strong key="n" style={{ fontWeight: 600 }}>{n}</strong>, t, tone === 'ok' ? <Status key="s" icon="circle-check" tone="ok" label={st} /> : <Status key="s" icon="triangle-alert" tone="warn" label={st} />])} />
+        </div>
+      </Panel>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.3fr) minmax(0,1fr)', gap: 16, alignItems: 'start' }}>
+        <Panel title="Routes (BGP)">
+          <div style={{ padding: '4px 16px 12px' }}>
+            <MiniTable label="BGP prefixes" cols={[{ label: 'Prefix', w: 'minmax(0,1fr)' }, { label: 'At failover', w: 'minmax(0,1.3fr)' }]} rows={PREFIXES.map(([p, now, fo]) => [<span key="p" style={{ whiteSpace: 'normal' }} data-tip={now}><strong style={{ fontWeight: 600 }}>{p}</strong></span>, <span key="f" style={{ whiteSpace: 'normal' }}>{fo}</span>])} />
+            <p style={{ marginTop: 8, font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Route changes run as steps of the recovery plan and are skipped in tests.</p>
+          </div>
+        </Panel>
+        <Panel title="Certificates at the recovery site" right={soon.length ? <Btn kind="outline" size="sm" icon="refresh-cw" perm={ctx.can('configure', 'Renewing certificates')} onClick={() => { audit({ who: 'priya.raman', customer: 'mer', what: 'Renewed certificates at the recovery site', object: soon.map(c => c[0]).join(', '), when: ctx.now(), r: 'ok' }); ctx.toast(`${soon.length} certificates renewed through ACME and pushed to the DR load balancers`, 'ok'); }}>Renew {soon.length}</Btn> : undefined}>
+          <div style={{ padding: '4px 16px 12px' }}>
+            <MiniTable label="DR certificates" cols={[{ label: 'Name', w: 'minmax(0,1fr)' }, { label: 'Where', w: 'minmax(0,1fr)' }, { label: 'Expires in', w: '100px', r: true }]} rows={CERTS.map(([n, w, d]) => [<strong key="n" style={{ fontWeight: 600 }}>{n}</strong>, w, <span key="d" style={{ color: d < 30 ? 'var(--warn)' : undefined }}>{d} days</span>])} />
+          </div>
+        </Panel>
+      </div>
+      <Panel title="Addresses per application">
+        <div style={{ padding: '4px 16px 12px' }}>
+          <MiniTable label="Stretched or re-addressed" cols={[{ label: 'Application', w: '200px' }, { label: 'At the DR site', w: 'minmax(0,1.3fr)' }, { label: 'Why', w: 'minmax(0,1fr)' }]} rows={L2.map(([a, h, w]) => [<strong key="a" style={{ fontWeight: 600 }}>{a}</strong>, <span key="h" style={{ whiteSpace: 'normal' }}>{h}</span>, w])} />
+          <p style={{ marginTop: 8, font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Firewall rules and security groups are copied with the servers (Mappings › Re-IP and names applies the address changes to them); load balancer health checks at the DR site are part of the readiness score.</p>
         </div>
       </Panel>
     </>
