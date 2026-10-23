@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Icon } from '../../lib/Icon';
-import { Btn, Field, RadioCard, SelectInput, TextArea, TextInput } from '../../ui/controls';
-import { Bar, MiniTable } from '../../ui/layout';
+import { Btn, CheckBox, Field, RadioCard, SelectInput, TextArea, TextInput } from '../../ui/controls';
+import { Bar, Facts, MiniTable } from '../../ui/layout';
 import { Dialog } from '../../ui/overlay';
 import type { Ctx } from '../../ui/ctx';
 import { CUSTOMERS } from '../../data/platform';
@@ -122,6 +122,81 @@ export function ForeignRepoDialog({ ctx, closing, onClose }: { ctx: Ctx; closing
         </>
       ) : (
         <p style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Use it when a customer moves to you from another Aegis provider, or to recover data from a closed account.</p>
+      )}
+    </Dialog>
+  );
+}
+
+type App = 'SQL Server' | 'Oracle' | 'PostgreSQL' | 'Active Directory';
+const APPS: { app: App; server: string; customer: string; what: string; chain: string; from: string; to: string; items: [string, string, string][] }[] = [
+  { app: 'SQL Server', server: 'sql-prod-02', customer: 'h360', what: 'SQL Server 2022 · 3 databases', chain: 'Full every night, logs every 15 min', from: '14 Oct 2026, 02:00:00', to: '21 Oct 2026, 15:45:00', items: [['ERP_LEDGER', '412 GB', 'Full recovery model'], ['ERP_HR', '38 GB', 'Full recovery model'], ['ReportServer', '6 GB', 'Simple: no point in time, nightly only']] },
+  { app: 'Oracle', server: 'mum-oracle-phy-01', customer: 'mer', what: 'Oracle 19c · TREASURY (CDB) with 2 PDBs', chain: 'RMAN level 0 weekly, level 1 nightly, archive logs every 15 min', from: '07 Oct 2026, 01:00:00', to: '21 Oct 2026, 15:30:00', items: [['TRS_DEAL', '880 GB', 'PDB'], ['TRS_RISK', '140 GB', 'PDB']] },
+  { app: 'PostgreSQL', server: 'his-db-01', customer: 'sah', what: 'PostgreSQL 15 · 4 databases', chain: 'Base backup nightly, WAL archived every 5 min', from: '14 Oct 2026, 01:00:00', to: '21 Oct 2026, 16:00:00', items: [['his_emr', '190 GB', ''], ['his_lab', '22 GB', ''], ['his_pacs_index', '14 GB', ''], ['his_billing', '9 GB', '']] },
+  { app: 'Active Directory', server: 'ad-dc-01', customer: 'h360', what: 'HOST360.LOCAL · 1,180 users, 240 groups, 66 GPOs', chain: 'System state every night', from: '22 Sep 2026', to: '21 Oct 2026, 02:00', items: [['rakesh.n (user)', 'Deleted 21 Oct, 09:12', 'In the AD recycle bin'], ['Finance-Approvers (group)', '4 members removed 20 Oct', ''], ['Default Domain Policy (GPO)', 'Changed 19 Oct, 17:30', 'Password age 90 → 365 days']] }
+];
+
+/** Protection › Restore › Application items: database point in time from logs, and directory objects. */
+export function AppRestoreDialog({ ctx, closing, onClose }: { ctx: Ctx; closing: boolean; onClose: () => void }) {
+  const apps = APPS.filter(a => !ctx.actingAs || a.customer === ctx.actingAs.customer);
+  const [app, setApp] = useState<App>(apps[0]?.app || 'SQL Server');
+  const a = apps.find(x => x.app === app) || apps[0];
+  const [pick, setPick] = useState<string[]>([]);
+  const [when, setWhen] = useState('21 Oct 2026, 14:52:30');
+  const [how, setHow] = useState('As a new database next to the original');
+  const isDir = app === 'Active Directory';
+  const fmtOk = /^\d{2} \w{3} \d{4}, \d{2}:\d{2}:\d{2}$/.test(when);
+  const err = !pick.length ? 'Choose at least one item.' : !isDir && !fmtOk ? 'Write the time as 21 Oct 2026, 14:52:30.' : null;
+  if (!a) return null;
+  return (
+    <Dialog
+      title="Restore application items"
+      sub="Databases to a point in time from their logs, and single directory objects, without restoring the whole server."
+      size="lg"
+      closing={closing}
+      onClose={onClose}
+      footer={
+        <>
+          <Btn kind="ghost" onClick={onClose}>Cancel</Btn>
+          <Btn
+            kind="primary"
+            icon="rotate-ccw"
+            disabled={!!err}
+            why={err || undefined}
+            perm={ctx.can('restore', 'Restoring')}
+            onClick={() => {
+              ctx.startJob({ name: isDir ? 'Restore directory objects' : 'Point-in-time restore', object: `${a.server}: ${pick.join(', ')}`, product: 'Backup', type: 'Restore', phases: isDir ? ['Queued', 'Mount system state', 'Restore objects', 'Check replication', 'Done'] : ['Queued', 'Restore full backup', 'Apply logs', 'Recover', 'Check consistency', 'Done'], speed: 12, rate: '260 MB/s', firstLine: isDir ? `Restoring ${pick.length} objects to HOST360.LOCAL` : `Restoring ${pick.join(', ')} to ${when}` });
+              audit({ who: 'priya.raman', customer: a.customer, what: isDir ? 'Restored directory objects' : 'Started a point-in-time database restore', object: `${a.server}: ${pick.join(', ')}`, when: ctx.now(), r: 'ok', note: isDir ? undefined : `${when} · ${how}` });
+              ctx.toast(isDir ? `${pick.length} directory objects being restored` : `${pick.join(', ')} restoring to ${when}`, 'info');
+              onClose();
+            }}
+          >
+            Restore {pick.length || ''}
+          </Btn>
+        </>
+      }
+    >
+      <div role="radiogroup" aria-label="Application" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        {apps.map(x => (
+          <RadioCard key={x.app} on={app === x.app} onClick={() => { setApp(x.app); setPick([]); }} icon={x.app === 'Active Directory' ? 'users' : 'database'} title={x.app} note={x.server} />
+        ))}
+      </div>
+      <Facts labelW={120} items={[{ k: 'Server', v: `${a.server} · ${a.what}` }, { k: 'Kept', v: a.chain }, { k: 'Restorable', v: `${a.from} to ${a.to}` }]} />
+      <MiniTable
+        label={isDir ? 'Directory objects' : 'Databases'}
+        cols={[{ label: '', w: '28px' }, { label: isDir ? 'Object' : 'Database', w: 'minmax(0,1fr)' }, { label: isDir ? 'What changed' : 'Size', w: '200px' }, { label: '', w: 'minmax(0,1fr)' }]}
+        rows={a.items.map(([n, z, note]) => [<CheckBox key="c" label={`Select ${n}`} on={pick.includes(n)} onChange={v => setPick(p => (v ? [...p, n] : p.filter(x => x !== n)))} />, <strong key="n" style={{ fontWeight: 600 }}>{n}</strong>, z, <span key="o" style={{ color: 'var(--tx-3)' }}>{note}</span>])}
+      />
+      {isDir ? (
+        <Bar tone="info" multiline>Objects are restored with their attributes, group memberships and links; a deleted user still in the recycle bin is reanimated with its SID. GPOs are restored with their links and security filtering.</Bar>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <Field id="ar-t" label="Point in time" hint="Any second between the oldest full backup and the newest log." err={!fmtOk ? 'Write it as 21 Oct 2026, 14:52:30.' : null}>
+            <TextInput id="ar-t" value={when} onChange={setWhen} mono />
+          </Field>
+          <Field id="ar-h" label="Restore">
+            <SelectInput id="ar-h" value={how} onChange={setHow} options={['As a new database next to the original', 'Over the original, after a tail-log backup', 'To another server', 'Export as a native backup file']} />
+          </Field>
+        </div>
       )}
     </Dialog>
   );

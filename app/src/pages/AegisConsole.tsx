@@ -10,7 +10,7 @@ import { GuestsPage } from '../products/protection/Endpoints';
 import { DrServersPage } from '../products/resilience/ReplicaChecks';
 import { MigServersPage } from '../products/mobility/Replication';
 import AegisList from '../screens/AegisList';
-import AegisOverview from '../screens/AegisOverview';
+import { OverviewPage } from '../products/protection/Verification';
 import { MappingsPage } from '../products/resilience/NetworkRecovery';
 import ReportsSection from '../platform/Reports';
 import AegisRestore from '../screens/AegisRestore';
@@ -1299,7 +1299,7 @@ export default class AegisConsole extends DC {
             ) : null}
             {v.is?.overview ? (
               <div style={{ flex: 1, minHeight: 0 }}>
-                <AegisOverview ctx={v.ctx} />
+                <OverviewPage ctx={v.ctx} />
               </div>
             ) : null}
             {v.is?.mappings ? (

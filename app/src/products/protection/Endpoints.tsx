@@ -11,6 +11,7 @@ import { audit } from '../../platform/store';
 import { DeployDialog } from '../../platform/Agents';
 import AegisGuests from '../../screens/AegisGuests';
 import { PlatformObjectsView } from './PlatformObjects';
+import { KubernetesView, SaasView, SharesView } from './MoreSources';
 
 /** A machine protected through the Aegis agent: a physical or cloud server, or a laptop or desktop. */
 export interface Protected {
@@ -55,9 +56,16 @@ export function protectedMachines(): Protected[] {
   });
 }
 
-/** Protection › Protected guests: hypervisor guests (the original screen) and machines protected through the agent, as two tabs. */
+/** Protection › Protected guests: hypervisor guests (the original screen), containers and platform, agents, Kubernetes, SaaS and file shares. */
+const SUBS: Record<string, string> = {
+  endpoints: 'Servers, laptops and desktops backed up through the Aegis agent, wherever they are.',
+  platform: 'Containers and the platforms’ own configuration, kept so a whole cluster or project can be rebuilt.',
+  kubernetes: 'Namespaces with their resources and persistent volumes, restored to the same cluster or another.',
+  saas: 'Mail, files, sites, Teams and the directory of Microsoft 365 and Google Workspace tenants.',
+  shares: 'NAS and file server shares, with their permissions.'
+};
 export function GuestsPage({ ctx }: { ctx: Ctx }) {
-  const tab = ctx.tab === 'endpoints' || ctx.tab === 'platform' ? ctx.tab : 'guests';
+  const tab = SUBS[ctx.tab] ? ctx.tab : 'guests';
   const n = protectedMachines().filter(p => inScope(ctx, p.a.customer)).length;
   const tabs = (
     <Tabs
@@ -67,7 +75,10 @@ export function GuestsPage({ ctx }: { ctx: Ctx }) {
       tabs={[
         { v: 'guests', label: 'Hypervisor guests', tip: 'Proxmox VE and OpenStack guests, backed up without an agent' },
         { v: 'platform', label: 'Containers and platform', tip: 'LXC containers, cluster configuration, OpenStack projects, Heat stacks and networks' },
-        { v: 'endpoints', label: 'Agents and endpoints', count: n, tip: 'Physical and cloud servers, laptops and desktops with the Aegis agent' }
+        { v: 'endpoints', label: 'Agents and endpoints', count: n, tip: 'Physical and cloud servers, laptops and desktops with the Aegis agent' },
+        { v: 'kubernetes', label: 'Kubernetes', tip: 'Namespaces, resources and persistent volumes' },
+        { v: 'saas', label: 'Microsoft 365 and Google', tip: 'Mail, OneDrive and Drive, SharePoint, Teams and the directory' },
+        { v: 'shares', label: 'File shares', tip: 'NAS shares over NDMP, SMB and NFS' }
       ]}
       style={{ margin: '0 24px 12px', padding: 0 }}
     />
@@ -78,12 +89,12 @@ export function GuestsPage({ ctx }: { ctx: Ctx }) {
       <PageHeader
         kicker="Protection"
         title="Protected guests"
-        sub={tab === 'endpoints' ? 'Servers, laptops and desktops backed up through the Aegis agent, wherever they are.' : 'Containers and the platforms’ own configuration, kept so a whole cluster or project can be rebuilt.'}
+        sub={SUBS[tab]}
         actions={<Btn kind="outline" icon="clipboard-list" onClick={() => ctx.go('policies')}>Policies</Btn>}
       />
       {tabs}
       <div key={tab} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', animation: 'ae-fade 150ms var(--ease)' }}>
-        {tab === 'endpoints' ? <EndpointsView ctx={ctx} /> : <PlatformObjectsView ctx={ctx} />}
+        {tab === 'endpoints' ? <EndpointsView ctx={ctx} /> : tab === 'kubernetes' ? <KubernetesView ctx={ctx} /> : tab === 'saas' ? <SaasView ctx={ctx} /> : tab === 'shares' ? <SharesView ctx={ctx} /> : <PlatformObjectsView ctx={ctx} />}
       </div>
     </Page>
   );

@@ -26,7 +26,9 @@ const METERS: { m: string; product: string; unit: string; how: string; v: Record
   { m: 'Endpoints', product: 'Protection', unit: 'endpoint-months', how: 'Laptops and desktops with the endpoint agent', v: { mer: 112, h360: 6 } },
   { m: 'Databases (application-consistent)', product: 'Protection', unit: 'database-months', how: 'Databases with log backups or a database plug-in', v: { mer: 4, kav: 2 } },
   { m: 'Kubernetes namespaces', product: 'Protection', unit: 'namespace-months', how: 'Namespaces protected by the operator', v: { mer: 6 } },
-  { m: 'Microsoft 365 users', product: 'Protection', unit: 'user-months', how: 'Licensed mailboxes, OneDrive and Teams users in a connected tenant', v: {} },
+  { m: 'Microsoft 365 users', product: 'Protection', unit: 'user-months', how: 'Licensed mailboxes, OneDrive and Teams users in a connected tenant', v: { mer: 1240 } },
+  { m: 'Google Workspace users', product: 'Protection', unit: 'user-months', how: 'Users with Gmail or Drive in a connected Workspace', v: { kav: 85 } },
+  { m: 'File shares', product: 'Protection', unit: 'TB-months', how: 'Front-end size of NAS shares protected over NDMP, SMB or NFS', v: { mer: 14.6, h360: 2.3 } },
   { m: 'Front-end TB', product: 'Protection', unit: 'TB', how: 'Size of the protected source data, before reduction (the basis for per-TB front-end pricing)', v: { mer: 41.2, kav: 9.8, sah: 14.1, nil: 1.2, h360: 22.4 } },
   { m: 'Back-end TB stored', product: 'Protection', unit: 'TB-months', how: 'Average stored after deduplication and compression', v: { mer: 18.6, kav: 4.2, sah: 6.8, nil: 0.4, h360: 9.1 } },
   { m: 'Immutable TB', product: 'Protection', unit: 'TB-months', how: 'Stored under Object Lock, a hardened repository or WORM tape', v: { mer: 14.2, kav: 1.1, sah: 6.8, h360: 3 } },
@@ -53,7 +55,7 @@ const METERS: { m: string; product: string; unit: string; how: string; v: Record
   { m: 'API calls', product: 'Platform', unit: 'calls', how: 'Requests to the public API, by token', v: { mer: 182400, kav: 9100, h360: 640000 } },
   { m: 'Support tickets', product: 'Platform', unit: 'tickets', how: 'Tickets opened by or for the customer', v: { mer: 3, kav: 1 } }
 ];
-const PRICED = new Set(['Virtual machines', 'Physical and cloud servers', 'Endpoints', 'Databases (application-consistent)', 'Kubernetes namespaces', 'Back-end TB stored', 'Egress', 'Protected workloads (replication)', 'Reserved DR capacity', 'DR compute', 'Failover events', 'DR tests', 'Servers migrated', 'Microsoft 365 users']);
+const PRICED = new Set(['Virtual machines', 'Physical and cloud servers', 'Endpoints', 'Databases (application-consistent)', 'Kubernetes namespaces', 'Back-end TB stored', 'Egress', 'Protected workloads (replication)', 'Reserved DR capacity', 'DR compute', 'Failover events', 'DR tests', 'Servers migrated', 'Microsoft 365 users', 'Google Workspace users', 'File shares']);
 
 /**
  * Usage and rating: every metered quantity for the open billing period, the rate applied and the

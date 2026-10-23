@@ -262,6 +262,7 @@ export default class AegisOverview extends DC {
           </div>
           <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{v.updated}</span>
         </div>
+        {this.props.tabs}
         <div style={{ padding: '0 24px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {v.isUnreach ? (
             <div

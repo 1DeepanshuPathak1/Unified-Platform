@@ -6,7 +6,7 @@ import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
 import { AEGIS } from '../data/aegis';
 import { Btn, Toggle } from '../ui/controls';
-import { ForeignRepoDialog, RestorePreflight } from '../products/protection/RestoreExtras';
+import { AppRestoreDialog, ForeignRepoDialog, RestorePreflight } from '../products/protection/RestoreExtras';
 
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const pad = n => String(n).padStart(2, '0');
@@ -75,7 +75,13 @@ export default class AegisRestore extends DC {
     jobId: null,
     rollback: true,
     foreign: false,
-    foreignClosing: false
+    foreignClosing: false,
+    apps: false,
+    appsClosing: false
+  };
+  closeApps = () => {
+    this.setState({ appsClosing: true });
+    window.setTimeout(() => this.setState({ apps: false, appsClosing: false }), 160);
   };
   closeForeign = () => {
     this.setState({ foreignClosing: true });
@@ -329,6 +335,10 @@ export default class AegisRestore extends DC {
       foreign: s.foreign,
       foreignClosing: s.foreignClosing,
       openForeign: () => this.setState({ foreign: true }),
+      apps: s.apps,
+      appsClosing: s.appsClosing,
+      openApps: () => this.setState({ apps: true }),
+      closeApps: this.closeApps,
       closeForeign: this.closeForeign,
       startDis: canStart ? undefined : 'true',
       startWhy: canStart ? undefined : why,
@@ -387,6 +397,9 @@ export default class AegisRestore extends DC {
             <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Restore</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Bring back a whole VM, single disks or files from a recovery point.</p>
           </div>
+          <Btn kind="outline" icon="database" onClick={v.openApps}>
+            Application items…
+          </Btn>
           <Btn kind="outline" icon="link" onClick={v.openForeign}>
             Restore from another account…
           </Btn>
@@ -878,6 +891,7 @@ export default class AegisRestore extends DC {
             </div>
           </aside>
         </div>
+        {v.apps ? <AppRestoreDialog ctx={this.props.ctx} closing={v.appsClosing} onClose={v.closeApps} /> : null}
         {v.foreign ? <ForeignRepoDialog ctx={this.props.ctx} closing={v.foreignClosing} onClose={v.closeForeign} /> : null}
       </div>
     );
