@@ -170,7 +170,13 @@ function PlanPage({ ctx, rb, onBack }: { ctx: Ctx; rb: Runbook; onBack: () => vo
   const applyStep = (x: RStep) => {
     const v = editStep.value!;
     const stages = JSON.parse(JSON.stringify(view.stages)) as RStage[];
-    const st = stages.find(y => y.id === v.stage)!;
+    const st = stages.find(y => y.id === v.stage);
+    if (!st) {
+      // The stage was removed while the step was being edited.
+      ctx.toast('That stage no longer exists; the step was not saved', 'warn');
+      editStep.close();
+      return;
+    }
     if (x.id.startsWith('new')) st.steps.push({ ...x, id: 's' + Date.now() });
     else st.steps = st.steps.map(y => (y.id === x.id ? x : y));
     change(stages);
