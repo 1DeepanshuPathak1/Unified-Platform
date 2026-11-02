@@ -132,7 +132,7 @@ function PermMatrix({ perms, edit }: { perms: Record<string, string[]>; edit?: (
       {AREAS.map(a => (
         <section key={a}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-            <h3 style={{ flex: 1, font: '600 15px/22px var(--f-body)' }}>{a}</h3>
+            <h3 style={{ flex: 1, font: '600 14px/20px var(--f-body)' }}>{a}</h3>
             <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>
               {(perms[a] || []).length} of {ACTIONS[a].length}
             </span>

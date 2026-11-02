@@ -258,7 +258,7 @@ function RpoChart({ ctx, rows, showCust }: { ctx: Ctx; rows: Row[]; showCust: bo
               ) : (
                 <span aria-hidden="true" style={{ position: 'absolute', left: 0, top: 5, height: 10, width: `max(2px, ${pct}%)`, background: RPO_FILL[state], transition: 'width 300ms var(--ease)' }} />
               )}
-              {ratio > 2 ? <span aria-hidden="true" style={{ position: 'absolute', right: -2, top: 2, font: '700 11px/16px var(--f-ui)', color: 'var(--tx-2)', background: 'var(--panel)', paddingLeft: 2 }}>›</span> : null}
+              {ratio > 2 ? <span aria-hidden="true" style={{ position: 'absolute', right: -2, top: 2, font: '600 11px/16px var(--f-ui)', color: 'var(--tx-2)', background: 'var(--panel)', paddingLeft: 2 }}>›</span> : null}
             </span>
             <span style={{ textAlign: 'right', font: '12px/16px var(--f-ui)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: state === 'within' ? 'var(--tx-2)' : 'var(--tx)', fontStyle: state === 'unreach' ? 'italic' : 'normal' }}>{value}</span>
           </button>

@@ -26,7 +26,7 @@ export function TenantMenu({ project, onPick, actingAs, role }: { project: strin
     );
   };
   return (
-    <div role="menu" aria-label="Projects" style={{ position: 'absolute', top: 44, right: 0, width: 360, background: 'var(--overlay)', border: '1px solid var(--ln-2)', boxShadow: 'var(--sh-menu)', animation: 'ae-pop 140ms var(--ease)' }}>
+    <div role="menu" className="ae-pop" aria-label="Projects" style={{ position: 'absolute', top: 44, right: 0, width: 360, background: 'var(--overlay)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', overflow: 'hidden', boxShadow: 'var(--sh-menu)', animation: 'ae-pop 140ms var(--ease)' }}>
       <div style={{ padding: 8, borderBottom: '1px solid var(--ln)', position: 'relative' }}>
         <Icon name="search" style={{ position: 'absolute', left: 18, top: 18, color: 'var(--tx-3)', pointerEvents: 'none' }} />
         <input autoFocus value={q} onChange={e => setQ(e.target.value)} placeholder="Find a customer or project" aria-label="Find a customer or project" className={pc('focus', 'border-color:var(--acc)')} style={{ width: '100%', height: 32, padding: '0 10px 0 34px', background: 'var(--panel-2)', border: '1px solid var(--ln)', font: '13px var(--f-ui)' }} />

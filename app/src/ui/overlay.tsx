@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties, type Reac
 import { Icon } from '../lib/Icon';
 import { pc } from '../lib/pseudo';
 import { Btn, IconBtn, Tabs, TextInput, fieldLabel, type Opt } from './controls';
-import { Bar, Stepper } from './layout';
+import { Bar } from './layout';
 
 /** Open/close state with the 150 ms exit animation. */
 export function useClosable<T>() {
@@ -62,8 +62,8 @@ export function Drawer<V extends string>({ kicker, title, status, actions, tabs,
     >
       <div style={{ flex: 'none', padding: '20px 16px 0 24px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{kicker}</div>
-          <h2 style={{ marginTop: 2, font: '500 20px/28px var(--f-head)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h2>
+          <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{kicker}</div>
+          <h2 style={{ marginTop: 4, font: '600 18px/26px var(--f-head)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h2>
           {status ? <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 16, font: '13px/18px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap', overflow: 'hidden' }}>{status}</div> : null}
         </div>
         <IconBtn icon="x" iconSize={20} label={`Close ${label.toLowerCase()}`} onClick={onClose} />
@@ -102,20 +102,20 @@ export function Dialog({ title, sub, size = 'md', closing, onClose, footer, foot
         role={alert ? 'alertdialog' : 'dialog'}
         aria-modal="true"
         aria-labelledby={id}
-        style={{ width: SIZE[size], maxWidth: '100%', maxHeight: 'calc(100vh - 48px)', display: 'flex', flexDirection: 'column', background: 'var(--overlay)', border: '1px solid var(--ln-2)', boxShadow: 'var(--sh-over)', animation: closing ? 'ae-dialog-out 150ms var(--ease) forwards' : 'ae-dialog 150ms var(--ease)' }}
+        style={{ width: SIZE[size], maxWidth: '100%', maxHeight: 'calc(100vh - 48px)', display: 'flex', flexDirection: 'column', background: 'var(--overlay)', border: '1px solid var(--ln)', borderRadius: 'var(--r-lg)', overflow: 'hidden', boxShadow: 'var(--sh-over)', animation: closing ? 'ae-dialog-out 150ms var(--ease) forwards' : 'ae-dialog 150ms var(--ease)' }}
       >
         <div style={{ flex: 'none', padding: '20px 16px 0 24px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h2 id={id} style={{ font: '500 20px/28px var(--f-head)' }}>
+            <h2 id={id} style={{ font: '600 18px/26px var(--f-head)' }}>
               {title}
             </h2>
-            {sub ? <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{sub}</p> : null}
+            {sub ? <p style={{ marginTop: 4, font: '14px/20px var(--f-body)', color: 'var(--tx-2)' }}>{sub}</p> : null}
           </div>
           <IconBtn icon="x" iconSize={20} label="Close" onClick={onClose} />
         </div>
-        <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '16px 24px 20px', display: 'flex', flexDirection: 'column', gap: 16, ...bodyStyle }}>{children}</div>
+        <div style={{ flex: 1, minHeight: 0, overflow: 'auto', padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16, ...bodyStyle }}>{children}</div>
         {footer ? (
-          <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 8, minHeight: 56, padding: '12px 16px 12px 24px', borderTop: '1px solid var(--ln)' }}>
+          <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 8, minHeight: 60, padding: '12px 20px 12px 24px', borderTop: '1px solid var(--ln)', background: 'var(--panel-2)' }}>
             <span style={{ flex: 1, font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{footNote}</span>
             {footer}
           </div>
@@ -125,26 +125,43 @@ export function Dialog({ title, sub, size = 'md', closing, onClose, footer, foot
   );
 }
 
-/** Large dialog with a stepper row; body at least 420 px high. */
+/**
+ * Wizard: the step list runs down the left, as in the consoles operators already know;
+ * the current step's page is on the right and the buttons sit in the footer. Body at least 440 px high.
+ */
 export function Wizard({ title, sub, steps, step, closing, onClose, children, canBack, onBack, next, footNote }: { title: ReactNode; sub?: ReactNode; steps: string[]; step: number; closing?: boolean; onClose: () => void; children: ReactNode; canBack?: boolean; onBack?: () => void; next: ReactNode; footNote?: ReactNode }) {
   useEscape(onClose);
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'grid', placeItems: 'center', padding: 24, background: 'var(--scrim)', animation: closing ? 'ae-fade-out 150ms var(--ease) forwards' : 'ae-fade 120ms var(--ease)' }}>
-      <div role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : 'Wizard'} style={{ width: 720, maxWidth: '100%', maxHeight: 'calc(100vh - 48px)', display: 'flex', flexDirection: 'column', background: 'var(--overlay)', border: '1px solid var(--ln-2)', boxShadow: 'var(--sh-over)', animation: closing ? 'ae-dialog-out 150ms var(--ease) forwards' : 'ae-dialog 150ms var(--ease)' }}>
-        <div style={{ flex: 'none', padding: '20px 16px 0 24px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+      <div role="dialog" aria-modal="true" aria-label={typeof title === 'string' ? title : 'Wizard'} style={{ width: 920, maxWidth: '100%', maxHeight: 'calc(100vh - 48px)', display: 'flex', flexDirection: 'column', background: 'var(--overlay)', border: '1px solid var(--ln)', borderRadius: 'var(--r-lg)', overflow: 'hidden', boxShadow: 'var(--sh-over)', animation: closing ? 'ae-dialog-out 150ms var(--ease) forwards' : 'ae-dialog 150ms var(--ease)' }}>
+        <div style={{ flex: 'none', padding: '20px 16px 18px 24px', display: 'flex', alignItems: 'flex-start', gap: 12, borderBottom: '1px solid var(--ln)' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h2 style={{ font: '500 20px/28px var(--f-head)' }}>{title}</h2>
-            {sub ? <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{sub}</p> : null}
+            <h2 style={{ font: '600 18px/26px var(--f-head)' }}>{title}</h2>
+            {sub ? <p style={{ marginTop: 4, font: '14px/20px var(--f-body)', color: 'var(--tx-2)' }}>{sub}</p> : null}
           </div>
           <IconBtn icon="x" iconSize={20} label="Close" onClick={onClose} />
         </div>
-        <div style={{ padding: '20px 24px 16px', borderBottom: '1px solid var(--ln)' }}>
-          <Stepper steps={steps} current={step} />
+        <div style={{ flex: 1, minHeight: 0, display: 'grid', gridTemplateColumns: '208px minmax(0,1fr)' }}>
+          <ol aria-label="Steps" style={{ listStyle: 'none', margin: 0, padding: '16px 8px', display: 'flex', flexDirection: 'column', gap: 2, background: 'var(--panel-2)', borderRight: '1px solid var(--ln)', overflow: 'auto' }}>
+            {steps.map((label, i) => {
+              const on = i === step;
+              const done = i < step;
+              return (
+                <li key={i} aria-current={on ? 'step' : undefined} style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 36, padding: '6px 10px', borderRadius: 'var(--r-sm)', background: on ? 'var(--acc-soft)' : 'transparent', color: on ? 'var(--acc-tx)' : done ? 'var(--tx)' : 'var(--tx-3)', font: `${on ? 600 : 400} 13px/18px var(--f-ui)` }}>
+                  <span style={{ width: 22, height: 22, flex: 'none', borderRadius: '50%', display: 'grid', placeItems: 'center', border: `1px solid ${on || done ? 'var(--acc)' : 'var(--ln-2)'}`, background: done ? 'var(--acc)' : on ? 'var(--panel)' : 'transparent', color: done ? 'var(--acc-ink)' : on ? 'var(--acc-tx)' : 'var(--tx-3)', font: '600 11px var(--f-ui)' }}>
+                    {done ? <Icon name="check" size={12} /> : i + 1}
+                  </span>
+                  <span style={{ minWidth: 0 }}>{label}</span>
+                </li>
+              );
+            })}
+          </ol>
+          <div key={step} style={{ minHeight: 440, overflow: 'auto', padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16, animation: 'ae-step 150ms var(--ease)' }}>
+            <div style={{ font: '600 15px/22px var(--f-head)' }}>{steps[step]}</div>
+            {children}
+          </div>
         </div>
-        <div key={step} style={{ flex: 1, minHeight: 420, overflow: 'auto', padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 16, animation: 'ae-step 150ms var(--ease)' }}>
-          {children}
-        </div>
-        <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px 12px 24px', borderTop: '1px solid var(--ln)' }}>
+        <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 8, minHeight: 60, padding: '12px 20px 12px 24px', borderTop: '1px solid var(--ln)', background: 'var(--panel-2)' }}>
           <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{footNote ?? `Step ${step + 1} of ${steps.length}`}</span>
           <span style={{ flex: 1 }} />
           <Btn kind="ghost" onClick={onClose}>

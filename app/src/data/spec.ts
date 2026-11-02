@@ -11,19 +11,19 @@ export const AEGIS_SPEC: any = (function () {
     ['--scrim', 'Overlay', 'Behind dialogs'], ['--tip-bg', 'Overlay', 'Tooltip background'], ['--tip-tx', 'Overlay', 'Tooltip text']
   ];
   const type = [
-    ['Display (KPI value)', 'ES Build', 28, 500, 36, '0'], ['Page title', 'ES Build', 24, 500, 32, '0'], ['Drawer and dialog title', 'ES Build', 20, 500, 28, '0'], ['Brand wordmark', 'ES Build', 17, 500, 24, '0.005em'],
-    ['Section title', 'Source Sans 3', 15, 600, 22, '0'], ['Body', 'Source Sans 3', 14, 400, 20, '0'], ['Body strong and buttons', 'Source Sans 3', 14, 600, 20, '0'], ['Help text', 'Source Sans 3', 13, 400, 18, '0'], ['Emphasis', 'Source Sans 3 italic', 14, 400, 20, '0'],
-    ['Table cell', 'Tahoma', 13, 400, 18, '0'], ['Label and column header', 'Tahoma', 12, 400, 16, '0'], ['Caption and meta', 'Tahoma', 11, 400, 16, '0'], ['Log line', 'Tahoma', 12, 400, 20, '0']
+    ['Display (KPI value)', 'Inter', 26, 600, 34, '-0.012em'], ['Page title', 'Inter', 22, 600, 30, '-0.012em'], ['Drawer and dialog title', 'Inter', 18, 600, 26, '-0.006em'], ['Brand wordmark', 'Inter', 16, 600, 24, '-0.01em'],
+    ['Section and panel title', 'Inter', 14, 600, 20, '0'], ['Body', 'Inter', 14, 400, 20, '0'], ['Navigation item', 'Inter', 14, 400, 20, '0'], ['Buttons and tabs', 'Inter', 13, 500, 18, '0'], ['Form label', 'Inter', 13, 500, 18, '0'], ['Emphasis', 'Inter italic', 14, 400, 20, '0'],
+    ['Table cell', 'Inter', 13, 400, 18, '0'], ['Column header and kicker', 'Inter', 12, 500, 16, '0'], ['Help text, caption and meta', 'Inter', 12, 400, 16, '0'], ['Navigation group label', 'Inter (upper case)', 11, 600, 16, '0.06em'], ['Log line', 'Inter', 12, 400, 20, '0']
   ];
   const space = [['--s-1', 4], ['--s-2', 8], ['--s-3', 12], ['--s-4', 16], ['--s-5', 20], ['--s-6', 24], ['--s-8', 32], ['--s-10', 40], ['--s-12', 48]];
   const layout = [
-    ['Grid unit', '8 px; 4 px for tight icon gaps'], ['Header height', '52 px'], ['Navigation width', '240 px; collapsed 56 px; collapses itself below 1200 px'], ['Navigation item', '32 px high, 10 px side padding, 12 px icon gap, 2 px between items'],
-    ['Product block in navigation', '168 px fixed height (5 items), so shared groups never move between products'], ['Navigation group label', '36 px high, label sits 6 px above its first item'], ['Page padding', '24 px left and right, 20 px above the title, 16 px below the header block'],
-    ['Toolbar row', '44 px minimum, 12 px gap, 12 px below'], ['Table header row', '36 px'], ['Table row', '36 px, one line, 8 px cell padding, checkbox column 44 px'], ['Table footer', '36 px'],
-    ['Drawer', '560–680 px wide, full height of the content area, 24 px padding, sub-tabs 40 px'], ['Dialog', 'Small 440 px, medium 600 px, large 720 px; 24 px padding; footer 56 px'], ['Wizard', 'Large dialog, stepper row 2 px bar + 20 px marker, body at least 420 px high'],
+    ['Grid unit', '8 px; 4 px for tight icon gaps'], ['Frame', 'Dark top bar, white management pane on the left, light working area with cards: the layout of enterprise backup consoles'], ['Header height', '52 px, dark in both themes; its menus use the page colours'], ['Navigation width', '240 px; collapsed 56 px; collapses itself below 1200 px'], ['Navigation item', '32 px high, 10 px side padding, 4 px corners, 12 px icon gap; current item --acc-soft fill and --acc-tx text'],
+    ['Product block in navigation', '168 px fixed height (5 items), so shared groups never move between products'], ['Navigation group label', '30 px high, upper case 11 px, sits 7 px above its first item'], ['Page padding', '24 px on every side; 24 px above the title, 20 px below the header block'],
+    ['Toolbar row', '44 px minimum, 12 px gap, 12 px below'], ['Table header row', '38 px on --panel-2'], ['Table row', '40 px, one line, 8 px cell padding, checkbox column 44 px'], ['Table footer', '38 px on --panel-2'],
+    ['Drawer', '560–680 px wide, full height of the content area, 24 px padding, sub-tabs 40 px'], ['Dialog', 'Small 440 px, medium 600 px, large 720 px; 24 px padding; footer 60 px on --panel-2'], ['Wizard', '920 px; steps listed down a 208 px left pane, the step’s page on the right, Back and Next in the footer; body at least 440 px high'],
     ['Menu and popover', '280–440 px wide, item 36–44 px, 4 px vertical padding'], ['Toast', '320–440 px wide, 24 px from the bottom-right corner, stack gap 8 px, 5.2 s on screen'],
-    ['Minimum width', '1024 px usable; designed for 1280–1920 px'], ['Corner radius', '0 everywhere (radio dots are the only circles)'], ['Borders', '1 px hairline: --ln for rules, --ln-2 for controls and overlays'],
-    ['Focus ring', '2 px solid --acc, 1 px offset, on :focus-visible only'], ['Elevation', 'Only menus (--sh-menu) and overlays (--sh-over). Panels are flat.'], ['Z-order', 'Content 0 · sticky header 2 · drawer 20 · menu scrim 40 · header 45 · dialog 60 · toasts 80 · tooltip 9999']
+    ['Minimum width', '1024 px usable; designed for 1280–1920 px'], ['Corner radius', '4 px controls (--r-sm), 6 px cards, tables, menus and toasts (--r), 8 px dialogs (--r-lg); toggles and avatars are round'], ['Borders', '1 px hairline: --ln for cards and rules, --ln-2 for controls'],
+    ['Focus ring', '2 px solid --acc, 1 px offset, on :focus-visible only'], ['Elevation', 'Cards and tables --sh-card (a 1–3 px soft shadow, none in dark); menus --sh-menu; drawers and dialogs --sh-over'], ['Z-order', 'Content 0 · sticky header 2 · drawer 20 · menu scrim 40 · header 45 · dialog 60 · toasts 80 · tooltip 9999']
   ];
   const motion = [
     ['Hover and colour changes', '100 ms, ease'], ['Menus and popovers open', '140 ms, translateY(-4 px) and fade'], ['Drawer open and close', '150 ms, translateX(40 px) and fade, cubic-bezier(.2,.7,.3,1)'],
@@ -31,38 +31,39 @@ export const AEGIS_SPEC: any = (function () {
     ['Progress bars', 'width follows live data, 900 ms linear between ticks'], ['Looping', 'Only the running-job spinner (1 s per turn). Everything stops with prefers-reduced-motion.']
   ];
   const components = [
-    ['Button, primary', 'Height 32 px (36 px in header and summary), padding 0 14 px, gap 8 px, 16 px icon; --acc fill, --acc-ink text, Source Sans 3 600 14 px. Hover --acc-h, pressed --acc-p and 1 px down. Disabled 45 % opacity with aria-disabled and a tooltip saying why.'],
-    ['Button, secondary', 'Height 32 px, padding 0 12 px, 1 px --ln-2 border, --panel fill, --tx text. Hover --hover.'],
+    ['Button, primary', 'Height 32 px (28 px small), padding 0 14 px, gap 8 px, 16 px icon, 4 px corners; --acc fill, --acc-ink text, Inter 500 13 px. Hover --acc-h, pressed --acc-p and 1 px down. Disabled 45 % opacity with aria-disabled and a tooltip saying why.'],
+    ['Button, secondary and outline', 'Height 32 px, padding 0 12 px, 4 px corners, 1 px --ln-2 border, --panel fill, a 1 px soft shadow, --tx text. Hover --hover.'],
     ['Button, ghost', 'Height 32 px, padding 0 10–12 px, no border. Hover --hover.'],
     ['Button, danger', 'Ghost with --err text and --err-s hover; the confirming button in a destructive dialog is --err fill with --acc-ink text, enabled only after the name is typed.'],
-    ['Icon button', '32 × 32 px (36 × 36 in header), 16 px icon (20 px for close in drawers and dialogs).'],
-    ['Text input', 'Height 36 px, padding 0 10 px, --panel-2 fill, 1 px --ln border; focus border --acc plus ring; error border --err and a 12 px Tahoma message with an icon below.'],
-    ['Search input', 'Height 36 px, 36 px left padding for the icon, keyboard hint chip on the right (Ctrl K).'],
-    ['Select', 'Native select, height 36 px (32 px in toolbars), padding 0 8 px, same fill and border as inputs.'],
-    ['Segmented control', 'Height 30 px inside a 1 px --ln-2 frame, padding 0 12–14 px, Tahoma 13 px; selected item gets an --acc-soft indicator that slides.'],
-    ['Checkbox', '16 × 16 px square, 1 px --ln-2 border; checked --acc fill with a 12 px check in --acc-ink; mixed shows a minus.'],
-    ['Radio', '16 px circle, 1 px border; checked --acc with a 4 px inner ring in the surface colour. Radio cards: 1 px border, selected --acc border, inner 1 px --acc ring, --acc-soft fill.'],
-    ['Toggle', '32 × 18 px track, 12 px knob, 2 px padding; on: --acc track and --acc-ink knob moved 14 px.'],
-    ['Tabs and sub-tabs', 'Height 40 px, padding 0 10–12 px, Source Sans 3 600 14 px; selected --tx with a 2 px --acc underline that slides; count in Tahoma 11 px --tx-3.'],
-    ['Table', 'Panel with 1 px --ln border. Sticky 36 px header on --panel-2 with Tahoma 12 px --tx-2 sort buttons and an --acc arrow. 36 px rows, 1 px --ln rule, hover --hover, selected --acc-soft, open row adds a 2 px inset --acc line on the left. Numbers right-aligned with units, tabular figures. Text truncates with a tooltip.'],
+    ['Icon button', '32 × 32 px (36 × 36 in header), 4 px corners, 16 px icon (20 px for close in drawers and dialogs).'],
+    ['Text input', 'Height 34 px, padding 0 10 px, 4 px corners, --panel fill (--panel-2 when read-only), 1 px --ln-2 border; focus border --acc plus ring; error border --err and a 12 px message with an icon below. Label Inter 500 13 px above, hint 12 px --tx-3 below.'],
+    ['Search input', 'Height 36 px in the dark top bar, 36 px left padding for the icon, keyboard hint chip on the right (Ctrl K).'],
+    ['Select', 'Native select, height 34 px (32 px in toolbars), padding 0 8 px, same fill, border and corners as inputs.'],
+    ['Segmented control', '2 px inset inside a 1 px --ln-2 frame with 4 px corners; 26 px items, padding 0 10 px, Inter 13 px; selected item --acc-tx on an --acc-soft indicator that slides.'],
+    ['Checkbox', '16 × 16 px, 3 px corners, 1 px --ln-2 border on --panel; checked --acc fill with a 12 px check in --acc-ink; mixed shows a minus.'],
+    ['Radio', '16 px circle, 1 px border; checked --acc with a 4 px inner ring in the surface colour. Radio cards: 6 px corners, 1 px --ln-2 border on --panel; selected --acc border, inner 1 px --acc ring, --acc-soft fill.'],
+    ['Toggle', '32 × 18 px pill track, 12 px round knob, 2 px padding; off --ln-2 track, on --acc track with the knob moved 14 px.'],
+    ['Tabs and sub-tabs', 'Height 40 px, padding 0 12 px, Inter 500 14 px; selected --acc-tx with a 2 px --acc underline that slides; counts in a pill.'],
+    ['Table', 'Card: 6 px corners, 1 px --ln border, --sh-card. Sticky 38 px header on --panel-2 with Inter 500 12 px --tx-2 sort buttons and an --acc arrow. 40 px rows, 1 px --ln rule, hover --hover, selected --acc-soft, open row adds a 2 px inset --acc line on the left. Numbers right-aligned with units in tabular figures. Text truncates with a tooltip. 38 px footer on --panel-2.'],
     ['Status in a table', '16 px icon in the status colour plus the word in --tx. Never colour alone.'],
-    ['Badge', '20–24 px high, padding 0 6–8 px, 1 px --ln-2 border, Tahoma 11–12 px --tx-2.'],
-    ['Progress bar', '4 px high on --ln; --run while running, --ok when done, --err when failed; phase name and percentage above it.'],
-    ['Stepper', 'Even columns; each has a 2 px bar (--acc when reached) and a 20 px square marker with the number or a check.'],
+    ['Badge', '20 px high, padding 0 7 px, 3 px corners, tinted border and fill in the tone colour (neutral: --ln-2 on --panel-2), Inter 500 11 px.'],
+    ['Progress bar', '6 px high, round ends, on --ln; --run while running, --ok when done, --err when failed; phase name and percentage above it.'],
+    ['Stepper', 'Even columns; each has a 3 px bar (--acc when reached) and a 20 px round marker with the number or a check.'],
     ['Timeline', 'Five stages in a row; 20 px markers joined by 2 px lines; done stages filled --acc; current outlined with a spinner when a job runs.'],
-    ['KPI tile', 'Inside one panel with 1 px dividers; 16 × 18 px padding; label Tahoma 12 px, value ES Build 28/36 px, sub line Tahoma 12 px --tx-3; optional 6 px segmented bar.'],
-    ['Panel', '--panel fill, 1 px --ln border, 44–48 px header with a 15 px section title. Panels never nest.'],
-    ['Warning bar', 'Min 40 px high, padding 0 12 px, --warn-s fill, 1 px --ln-2 border, triangle icon in --warn; text starts “Could not be read:” when something is unreachable.'],
-    ['Danger bar', 'Same shape with --err-s fill and a --err icon.'],
-    ['Info tooltip', 'Info icon button; tooltip --tip-bg, --tip-tx, Tahoma 12/16 px, padding 6 × 10 px, max 320 px, 350 ms delay on hover and 150 ms on keyboard focus. At most two per view.'],
-    ['Empty state', 'Centred in the panel, 64 px vertical padding; one sentence in --tx-2 and one primary button.'],
-    ['Loading state', '“Reading…” in the footer; eight skeleton rows with --skel bars 8 px high. No shimmer.'],
-    ['Log viewer', '--panel-2, 1 px --ln border, Tahoma 12/20 px, columns: time 64 px, 16 px level icon, text; follows new lines; new lines fade in.'],
-    ['File card', '1 px --ln-2 border, --panel-2 fill, 12 px padding, 20 px file icon, name in 600, meta in Tahoma 12 px, remove button 28 px.'],
-    ['Menu', '--overlay, 1 px --ln-2 border, --sh-menu; items 36–44 px with a 16 px icon; selected item shows a check in --acc.'],
-    ['Toast', '--overlay, 1 px --ln-2 border, --sh-menu; status icon, text that names the object, optional action in --acc-tx, dismiss button.'],
-    ['Drawer', 'From the right over the content, --overlay, 1 px --ln-2 left border, --sh-over; kicker 12 px, title ES Build 20/28 px, status line, actions row, sub-tabs, scrolling body.'],
-    ['Dialog', 'Centred on --scrim; --overlay, 1 px --ln-2 border, --sh-over. Confirmations are armed inside the same dialog. Destructive dialogs list exactly what is removed and ask for the name.']
+    ['KPI widget', 'One card per value with a 12–16 px gap: 6 px corners, 1 px --ln border, --sh-card, 16 × 20 px padding; title Inter 500 13 px --tx-2 with a status icon, value Inter 600 26/34 px, one line of context 12 px --tx-3; optional 6 px segmented bar. A widget with a link lifts on hover and opens its filtered list.'],
+    ['Panel (widget)', 'Card: --panel fill, 1 px --ln border, 6 px corners, --sh-card; 48 px header with a 14 px 600 title on the left and a link or control on the right. Panels never nest.'],
+    ['Warning bar', 'Min 40 px high, padding 0 12 px, 4 px corners, --warn-s fill, a tinted border and a 3 px --warn edge on the left, triangle icon in --warn; text starts “Could not be read:” when something is unreachable.'],
+    ['Danger bar', 'Same shape with --err-s fill, an --err edge and an --err icon.'],
+    ['Info tooltip', 'Info icon button; tooltip --tip-bg, --tip-tx, Inter 12/16 px, 4 px corners, padding 6 × 10 px, max 320 px, 350 ms delay on hover and 150 ms on keyboard focus. At most two per view.'],
+    ['Empty state', 'Centred in the card, 64 px vertical padding; one sentence in --tx-2 and one primary button.'],
+    ['Loading state', '“Reading…” in the footer; eight skeleton rows with rounded --skel bars 8 px high. No shimmer.'],
+    ['Log viewer', '--panel-2, 1 px --ln border, 6 px corners, Inter 12/20 px, columns: time 64 px in tabular figures, 16 px level icon, text; follows new lines; new lines fade in.'],
+    ['File card', '1 px --ln-2 border, --panel-2 fill, 6 px corners, 12 px padding, 20 px file icon, name in 600, meta in 12 px, remove button 28 px.'],
+    ['Menu', '--overlay, 1 px --ln border, 6 px corners, --sh-menu; items 36–44 px with a 16 px icon; selected item shows a check in --acc. Menus opened from the top bar use the page colours.'],
+    ['Toast', '--overlay, 1 px --ln border, 6 px corners, --sh-menu; status icon, text that names the object, optional action in --acc-tx, dismiss button.'],
+    ['Drawer', 'From the right over the content, --overlay, 1 px --ln-2 left border, --sh-over; kicker 12 px 500, title Inter 600 18/26 px, status line, actions row, sub-tabs, scrolling body.'],
+    ['Dialog', 'Centred on --scrim; --overlay, 1 px --ln border, 8 px corners, --sh-over; footer on --panel-2. Confirmations are armed inside the same dialog. Destructive dialogs list exactly what is removed and ask for the name.'],
+    ['Wizard', 'Dialog with the steps listed in a left pane (number in a 22 px circle, done steps checked, current step on --acc-soft); the step’s title heads the page on the right.']
   ];
   const oklchToHex = str => {
     const m = /oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+))?\s*\)/.exec(str || '');
@@ -83,7 +84,7 @@ export const AEGIS_SPEC: any = (function () {
     document.body.appendChild(el);
     const cs = getComputedStyle(el);
     const out = {};
-    tokens.concat([['--sh-menu'], ['--sh-over']]).forEach(([n]) => { out[n] = cs.getPropertyValue(n).trim(); });
+    tokens.concat([['--sh-card'], ['--sh-menu'], ['--sh-over']]).forEach(([n]) => { out[n] = cs.getPropertyValue(n).trim(); });
     el.remove();
     return out;
   };

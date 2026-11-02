@@ -276,7 +276,7 @@ export function FailoverDialog({ ctx, rb, initial, closing, onClose }: { ctx: Ct
             ].map(([k, v, sub], i) => (
               <div key={k} style={{ padding: '12px 14px', borderLeft: i ? '1px solid var(--ln)' : 'none', minWidth: 0 }}>
                 <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>{k}</div>
-                <div style={{ font: '500 20px/28px var(--f-head)' }}>{v}</div>
+                <div style={{ font: '600 18px/26px var(--f-head)' }}>{v}</div>
                 <div data-tip={sub} data-tip-overflow="" style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sub}</div>
               </div>
             ))}

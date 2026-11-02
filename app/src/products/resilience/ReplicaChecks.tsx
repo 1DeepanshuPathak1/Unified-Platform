@@ -53,7 +53,7 @@ export function DrServersPage({ ctx }: { ctx: Ctx }) {
     <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-page 150ms var(--ease)' }}>
       <div style={{ flex: 'none', padding: '20px 24px 16px' }}>
         <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 4 }}>Resilience</div>
-        <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Protected servers</h1>
+        <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Protected servers</h1>
         <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{tab === 'groups' ? 'Servers that must come back from the same moment, so a database and its application never disagree.' : tab === 'apps' ? 'Databases and Kubernetes namespaces replicated by their own tools; Aegis watches the lag and runs the switch.' : tab === 'seeding' ? 'First full copies that travel on an encrypted disk, so a slow link only has to carry the changes.' : 'Proof that each replica would start and holds the same data as its source.'}</p>
       </div>
       {tabs}

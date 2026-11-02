@@ -99,7 +99,7 @@ export default class AegisMappings extends DC {
         <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Infrastructure</div>
-            <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Mappings</h1>
+            <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Mappings</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>How networks, storage and sizes translate from one site to another.</p>
           </div>
           <button
@@ -175,7 +175,7 @@ export default class AegisMappings extends DC {
             }}
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--ln)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <h2 style={{ flex: 1, font: '500 20px/28px var(--f-head)' }}>{v.m?.title}</h2>
+              <h2 style={{ flex: 1, font: '600 18px/26px var(--f-head)' }}>{v.m?.title}</h2>
               <button
                 onClick={v.save}
                 aria-disabled={v.cfgDis}
@@ -195,7 +195,7 @@ export default class AegisMappings extends DC {
             </div>
             {arr(v.m?.groups).map((g: any, i: number) => (
               <div key={i} style={{ padding: '16px 20px', borderBottom: '1px solid var(--ln)' }}>
-                <h3 style={{ font: '600 15px/22px var(--f-body)', marginBottom: '8px' }}>{g.title}</h3>
+                <h3 style={{ font: '600 14px/20px var(--f-body)', marginBottom: '8px' }}>{g.title}</h3>
                 <div role="table" style={{ font: '13px/18px var(--f-ui)' }}>
                   <div
                     role="row"
@@ -255,7 +255,7 @@ export default class AegisMappings extends DC {
             <div
               style={{ padding: '16px 20px', borderBottom: '1px solid var(--ln)', display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
-              <h3 style={{ font: '600 15px/22px var(--f-body)' }}>Test network</h3>
+              <h3 style={{ font: '600 14px/20px var(--f-body)' }}>Test network</h3>
               <span style={{ display: 'flex', alignItems: 'center', gap: '8px', font: '13px var(--f-ui)' }}>
                 <Icon name="circle-check" style={{ color: 'var(--ok)' }} />
                 <span>{v.m?.test}</span> · isolated, no route to production
@@ -265,7 +265,7 @@ export default class AegisMappings extends DC {
               </span>
             </div>
             <div style={{ padding: '16px 20px' }}>
-              <h3 style={{ font: '600 15px/22px var(--f-body)', marginBottom: '8px' }}>Used by</h3>
+              <h3 style={{ font: '600 14px/20px var(--f-body)', marginBottom: '8px' }}>Used by</h3>
               {arr(v.m?.used).map((u: any, i: number) => (
                 <a
                   key={i}

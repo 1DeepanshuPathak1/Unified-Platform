@@ -15,7 +15,7 @@ export function installTooltips() {
     tip = document.createElement('div');
     tip.setAttribute('role', 'tooltip');
     tip.style.cssText =
-      'position:fixed;z-index:9999;left:0;top:0;max-width:320px;padding:6px 10px;font:12px/16px Tahoma,Verdana,sans-serif;pointer-events:none;opacity:0;transform:translateY(2px);transition:opacity 100ms,transform 100ms;white-space:normal';
+      'position:fixed;z-index:9999;left:0;top:0;max-width:320px;padding:6px 10px;border-radius:4px;font:12px/16px Inter,Segoe UI,system-ui,sans-serif;pointer-events:none;opacity:0;transform:translateY(2px);transition:opacity 100ms,transform 100ms;white-space:normal';
     document.body.appendChild(tip);
     return tip;
   };

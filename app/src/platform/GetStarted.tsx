@@ -36,7 +36,7 @@ export function GetStarted({ ctx }: { ctx: Ctx }) {
             const isNext = next?.id === s.id;
             return (
               <li key={s.id} style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1fr) auto', gap: 14, alignItems: 'center', padding: '14px 16px', borderBottom: i < STEPS.length - 1 ? '1px solid var(--ln)' : 'none', background: isNext ? 'var(--acc-soft)' : undefined }}>
-                <span style={{ width: 24, height: 24, display: 'grid', placeItems: 'center', border: `1px solid ${isDone ? 'var(--ok)' : isNext ? 'var(--acc)' : 'var(--ln-2)'}`, color: isDone ? 'var(--ok)' : 'var(--tx-2)', font: '700 12px var(--f-ui)' }}>{isDone ? <Icon name="check" size={14} /> : i + 1}</span>
+                <span style={{ width: 24, height: 24, display: 'grid', placeItems: 'center', border: `1px solid ${isDone ? 'var(--ok)' : isNext ? 'var(--acc)' : 'var(--ln-2)'}`, color: isDone ? 'var(--ok)' : 'var(--tx-2)', font: '600 12px var(--f-ui)' }}>{isDone ? <Icon name="check" size={14} /> : i + 1}</span>
                 <span style={{ minWidth: 0 }}>
                   <span style={{ display: 'block', fontWeight: 600 }}>{s.title}</span>
                   <span style={{ display: 'block', font: '13px/18px var(--f-ui)', color: 'var(--tx-2)' }}>{isDone && s.done ? s.done : s.what}</span>

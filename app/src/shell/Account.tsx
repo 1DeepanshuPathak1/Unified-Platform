@@ -20,7 +20,7 @@ export function UserMenu({ roleLine, side, themeIcon, themeLabel, onTheme, onAcc
     </button>
   );
   return (
-    <div role="menu" aria-label="User" style={{ position: 'absolute', top: 44, right: 0, width: 288, background: 'var(--overlay)', border: '1px solid var(--ln-2)', boxShadow: 'var(--sh-menu)', animation: 'ae-pop 140ms var(--ease)' }}>
+    <div role="menu" className="ae-pop" aria-label="User" style={{ position: 'absolute', top: 44, right: 0, width: 288, background: 'var(--overlay)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', overflow: 'hidden', boxShadow: 'var(--sh-menu)', animation: 'ae-pop 140ms var(--ease)' }}>
       <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--ln)' }}>
         <div style={{ fontWeight: 600 }}>Priya Raman</div>
         <div style={{ font: '12px/18px var(--f-ui)', color: 'var(--tx-3)' }}>priya.raman@host360.ai</div>

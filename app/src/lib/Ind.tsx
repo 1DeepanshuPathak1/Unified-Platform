@@ -54,6 +54,7 @@ export function Ind({ mode = 'underline', style, className, children, ...rest }:
         i.style.height = h + 'px';
         i.style.transform = `translate(${x}px,${y}px)`;
         i.style.background = 'var(--ind-fill, var(--acc-soft))';
+        i.style.borderRadius = 'var(--ind-r, var(--r-sm))';
         i.style.boxShadow = 'var(--ind-ring, none)';
       }
       i.style.opacity = '1';

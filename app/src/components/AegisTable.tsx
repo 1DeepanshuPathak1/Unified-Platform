@@ -147,7 +147,7 @@ export default class AegisTable extends DC {
       rows: R,
       selectable,
       chev,
-      rowH: (p.rowH || 36) + 'px',
+      rowH: (p.rowH || 40) + 'px',
       label: p.label || 'Table',
       allAria: all ? 'true' : some ? 'mixed' : 'false',
       allIcon: all ? 'check' : some ? 'minus' : '',
@@ -193,8 +193,10 @@ export default class AegisTable extends DC {
           flexDirection: 'column',
           background: 'var(--panel)',
           border: '1px solid var(--ln)',
+          borderRadius: 'var(--r)',
+          boxShadow: 'var(--sh-card)',
+          overflow: 'hidden',
           font: '13px/18px var(--f-ui)',
-          fontVariantNumeric: 'tabular-nums',
           color: 'var(--tx)',
           transition: 'background-color 150ms,border-color 150ms'
         }}
@@ -233,11 +235,11 @@ export default class AegisTable extends DC {
               display: 'grid',
               gridTemplateColumns: v.grid,
               alignItems: 'center',
-              height: '36px',
+              height: '38px',
               background: 'var(--panel-2)',
               borderBottom: '1px solid var(--ln)',
               color: 'var(--tx-2)',
-              fontSize: '12px'
+              font: '500 12px/16px var(--f-ui)'
             }}
           >
             {v.selectable ? (
@@ -341,6 +343,7 @@ export default class AegisTable extends DC {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: c.jc,
+                        fontVariantNumeric: c.jc === 'flex-end' ? 'tabular-nums' : undefined,
                         gap: '6px',
                         overflow: 'hidden'
                       }}
@@ -383,8 +386,10 @@ export default class AegisTable extends DC {
                               style={{
                                 flex: 'none',
                                 height: '20px',
-                                padding: '0 6px',
+                                padding: '0 7px',
                                 border: '1px solid var(--ln-2)',
+                                borderRadius: '3px',
+                                background: 'var(--panel-2)',
                                 fontSize: '11px',
                                 lineHeight: '18px',
                                 color: 'var(--tx-2)',
@@ -513,7 +518,8 @@ export default class AegisTable extends DC {
                     background: v.blankBg,
                     color: v.blankFg,
                     border: `1px solid ${v.blankBd}`,
-                    font: '600 14px var(--f-body)',
+                    borderRadius: 'var(--r-sm)',
+                    font: '500 13px var(--f-body)',
                     transition: 'background-color 100ms'
                   }}
                 >
@@ -529,9 +535,10 @@ export default class AegisTable extends DC {
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            height: '36px',
-            padding: '0 12px',
+            height: '38px',
+            padding: '0 14px',
             borderTop: '1px solid var(--ln)',
+            background: 'var(--panel-2)',
             fontSize: '12px',
             color: 'var(--tx-3)'
           }}

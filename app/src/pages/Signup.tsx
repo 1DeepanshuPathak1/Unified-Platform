@@ -6,7 +6,7 @@ import { Facts, Stepper } from '../ui/layout';
 
 const readTheme = () => {
   try {
-    return localStorage.getItem('aegis.theme') || 'dark';
+    return localStorage.getItem('aegis.theme.v2') || 'light';
   } catch {
     return 'dark';
   }
@@ -59,16 +59,16 @@ export default function Signup() {
   const review = check === 'mismatch';
   return (
     <div data-ae="" data-theme={theme} style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ height: 52, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', borderBottom: '1px solid var(--ln)', background: 'var(--hdr)' }}>
+      <header className="ae-hdr" style={{ color: 'var(--tx)', height: 52, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', borderBottom: '1px solid var(--ln)', background: 'var(--hdr)' }}>
         <Icon name="mark" size={24} />
-        <span style={{ font: '500 17px/24px var(--f-head)' }}>Host360 Aegis</span>
+        <span style={{ font: '600 16px/24px var(--f-head)' }}>Host360 Aegis</span>
         <span style={{ flex: 1 }} />
         <a href="#/backup/home" className={pc('hover', 'background:var(--hover)')} style={{ height: 32, display: 'inline-flex', alignItems: 'center', padding: '0 10px', color: 'var(--tx-2)', fontWeight: 600 }}>Already a customer? Sign in</a>
       </header>
       <main style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '40px 16px' }}>
         <div style={{ width: 600, maxWidth: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
           <div>
-            <h1 style={{ font: '500 26px/34px var(--f-head)' }}>Start a 30-day trial</h1>
+            <h1 style={{ font: '600 26px/34px var(--f-head)' }}>Start a 30-day trial</h1>
             <p style={{ color: 'var(--tx-2)' }}>Backup, disaster recovery or migration for Proxmox VE, OpenStack and VMware. No card needed; nothing is charged unless you convert.</p>
           </div>
           <Stepper steps={['Work e-mail', 'Organisation', 'Verification', 'Trial', 'Ready']} current={step} />

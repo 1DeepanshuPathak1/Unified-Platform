@@ -18,14 +18,14 @@ export function Page({ children, scroll }: { children: ReactNode; scroll?: boole
 
 export function PageHeader({ kicker, title, sub, actions, meta, info }: { kicker: ReactNode; title: ReactNode; sub?: ReactNode; actions?: ReactNode; meta?: ReactNode; info?: ReactNode }) {
   return (
-    <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: 16 }}>
+    <div style={{ flex: 'none', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: 16 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 4 }}>{kicker}</div>
-        <h1 style={{ font: '500 24px/32px var(--f-head)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 6 }}>{kicker}</div>
+        <h1 style={{ font: '600 22px/30px var(--f-head)', display: 'flex', alignItems: 'center', gap: 8 }}>
           {title}
           {info}
         </h1>
-        {sub ? <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{sub}</p> : null}
+        {sub ? <p style={{ marginTop: 4, maxWidth: 880, font: '14px/20px var(--f-body)', color: 'var(--tx-2)' }}>{sub}</p> : null}
       </div>
       {meta ? <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)', whiteSpace: 'nowrap' }}>{meta}</span> : null}
       {actions ? <div style={{ display: 'flex', gap: 8, flex: 'none' }}>{actions}</div> : null}
@@ -40,15 +40,15 @@ export function PageHeader({ kicker, title, sub, actions, meta, info }: { kicker
 export function Section<V extends string>({ kicker, title, sub, tabs, tab, onTab, actions, children }: { kicker: string; title: string; sub: ReactNode; tabs: Opt<V>[]; tab: V; onTab: (v: V) => void; actions?: ReactNode; children: ReactNode }) {
   return (
     <Page>
-      <div style={{ flex: 'none', padding: '20px 24px 0', display: 'flex', alignItems: 'flex-end', gap: 16 }}>
+      <div style={{ flex: 'none', padding: '24px 24px 0', display: 'flex', alignItems: 'flex-end', gap: 16 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 4 }}>{kicker}</div>
-          <h1 style={{ font: '500 24px/32px var(--f-head)' }}>{title}</h1>
-          <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{sub}</p>
+          <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 6 }}>{kicker}</div>
+          <h1 style={{ font: '600 22px/30px var(--f-head)' }}>{title}</h1>
+          <p style={{ marginTop: 4, maxWidth: 880, font: '14px/20px var(--f-body)', color: 'var(--tx-2)' }}>{sub}</p>
         </div>
         {actions ? <div style={{ display: 'flex', gap: 8, flex: 'none' }}>{actions}</div> : null}
       </div>
-      <Tabs label={`${title} sections`} value={tab} tabs={tabs} onChange={onTab} style={{ margin: '12px 24px 16px', padding: 0 }} />
+      <Tabs label={`${title} sections`} value={tab} tabs={tabs} onChange={onTab} style={{ margin: '16px 24px 16px', padding: 0 }} />
       <div key={tab} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', animation: 'ae-fade 150ms var(--ease)' }}>
         {children}
       </div>
@@ -65,11 +65,11 @@ export const Spacer = () => <span style={{ flex: 1 }} />;
 /** Replaces the toolbar while rows are selected. */
 export function BulkBar({ label, children, onClear }: { label: string; children: ReactNode; onClear: () => void }) {
   return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4, height: 44, padding: '0 8px 0 14px', background: 'var(--acc-soft)', border: '1px solid var(--acc)', animation: 'ae-fade 120ms var(--ease)' }}>
-      <span style={{ font: '700 13px var(--f-ui)', marginRight: 12, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{label}</span>
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 4, height: 44, padding: '0 8px 0 14px', background: 'var(--acc-soft)', border: '1px solid var(--acc)', borderRadius: 'var(--r)', animation: 'ae-fade 120ms var(--ease)' }}>
+      <span style={{ font: '600 13px var(--f-ui)', marginRight: 12, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{label}</span>
       {children}
       <span style={{ flex: 1 }} />
-      <button type="button" onClick={onClear} className={HOVER} style={{ height: 32, padding: '0 10px', fontWeight: 600, whiteSpace: 'nowrap', transition: 'background-color 100ms' }}>
+      <button type="button" onClick={onClear} className={HOVER} style={{ height: 32, padding: '0 10px', borderRadius: 'var(--r-sm)', fontWeight: 500, whiteSpace: 'nowrap', transition: 'background-color 100ms' }}>
         Clear selection
       </button>
     </div>
@@ -90,7 +90,7 @@ export function Bar({ tone = 'warn', icon, children, actions, style, multiline }
   return (
     <div
       role={tone === 'err' ? 'alert' : 'status'}
-      style={{ flex: 'none', display: 'flex', alignItems: multiline ? 'flex-start' : 'center', gap: 12, minHeight: 40, padding: multiline ? '10px 8px 10px 12px' : '0 8px 0 12px', background: b.bg, border: '1px solid var(--ln-2)', animation: 'ae-fade 150ms var(--ease)', ...style }}
+      style={{ flex: 'none', display: 'flex', alignItems: multiline ? 'flex-start' : 'center', gap: 12, minHeight: 40, padding: multiline ? '10px 8px 10px 12px' : '0 8px 0 12px', background: b.bg, border: `1px solid color-mix(in oklch, ${b.c} 30%, var(--ln))`, borderLeft: `3px solid ${b.c}`, borderRadius: 'var(--r-sm)', animation: 'ae-fade 150ms var(--ease)', ...style }}
     >
       <Icon name={icon || b.icon} spin={tone === 'run'} style={{ color: b.c, marginTop: multiline ? 2 : 0 }} />
       <span style={{ flex: 1, minWidth: 0, ...(multiline ? null : { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }) }}>{children}</span>
@@ -101,9 +101,9 @@ export function Bar({ tone = 'warn', icon, children, actions, style, multiline }
 
 export function Panel({ title, right, children, style, bodyStyle, id }: { title: ReactNode; right?: ReactNode; children: ReactNode; style?: CSSProperties; bodyStyle?: CSSProperties; id?: string }) {
   return (
-    <section id={id} style={{ background: 'var(--panel)', border: '1px solid var(--ln)', minWidth: 0, ...style }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, height: 44, padding: '0 16px', borderBottom: '1px solid var(--ln)' }}>
-        <h2 style={{ font: '600 15px/22px var(--f-body)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>{title}</h2>
+    <section id={id} style={{ background: 'var(--panel)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', boxShadow: 'var(--sh-card)', minWidth: 0, ...style }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, height: 48, padding: '0 16px', borderBottom: '1px solid var(--ln)' }}>
+        <h2 style={{ font: '600 14px/20px var(--f-body)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>{title}</h2>
         {right}
       </div>
       <div style={bodyStyle}>{children}</div>
@@ -113,7 +113,7 @@ export function Panel({ title, right, children, style, bodyStyle, id }: { title:
 
 export function PanelLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <a href={href} style={{ display: 'flex', alignItems: 'center', gap: 4, font: '600 13px var(--f-body)', color: 'var(--acc-tx)', whiteSpace: 'nowrap' }}>
+    <a href={href} style={{ display: 'flex', alignItems: 'center', gap: 4, font: '500 13px var(--f-body)', color: 'var(--acc-tx)', whiteSpace: 'nowrap' }}>
       {children}
       <Icon name="arrow-right" />
     </a>
@@ -122,36 +122,36 @@ export function PanelLink({ href, children }: { href: string; children: ReactNod
 
 export type Kpi = { label: string; value: ReactNode; unit?: string; sub?: string; icon?: string; tone?: string; href?: string; segs?: { w: string; c: string }[]; loading?: boolean; unread?: boolean };
 
-/** KPI tiles inside one panel, 1 px dividers. Page level. */
+/** KPI widgets: one card each, title on top, value, one line of context. A widget with a link drills into its list. Page level. */
 export function Tiles({ items }: { items: Kpi[] }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${items.length},minmax(0,1fr))`, background: 'var(--panel)', border: '1px solid var(--ln)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${items.length},minmax(0,1fr))`, gap: items.length > 5 ? 12 : 16 }}>
       {items.map((k, i) => {
         const body = (
           <>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: '12px/16px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 8, font: '500 13px/18px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap', minWidth: 0 }}>
               {k.icon ? <Icon name={k.icon} style={{ color: k.tone ? TONE[k.tone] : 'var(--tx-3)' }} /> : null}
-              {k.label}
+              <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.label}</span>
             </span>
             {k.loading ? (
-              <span style={{ display: 'block', height: 28, margin: '4px 0', width: '60%', background: 'var(--skel)' }} />
+              <span style={{ display: 'block', height: 28, margin: '4px 0', width: '60%', background: 'var(--skel)', borderRadius: 'var(--r-sm)' }} />
             ) : (
-              <span style={{ font: '500 28px/36px var(--f-head)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', fontStyle: k.unread ? 'italic' : 'normal', color: k.unread ? 'var(--tx-3)' : 'var(--tx)' }}>
+              <span style={{ font: '600 26px/34px var(--f-head)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', fontStyle: k.unread ? 'italic' : 'normal', color: k.unread ? 'var(--tx-3)' : 'var(--tx)' }}>
                 {k.value}
-                {k.unit ? <span style={{ font: '400 15px var(--f-body)', color: 'var(--tx-2)', marginLeft: 6 }}>{k.unit}</span> : null}
+                {k.unit ? <span style={{ font: '400 14px var(--f-body)', color: 'var(--tx-3)', marginLeft: 6, letterSpacing: 0 }}>{k.unit}</span> : null}
               </span>
             )}
             {k.sub ? <span data-tip={k.sub} data-tip-overflow="" style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.sub}</span> : null}
             {k.segs ? (
-              <span style={{ display: 'flex', height: 6, gap: 1, marginTop: 2 }}>
+              <span style={{ display: 'flex', height: 6, gap: 2, marginTop: 4, borderRadius: 3, overflow: 'hidden', background: 'var(--ln)' }}>
                 {k.segs.map((s, j) => <span key={j} style={{ height: 6, width: s.w, background: s.c, transition: 'width 150ms var(--ease)' }} />)}
               </span>
             ) : null}
           </>
         );
-        const st: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px', borderLeft: i ? '1px solid var(--ln)' : 'none', minWidth: 0, transition: 'background-color 100ms' };
+        const st: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8, padding: items.length > 5 ? '16px 16px 18px' : '16px 20px 18px', background: 'var(--panel)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', boxShadow: 'var(--sh-card)', minWidth: 0, transition: 'border-color 100ms,box-shadow 100ms' };
         return k.href ? (
-          <a key={i} href={k.href} className={HOVER} style={st}>{body}</a>
+          <a key={i} href={k.href} className={pc('hover', 'border-color:var(--ln-2);box-shadow:var(--sh-menu)')} style={st}>{body}</a>
         ) : (
           <div key={i} style={st}>{body}</div>
         );
@@ -163,11 +163,11 @@ export function Tiles({ items }: { items: Kpi[] }) {
 /** Tiles for a drawer's Overview tab (the only place drawers show tiles). */
 export function DrawerTiles({ items }: { items: { label: string; value: ReactNode; sub?: string; icon?: string; tone?: string }[] }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${items.length},minmax(0,1fr))`, border: '1px solid var(--ln)', background: 'var(--panel-2)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${items.length},minmax(0,1fr))`, gap: 8 }}>
       {items.map((k, i) => (
-        <div key={i} style={{ padding: '12px 14px', borderLeft: i ? '1px solid var(--ln)' : 'none', display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
+        <div key={i} style={{ padding: '12px 14px', background: 'var(--panel-2)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
           <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', whiteSpace: 'nowrap' }}>{k.label}</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: '500 20px/28px var(--f-head)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: '600 18px/26px var(--f-head)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
             {k.icon ? <Icon name={k.icon} style={{ color: k.tone ? TONE[k.tone] : 'var(--tx-2)' }} /> : null}
             {k.value}
           </span>
@@ -186,8 +186,8 @@ export function Facts({ items, labelW = 168 }: { items: Fact[]; labelW?: number 
     <dl style={{ display: 'grid', gridTemplateColumns: `${labelW}px minmax(0,1fr)`, font: '13px/18px var(--f-ui)' }}>
       {items.map((f, i) => (
         <div key={i} style={{ display: 'contents' }}>
-          <dt style={{ padding: '9px 0', borderBottom: '1px solid var(--ln)', color: 'var(--tx-3)' }}>{f.k}</dt>
-          <dd style={{ padding: '9px 0', borderBottom: '1px solid var(--ln)', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, fontStyle: f.muted ? 'italic' : 'normal', color: f.muted ? 'var(--tx-3)' : 'var(--tx)' }}>
+          <dt style={{ padding: '10px 12px 10px 0', borderBottom: '1px solid var(--ln)', color: 'var(--tx-2)' }}>{f.k}</dt>
+          <dd style={{ padding: '10px 0', borderBottom: '1px solid var(--ln)', display: 'flex', alignItems: 'center', gap: 6, minWidth: 0, fontStyle: f.muted ? 'italic' : 'normal', color: f.muted ? 'var(--tx-3)' : 'var(--tx)' }}>
             {f.icon ? <Icon name={f.icon} style={{ color: f.tone ? TONE[f.tone] : 'var(--tx-2)' }} /> : null}
             <span style={{ overflowWrap: 'anywhere', minWidth: 0 }}>{f.v}</span>
           </dd>
@@ -203,8 +203,8 @@ export type MiniCol = { label: string; w?: string; r?: boolean };
 export function MiniTable({ cols, rows, empty, label, onRow }: { cols: MiniCol[]; rows: ReactNode[][]; empty?: string; label: string; onRow?: (i: number) => void }) {
   const grid = cols.map(c => c.w || 'minmax(0,1fr)').join(' ');
   return (
-    <div role="table" aria-label={label} style={{ font: '13px/18px var(--f-ui)', fontVariantNumeric: 'tabular-nums' }}>
-      <div role="row" style={{ display: 'grid', gridTemplateColumns: grid, gap: 12, alignItems: 'center', height: 36, borderBottom: '1px solid var(--ln)', fontSize: 12, color: 'var(--tx-2)' }}>
+    <div role="table" aria-label={label} style={{ font: '13px/18px var(--f-ui)' }}>
+      <div role="row" style={{ display: 'grid', gridTemplateColumns: grid, gap: 12, alignItems: 'center', height: 36, borderBottom: '1px solid var(--ln)', font: '500 12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>
         {cols.map((c, i) => (
           <div key={i} role="columnheader" style={{ textAlign: c.r ? 'right' : 'left', whiteSpace: 'nowrap' }}>{c.label}</div>
         ))}
@@ -215,10 +215,10 @@ export function MiniTable({ cols, rows, empty, label, onRow }: { cols: MiniCol[]
           role="row"
           onClick={onRow ? () => onRow(i) : undefined}
           className={onRow ? HOVER : undefined}
-          style={{ display: 'grid', gridTemplateColumns: grid, gap: 12, alignItems: 'center', minHeight: 36, borderBottom: '1px solid var(--ln)', cursor: onRow ? 'pointer' : undefined, transition: 'background-color 100ms' }}
+          style={{ display: 'grid', gridTemplateColumns: grid, gap: 12, alignItems: 'center', minHeight: 40, borderBottom: '1px solid var(--ln)', cursor: onRow ? 'pointer' : undefined, transition: 'background-color 100ms' }}
         >
           {r.map((c, j) => (
-            <div key={j} role="cell" style={{ minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: cols[j]?.r ? 'flex-end' : 'flex-start', gap: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div key={j} role="cell" style={{ minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: cols[j]?.r ? 'flex-end' : 'flex-start', fontVariantNumeric: cols[j]?.r ? 'tabular-nums' : undefined, gap: 6, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {c}
             </div>
           ))}
@@ -241,8 +241,8 @@ export function Status({ icon, label, tone = 'tx', spin, tip }: { icon: string; 
 
 export function Progress({ pct, tone = 'run', width, slow }: { pct: number; tone?: string; width?: number | string; slow?: boolean }) {
   return (
-    <span style={{ display: 'block', height: 4, width, background: 'var(--ln)', flex: width ? 'none' : 1, minWidth: 24 }}>
-      <span style={{ display: 'block', height: 4, width: `${Math.max(0, Math.min(100, pct))}%`, background: TONE[tone] || tone, transition: `width ${slow ? 900 : 150}ms linear` }} />
+    <span style={{ display: 'block', height: 6, width, background: 'var(--ln)', borderRadius: 3, overflow: 'hidden', flex: width ? 'none' : 1, minWidth: 24 }}>
+      <span style={{ display: 'block', height: 6, borderRadius: 3, width: `${Math.max(0, Math.min(100, pct))}%`, background: TONE[tone] || tone, transition: `width ${slow ? 900 : 150}ms linear` }} />
     </span>
   );
 }
@@ -250,7 +250,7 @@ export function Progress({ pct, tone = 'run', width, slow }: { pct: number; tone
 export type LogLine = { t: string; text: string; lv?: 'info' | 'ok' | 'warn' | 'err' };
 const LV = { info: ['circle-dot', 'var(--tx-3)'], ok: ['circle-check', 'var(--ok)'], warn: ['triangle-alert', 'var(--warn)'], err: ['circle-x', 'var(--err)'] };
 
-/** Log viewer: Tahoma 12/20, time, level icon, text; follows new lines. */
+/** Log viewer: 12/20, time, level icon, text; follows new lines. */
 export function LogView({ lines, height = 280 }: { lines: LogLine[]; height?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -258,12 +258,12 @@ export function LogView({ lines, height = 280 }: { lines: LogLine[]; height?: nu
     if (el) el.scrollTop = el.scrollHeight;
   }, [lines.length]);
   return (
-    <div ref={ref} role="log" aria-label="Log" style={{ height, overflow: 'auto', padding: '8px 12px', background: 'var(--panel-2)', border: '1px solid var(--ln)', font: '12px/20px var(--f-ui)', fontVariantNumeric: 'tabular-nums' }}>
+    <div ref={ref} role="log" aria-label="Log" style={{ height, overflow: 'auto', padding: '8px 12px', background: 'var(--panel-2)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', font: '12px/20px var(--f-ui)' }}>
       {lines.map((l, i) => {
         const [ic, c] = LV[l.lv || 'info'];
         return (
           <div key={i} style={{ display: 'grid', gridTemplateColumns: '64px 16px minmax(0,1fr)', gap: 8, alignItems: 'center', animation: 'ae-line 150ms var(--ease)' }}>
-            <span style={{ color: 'var(--tx-3)' }}>{l.t}</span>
+            <span style={{ color: 'var(--tx-3)', fontVariantNumeric: 'tabular-nums' }}>{l.t}</span>
             <Icon name={ic} style={{ color: c }} />
             <span>{l.text}</span>
           </div>
@@ -290,7 +290,7 @@ export function StepList({ steps, label = 'Steps' }: { steps: Step[]; label?: st
         const [ic, c] = STEP[s.state];
         const cur = s.state === 'current';
         return (
-          <li key={i} aria-current={cur ? 'step' : undefined} style={{ display: 'grid', gridTemplateColumns: '20px minmax(0,1fr) auto', gap: 10, alignItems: 'center', minHeight: 32, padding: '0 8px', background: cur ? 'var(--acc-soft)' : 'transparent', color: s.state === 'todo' || s.state === 'skipped' ? 'var(--tx-2)' : 'var(--tx)', transition: 'background-color 150ms' }}>
+          <li key={i} aria-current={cur ? 'step' : undefined} style={{ display: 'grid', gridTemplateColumns: '20px minmax(0,1fr) auto', gap: 10, alignItems: 'center', minHeight: 34, padding: '0 10px', borderRadius: 'var(--r-sm)', background: cur ? 'var(--acc-soft)' : 'transparent', color: s.state === 'todo' || s.state === 'skipped' ? 'var(--tx-2)' : 'var(--tx)', transition: 'background-color 150ms' }}>
             <Icon name={ic} spin={cur} style={{ color: c }} />
             <span style={{ fontWeight: cur ? 600 : 400 }}>{s.label}</span>
             <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{s.note}</span>
@@ -311,9 +311,9 @@ export function Stepper({ steps, current, done }: { steps: string[]; current: nu
         const reached = isDone || on;
         return (
           <li key={i} aria-current={on ? 'step' : undefined} style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
-            <span style={{ height: 2, background: reached ? 'var(--acc)' : 'var(--ln)', transition: 'background-color 150ms var(--ease)' }} />
+            <span style={{ height: 3, borderRadius: 2, background: reached ? 'var(--acc)' : 'var(--ln)', transition: 'background-color 150ms var(--ease)' }} />
             <span style={{ display: 'flex', alignItems: 'center', gap: 8, font: '12px/16px var(--f-ui)', color: on ? 'var(--tx)' : isDone ? 'var(--tx-2)' : 'var(--tx-3)' }}>
-              <span style={{ width: 20, height: 20, flex: 'none', display: 'grid', placeItems: 'center', border: `1px solid ${reached ? 'var(--acc)' : 'var(--ln-2)'}`, background: isDone ? 'var(--acc)' : 'transparent', color: isDone ? 'var(--acc-ink)' : on ? 'var(--acc)' : 'var(--tx-3)', font: '700 11px var(--f-ui)', transition: 'background-color 150ms,border-color 150ms' }}>
+              <span style={{ width: 20, height: 20, flex: 'none', borderRadius: '50%', display: 'grid', placeItems: 'center', border: `1px solid ${reached ? 'var(--acc)' : 'var(--ln-2)'}`, background: isDone ? 'var(--acc)' : 'transparent', color: isDone ? 'var(--acc-ink)' : on ? 'var(--acc)' : 'var(--tx-3)', font: '600 11px var(--f-ui)', transition: 'background-color 150ms,border-color 150ms' }}>
                 {isDone ? <Icon name="check" size={12} /> : i + 1}
               </span>
               <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{label}</span>
@@ -337,7 +337,7 @@ export function StateBlock({ ui, emptyText, emptyAction, onEmpty, unreachText, c
       <div aria-busy="true" style={{ display: 'flex', flexDirection: 'column' }}>
         {Array.from({ length: rows }, (_, i) => (
           <div key={i} aria-hidden="true" style={{ height: 36, display: 'flex', alignItems: 'center', gap: 16, borderBottom: '1px solid var(--ln)', animation: 'ae-fade 150ms var(--ease)' }}>
-            <span style={{ height: 8, width: SKW[i % 6], background: 'var(--skel)' }} />
+            <span style={{ height: 8, width: SKW[i % 6], background: 'var(--skel)', borderRadius: 4 }} />
           </div>
         ))}
         <span style={{ padding: '8px 0', font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>Reading…</span>
@@ -354,7 +354,7 @@ export function StateBlock({ ui, emptyText, emptyAction, onEmpty, unreachText, c
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '64px 24px', textAlign: 'center', animation: 'ae-fade 150ms var(--ease)' }}>
         <span style={{ font: '15px/22px var(--f-body)', color: 'var(--tx-2)', maxWidth: 440 }}>{emptyText}</span>
         {emptyAction ? (
-          <button type="button" onClick={onEmpty} className={pc('hover', 'background:var(--acc-h)')} style={{ height: 32, padding: '0 14px', background: 'var(--acc)', color: 'var(--acc-ink)', fontWeight: 600 }}>
+          <button type="button" onClick={onEmpty} className={pc('hover', 'background:var(--acc-h)')} style={{ height: 32, padding: '0 14px', borderRadius: 'var(--r-sm)', background: 'var(--acc)', color: 'var(--acc-ink)', fontWeight: 500 }}>
             {emptyAction}
           </button>
         ) : null}
@@ -376,7 +376,7 @@ export function TableArea({ children, above }: { children: ReactNode; above?: Re
 export function H3({ children, right }: { children: ReactNode; right?: ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
-      <h3 style={{ font: '600 15px/22px var(--f-body)' }}>{children}</h3>
+      <h3 style={{ font: '600 14px/20px var(--f-body)' }}>{children}</h3>
       {right}
     </div>
   );

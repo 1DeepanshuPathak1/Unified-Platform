@@ -3,7 +3,7 @@ html,
 body {
   height: 100%;
   margin: 0;
-  background: #15191f;
+  background: #f2f4f6;
 }
 /* The console has a 1024 px minimum width; it scrolls inside #root so the page itself never does. */
 #root {
@@ -65,3 +65,26 @@ a:hover {
 .ae-step .ae-step-tools { opacity: 0; transition: opacity 100ms; }
 .ae-step:hover .ae-step-tools,
 .ae-step:focus-within .ae-step-tools { opacity: 1; }
+
+/* The older class-component screens style their boxes inline. These rules give their panels,
+   cards, buttons and chips the same corners and depth as the shared components. */
+[data-ae] section[style*="border: 1px solid var(--ln)"],
+[data-ae] div[style*="background: var(--panel)"][style*="border: 1px solid var(--ln)"],
+[data-ae] div[style*="background: var(--panel-2)"][style*="border: 1px solid var(--ln)"] {
+  border-radius: var(--r);
+}
+[data-ae] section[style*="background: var(--panel)"][style*="border: 1px solid var(--ln)"] {
+  box-shadow: var(--sh-card);
+}
+[data-ae] button[style*="border: 1px solid var(--ln-2)"],
+[data-ae] button[style*="background: var(--acc)"],
+[data-ae] button[style*="background: var(--err)"],
+[data-ae] a[style*="border: 1px solid var(--ln-2)"],
+[data-ae] label[style*="border: 1px solid var(--ln-2)"],
+[data-ae] span[style*="border: 1px solid var(--ln-2)"][style*="height: 20px"] {
+  border-radius: var(--r-sm);
+}
+[data-ae] [role="dialog"][style*="box-shadow: var(--sh-over)"],
+[data-ae] [role="menu"][style*="box-shadow: var(--sh-menu)"] {
+  border-radius: var(--r);
+}

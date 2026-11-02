@@ -92,7 +92,7 @@ const PLATFORM = {
 export default class AegisConsole extends DC {
   state: any = {
     ready: !!AEGIS,
-    theme: 'dark',
+    theme: 'light',
     route: 'backup/home',
     collapsed: false,
     menu: null,
@@ -121,7 +121,7 @@ export default class AegisConsole extends DC {
 
   componentDidMount() {
     try {
-      const t = localStorage.getItem('aegis.theme');
+      const t = localStorage.getItem('aegis.theme.v2');
       if (t) this.setState({ theme: t });
     } catch (e) {}
     this.readHash();
@@ -187,7 +187,7 @@ export default class AegisConsole extends DC {
 
   readHash() {
     try {
-      const t = localStorage.getItem('aegis.theme');
+      const t = localStorage.getItem('aegis.theme.v2');
       if (t && t !== this.state.theme) this.setState({ theme: t });
     } catch (e) {}
     const h = (location.hash || '').replace(/^#\/?/, '');
@@ -497,7 +497,7 @@ export default class AegisConsole extends DC {
       toggleTheme: () => {
         const t = s.theme === 'dark' ? 'light' : 'dark';
         try {
-          localStorage.setItem('aegis.theme', t);
+          localStorage.setItem('aegis.theme.v2', t);
         } catch (e) {}
         this.setState({ theme: t, menu: null });
       },
@@ -647,6 +647,7 @@ export default class AegisConsole extends DC {
         {v.anyMenu ? <div onClick={v.closeMenu} style={{ position: 'absolute', inset: 0, zIndex: 40 }} /> : null}
         {v.actingAs ? <ActingBanner customer={customerName(v.actingAs.customer)} owner={v.actingAs.owner} until={v.actingUntil} onReturn={v.stopActing} self={v.selfView} /> : null}
         <header
+          className="ae-hdr"
           style={{
             height: '52px',
             flex: 'none',
@@ -655,7 +656,8 @@ export default class AegisConsole extends DC {
             gap: '12px',
             padding: '0 12px 0 16px',
             background: 'var(--hdr)',
-            borderBottom: '1px solid var(--ln)',
+            color: 'var(--tx)',
+            borderBottom: '1px solid oklch(0 0 0 / 0.3)',
             position: 'relative',
             zIndex: 45,
             transition: 'background-color 150ms,border-color 150ms'
@@ -667,7 +669,7 @@ export default class AegisConsole extends DC {
             style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 'none', height: '36px', paddingRight: '4px' }}
           >
             <Icon name="mark" size="24" />
-            <span style={{ font: '500 17px/24px var(--f-head)', whiteSpace: 'nowrap', letterSpacing: '0.005em' }}>Host360 Aegis</span>
+            <span style={{ font: '600 16px/24px var(--f-head)', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>Host360 <span style={{ fontWeight: 400, color: 'var(--tx-2)' }}>Aegis</span></span>
           </a>
           <span style={{ width: '1px', height: '24px', background: 'var(--ln-2)', flex: 'none', display: v.selfView ? 'none' : undefined }} />
           <div style={{ position: 'relative', flex: 'none', display: v.selfView ? 'none' : undefined }}>
@@ -689,7 +691,7 @@ export default class AegisConsole extends DC {
               className={pc('hover', 'background:var(--hover)')}
             >
               <Icon name={v.productIcon} size="20" style={{ color: 'var(--tx-2)' }} />
-              <span style={{ font: '500 16px/24px var(--f-head)' }}>{v.productLabel}</span>
+              <span style={{ font: '600 15px/22px var(--f-head)' }}>{v.productLabel}</span>
               <Icon
                 name="chevron-down"
                 style={{ color: 'var(--tx-3)', transform: v.productChev, transition: 'transform 150ms var(--ease)' }}
@@ -699,6 +701,7 @@ export default class AegisConsole extends DC {
               <div
                 role="menu"
                 aria-label="Products"
+                className="ae-pop"
                 style={{
                   position: 'absolute',
                   top: '44px',
@@ -706,7 +709,8 @@ export default class AegisConsole extends DC {
                   width: '360px',
                   padding: '4px 0',
                   background: 'var(--overlay)',
-                  border: '1px solid var(--ln-2)',
+                  border: '1px solid var(--ln)',
+                  borderRadius: 'var(--r)',
                   boxShadow: 'var(--sh-menu)',
                   animation: 'ae-pop 140ms var(--ease)'
                 }}
@@ -763,6 +767,7 @@ export default class AegisConsole extends DC {
                   padding: '0 64px 0 36px',
                   background: 'var(--panel-2)',
                   border: '1px solid var(--ln)',
+                  borderRadius: 'var(--r-sm)',
                   color: 'var(--tx)',
                   font: '14px var(--f-body)',
                   transition: 'border-color 100ms,background-color 150ms'
@@ -778,6 +783,7 @@ export default class AegisConsole extends DC {
                   height: '18px',
                   padding: '0 6px',
                   border: '1px solid var(--ln-2)',
+                  borderRadius: '3px',
                   font: '11px/16px var(--f-ui)',
                   color: 'var(--tx-3)',
                   whiteSpace: 'nowrap'
@@ -789,7 +795,9 @@ export default class AegisConsole extends DC {
                 <div
                   id="ae-search-results"
                   role="listbox"
+                  className="ae-pop"
                   style={{
+                    borderRadius: 'var(--r)',
                     position: 'absolute',
                     top: '42px',
                     left: 0,
@@ -901,7 +909,10 @@ export default class AegisConsole extends DC {
                 <div
                   role="dialog"
                   aria-label="Running jobs"
+                  className="ae-pop"
                   style={{
+                    borderRadius: 'var(--r)',
+                    overflow: 'hidden',
                     position: 'absolute',
                     top: '44px',
                     right: 0,
@@ -1022,7 +1033,10 @@ export default class AegisConsole extends DC {
                 <div
                   role="dialog"
                   aria-label="Active alerts"
+                  className="ae-pop"
                   style={{
+                    borderRadius: 'var(--r)',
+                    overflow: 'hidden',
                     position: 'absolute',
                     top: '44px',
                     right: 0,
@@ -1189,9 +1203,10 @@ export default class AegisConsole extends DC {
                     height: '28px',
                     display: 'grid',
                     placeItems: 'center',
-                    background: 'var(--panel-2)',
-                    border: '1px solid var(--ln-2)',
-                    font: '700 11px var(--f-ui)'
+                    borderRadius: '50%',
+                    background: 'var(--acc)',
+                    color: 'var(--acc-ink)',
+                    font: '600 11px var(--f-ui)'
                   }}
                 >
                   PR
@@ -1343,7 +1358,7 @@ export default class AegisConsole extends DC {
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', animation: 'ae-page 150ms var(--ease)' }}>
                 <div style={{ padding: '20px 24px 16px' }}>
                   <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>{v.ctx?.section}</div>
-                  <h1 style={{ font: '500 24px/32px var(--f-head)' }}>{v.ctx?.title}</h1>
+                  <h1 style={{ font: '600 22px/30px var(--f-head)' }}>{v.ctx?.title}</h1>
                   <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>{v.ctx?.sub}</p>
                 </div>
                 <div
@@ -1391,7 +1406,9 @@ export default class AegisConsole extends DC {
                 gap: '12px',
                 padding: '10px 8px 10px 14px',
                 background: 'var(--overlay)',
-                border: '1px solid var(--ln-2)',
+                border: '1px solid var(--ln)',
+                borderLeft: `3px solid ${t.color}`,
+                borderRadius: 'var(--r)',
                 boxShadow: 'var(--sh-menu)',
                 animation: t.anim
               }}
@@ -1450,7 +1467,7 @@ export default class AegisConsole extends DC {
               style={{ width: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', textAlign: 'center' }}
             >
               <Icon name="mark" size="40" />
-              <h1 style={{ font: '500 24px/32px var(--f-head)' }}>You are signed out</h1>
+              <h1 style={{ font: '600 22px/30px var(--f-head)' }}>You are signed out</h1>
               <p style={{ color: 'var(--tx-2)' }}>Running jobs keep going on aegis-orchestrator. Sign in again to see them.</p>
               <button
                 onClick={v.signIn}

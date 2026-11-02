@@ -115,7 +115,7 @@ function Explorer({ ctx }: { ctx: Ctx }) {
             <div style={{ padding: '10px 12px 4px', font: '600 12px/16px var(--f-body)', color: 'var(--tx-3)' }}>{g}</div>
             {ENDPOINTS.filter(x => x.group === g).map(x => (
               <button key={x.id} type="button" aria-current={sel === x.id ? 'true' : undefined} onClick={() => { setSel(x.id); setRes(null); }} className={HOVER} style={{ width: '100%', display: 'grid', gridTemplateColumns: '52px minmax(0,1fr)', gap: 8, alignItems: 'center', padding: '7px 12px', textAlign: 'left', background: sel === x.id ? 'var(--acc-soft)' : undefined, borderLeft: `2px solid ${sel === x.id ? 'var(--acc)' : 'transparent'}` }}>
-                <span style={{ font: '700 11px var(--f-ui)', color: `var(--${METHOD_TONE[x.method]})` }}>{x.method}</span>
+                <span style={{ font: '600 11px var(--f-ui)', color: `var(--${METHOD_TONE[x.method]})` }}>{x.method}</span>
                 <span style={{ font: '12px var(--f-ui)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={x.path}>{x.path}</span>
               </button>
             ))}
@@ -125,7 +125,7 @@ function Explorer({ ctx }: { ctx: Ctx }) {
       <div style={{ overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <span style={{ font: '700 12px var(--f-ui)', padding: '2px 6px', border: `1px solid var(--${METHOD_TONE[e.method]})`, color: `var(--${METHOD_TONE[e.method]})` }}>{e.method}</span>
+            <span style={{ font: '600 12px var(--f-ui)', padding: '2px 6px', border: `1px solid var(--${METHOD_TONE[e.method]})`, color: `var(--${METHOD_TONE[e.method]})` }}>{e.method}</span>
             <code style={{ font: '14px var(--f-ui)' }}>{BASE}{e.path}</code>
           </div>
           <p style={{ marginTop: 6, color: 'var(--tx-2)' }}>{e.summary}. Needs the scope <code>{e.scope}</code>.</p>

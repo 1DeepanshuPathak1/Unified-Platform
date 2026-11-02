@@ -17,6 +17,8 @@ The app also has three reference pages, opened from the user menu:
 - **Design system** (`#/design-system`): tokens, type, spacing, icons and components, read from the live tokens.
 - **Handoff** (`#/handoff`): token values and CSS, the rules every screen follows (Part 7) and the screen catalogue. For each screen the catalogue gives its level, the object it reads, its actions, its states and its priority.
 
+**Look and feel.** The console follows the conventions of enterprise backup consoles such as Veeam Backup & Replication: light by default (dark one click away), a dark top bar, a white management pane, and cards on a light working area. Everything is set in Inter; controls have 4 px corners, cards and tables 6 px with a soft shadow, dialogs 8 px. KPI values sit in separate widgets, and wizards list their steps on the left. [`DESIGN.md`](DESIGN.md) records the research behind this, what was taken and what was kept as Host360's own.
+
 ## Running it
 
 ```sh

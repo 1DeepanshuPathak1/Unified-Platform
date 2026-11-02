@@ -15,12 +15,12 @@ const BTN: Record<BtnKind, { style: CSSProperties; cls: string }> = {
     style: { padding: '0 14px', background: 'var(--acc)', color: 'var(--acc-ink)' },
     cls: `${pc('hover', 'background:var(--acc-h)')} ${PRESS}`
   },
-  secondary: { style: { padding: '0 12px', border: '1px solid var(--ln-2)', background: 'var(--panel)' }, cls: HOVER },
-  outline: { style: { padding: '0 12px', border: '1px solid var(--ln-2)' }, cls: HOVER },
+  secondary: { style: { padding: '0 12px', border: '1px solid var(--ln-2)', background: 'var(--panel)', boxShadow: '0 1px 1px oklch(0.25 0.02 240 / 0.04)' }, cls: HOVER },
+  outline: { style: { padding: '0 12px', border: '1px solid var(--ln-2)', background: 'var(--panel)', boxShadow: '0 1px 1px oklch(0.25 0.02 240 / 0.04)' }, cls: HOVER },
   ghost: { style: { padding: '0 10px' }, cls: HOVER },
   danger: { style: { padding: '0 12px', color: 'var(--err)' }, cls: pc('hover', 'background:var(--err-s)') },
   dangerSolid: { style: { padding: '0 14px', background: 'var(--err)', color: 'var(--acc-ink)' }, cls: PRESS },
-  link: { style: { padding: 0, color: 'var(--acc-tx)', height: 'auto', font: '600 13px var(--f-body)' }, cls: pc('hover', 'text-decoration:underline') }
+  link: { style: { padding: 0, color: 'var(--acc-tx)', height: 'auto', font: '500 13px var(--f-body)' }, cls: pc('hover', 'text-decoration:underline') }
 };
 
 type BtnProps = {
@@ -41,7 +41,7 @@ type BtnProps = {
   type?: 'button' | 'submit';
 };
 
-/** Buttons: 32 px (28 px small), Source Sans 3 600 14 px, square. Disabled buttons stay focusable and say why. */
+/** Buttons: 32 px (28 px small), Inter 500 13 px, 4 px corners. Disabled buttons stay focusable and say why. */
 export function Btn({ kind = 'secondary', icon, iconAfter, spin, onClick, perm, disabled, why, size = 'md', tip, style, children, ariaLabel, type = 'button' }: BtnProps) {
   const off = disabled || (perm && !perm.ok);
   const reason = perm && !perm.ok ? perm.why : why;
@@ -63,7 +63,8 @@ export function Btn({ kind = 'secondary', icon, iconAfter, spin, onClick, perm, 
         alignItems: 'center',
         gap: 8,
         flex: 'none',
-        fontWeight: 600,
+        borderRadius: 'var(--r-sm)',
+        font: '500 13px/18px var(--f-ui)',
         whiteSpace: 'nowrap',
         opacity: off ? 0.45 : 1,
         transition: 'background-color 100ms,opacity 100ms,transform 80ms',
@@ -90,7 +91,7 @@ export function IconBtn({ icon, label, onClick, size = 32, iconSize = 16, perm, 
       aria-disabled={off ? 'true' : undefined}
       data-tip={off ? perm!.why : label}
       className={off ? undefined : pc('hover', 'background:var(--hover);color:var(--tx)')}
-      style={{ width: size, height: size, flex: 'none', display: 'grid', placeItems: 'center', color: 'var(--tx-2)', opacity: off ? 0.45 : 1, transition: 'background-color 100ms,color 100ms', ...style }}
+      style={{ width: size, height: size, flex: 'none', display: 'grid', placeItems: 'center', borderRadius: 'var(--r-sm)', color: 'var(--tx-2)', opacity: off ? 0.45 : 1, transition: 'background-color 100ms,color 100ms', ...style }}
     >
       <Icon name={icon} size={iconSize} />
     </button>
@@ -102,7 +103,7 @@ export type Opt<V extends string = string> = { v: V; label: string; count?: numb
 /** Segmented control: 30 px items in a 1 px --ln-2 frame; the selection indicator slides. */
 export function Seg<V extends string>({ value, options, onChange, label, panel = true }: { value: V; options: Opt<NoInfer<V>>[]; onChange: (v: NoInfer<V>) => void; label: string; panel?: boolean }) {
   return (
-    <Ind mode="fill" role="radiogroup" aria-label={label} style={{ display: 'flex', flex: 'none', alignSelf: 'flex-start', border: '1px solid var(--ln-2)', background: panel ? 'var(--panel)' : undefined }}>
+    <Ind mode="fill" role="radiogroup" aria-label={label} style={{ display: 'flex', flex: 'none', alignSelf: 'flex-start', padding: 2, gap: 2, border: '1px solid var(--ln-2)', borderRadius: 'var(--r-sm)', background: panel ? 'var(--panel)' : undefined, ['--ind-r' as string]: '3px' } as CSSProperties}>
       {options.map(o => {
         const on = o.v === value;
         return (
@@ -115,7 +116,7 @@ export function Seg<V extends string>({ value, options, onChange, label, panel =
             data-tip={o.tip}
             onClick={() => !o.disabled && onChange(o.v)}
             className={HOVER_TX}
-            style={{ height: 30, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 8, font: '13px var(--f-ui)', whiteSpace: 'nowrap', color: on ? 'var(--tx)' : 'var(--tx-2)', opacity: o.disabled ? 0.45 : 1, transition: 'color 100ms' }}
+            style={{ height: 26, padding: '0 10px', borderRadius: 3, display: 'flex', alignItems: 'center', gap: 8, font: `${on ? 500 : 400} 13px var(--f-ui)`, whiteSpace: 'nowrap', color: on ? 'var(--acc-tx)' : 'var(--tx-2)', opacity: o.disabled ? 0.45 : 1, transition: 'color 100ms' }}
           >
             {o.icon ? <Icon name={o.icon} /> : null}
             {o.label}
@@ -127,7 +128,7 @@ export function Seg<V extends string>({ value, options, onChange, label, panel =
   );
 }
 
-/** Tabs and sub-tabs: 40 px, Source Sans 3 600 14 px, 2 px --acc underline that slides. */
+/** Tabs and sub-tabs: 40 px, Inter 500 14 px, 2 px --acc underline that slides. */
 export function Tabs<V extends string>({ value, tabs, onChange, label, style }: { value: V; tabs: Opt<NoInfer<V>>[]; onChange: (v: NoInfer<V>) => void; label: string; style?: CSSProperties }) {
   return (
     <Ind mode="underline" role="tablist" aria-label={label} style={{ flex: 'none', display: 'flex', padding: '0 16px', borderBottom: '1px solid var(--ln)', overflowX: 'auto', overflowY: 'hidden', ...style }}>
@@ -142,11 +143,11 @@ export function Tabs<V extends string>({ value, tabs, onChange, label, style }: 
             data-tip={t.tip}
             onClick={() => onChange(t.v)}
             className={HOVER_TX}
-            style={{ height: 40, padding: '0 10px', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, whiteSpace: 'nowrap', color: on ? 'var(--tx)' : 'var(--tx-2)', transition: 'color 100ms' }}
+            style={{ height: 40, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6, font: '500 14px/20px var(--f-ui)', whiteSpace: 'nowrap', color: on ? 'var(--acc-tx)' : 'var(--tx-2)', transition: 'color 100ms' }}
           >
             {t.icon ? <Icon name={t.icon} style={{ color: on ? 'var(--acc)' : 'var(--tx-3)' }} /> : null}
             {t.label}
-            {t.count != null && t.count !== '' ? <span style={{ font: '11px var(--f-ui)', color: 'var(--tx-3)' }}>{t.count}</span> : null}
+            {t.count != null && t.count !== '' ? <span style={{ minWidth: 20, height: 18, padding: '0 6px', borderRadius: 9, display: 'inline-grid', placeItems: 'center', background: on ? 'var(--acc-soft)' : 'var(--hover)', font: '500 11px/18px var(--f-ui)', color: on ? 'var(--acc-tx)' : 'var(--tx-2)', fontVariantNumeric: 'tabular-nums' }}>{t.count}</span> : null}
           </button>
         );
       })}
@@ -164,7 +165,7 @@ export function FilterInput({ value, onChange, placeholder, label, width = 260 }
         placeholder={placeholder}
         aria-label={label}
         className={pc('focus', 'border-color:var(--acc)')}
-        style={{ width: '100%', height: 32, padding: '0 10px 0 34px', background: 'var(--panel)', border: '1px solid var(--ln-2)', font: '13px var(--f-ui)', transition: 'border-color 100ms' }}
+        style={{ width: '100%', height: 32, padding: '0 10px 0 34px', background: 'var(--panel)', border: '1px solid var(--ln-2)', borderRadius: 'var(--r-sm)', font: '13px var(--f-ui)', transition: 'border-color 100ms' }}
       />
     </div>
   );
@@ -173,7 +174,7 @@ export function FilterInput({ value, onChange, placeholder, label, width = 260 }
 /** A labelled select for toolbars: "Type  All ▾". */
 export function SelectFilter({ label, value, options, onChange }: { label: string; value: string; options: (string | Opt)[]; onChange: (v: string) => void }) {
   return (
-    <label style={{ height: 32, flex: 'none', display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px 0 10px', border: '1px solid var(--ln-2)', background: 'var(--panel)', font: '13px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>
+    <label style={{ height: 32, flex: 'none', display: 'flex', alignItems: 'center', gap: 6, padding: '0 4px 0 10px', border: '1px solid var(--ln-2)', borderRadius: 'var(--r-sm)', background: 'var(--panel)', font: '13px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>
       {label}
       <select value={value} onChange={e => onChange(e.target.value)} aria-label={label} style={{ height: 30, border: 0, background: 'transparent', color: 'var(--tx)', font: '13px var(--f-ui)' }}>
         {options.map(o => (typeof o === 'string' ? <option key={o} value={o}>{o}</option> : <option key={o.v} value={o.v}>{o.label}</option>))}
@@ -196,8 +197,8 @@ export function Toggle({ on, onChange, label, children, perm }: { on: boolean; o
       onClick={() => !off && onChange(!on)}
       style={{ display: 'flex', alignItems: 'center', gap: 8, font: '13px var(--f-ui)', opacity: off ? 0.45 : 1, whiteSpace: 'nowrap' }}
     >
-      <span style={{ width: 32, height: 18, padding: 2, flex: 'none', display: 'flex', background: on ? 'var(--acc)' : 'transparent', border: `1px solid ${on ? 'var(--acc)' : 'var(--ln-2)'}`, transition: 'background-color 120ms,border-color 120ms' }}>
-        <span style={{ width: 12, height: 12, background: on ? 'var(--acc-ink)' : 'var(--tx-3)', transform: on ? 'translateX(14px)' : 'none', transition: 'transform 120ms var(--ease),background-color 120ms' }} />
+      <span style={{ width: 32, height: 18, padding: 2, flex: 'none', display: 'flex', borderRadius: 9, background: on ? 'var(--acc)' : 'var(--ln-2)', border: `1px solid ${on ? 'var(--acc)' : 'var(--ln-2)'}`, transition: 'background-color 120ms,border-color 120ms' }}>
+        <span style={{ width: 12, height: 12, borderRadius: '50%', background: on ? 'var(--acc-ink)' : 'var(--panel)', boxShadow: '0 1px 2px oklch(0 0 0 / 0.2)', transform: on ? 'translateX(14px)' : 'none', transition: 'transform 120ms var(--ease),background-color 120ms' }} />
       </span>
       {children != null ? <span style={{ whiteSpace: 'normal', textAlign: 'left', minWidth: 0 }}>{children}</span> : null}
     </button>
@@ -220,7 +221,7 @@ export function CheckBox({ on, mixed, onChange, label, children, disabled, why }
     >
       <span
         className={pc('hover', 'border-color:var(--acc)')}
-        style={{ width: 16, height: 16, flex: 'none', display: 'grid', placeItems: 'center', border: `1px solid ${filled ? 'var(--acc)' : 'var(--ln-2)'}`, background: filled ? 'var(--acc)' : 'transparent', color: 'var(--acc-ink)', transition: 'background-color 100ms,border-color 100ms' }}
+        style={{ width: 16, height: 16, flex: 'none', display: 'grid', placeItems: 'center', borderRadius: 3, border: `1px solid ${filled ? 'var(--acc)' : 'var(--ln-2)'}`, background: filled ? 'var(--acc)' : 'var(--panel)', color: 'var(--acc-ink)', transition: 'background-color 100ms,border-color 100ms' }}
       >
         <Icon name={mixed ? 'minus' : on ? 'check' : ''} size={12} />
       </span>
@@ -244,12 +245,12 @@ export function RadioCard({ on, onClick, title, note, tag, icon, disabled, why }
       data-tip={disabled ? why : undefined}
       onClick={() => !disabled && onClick()}
       className={pc('hover', `border-color:${on ? 'var(--acc)' : 'var(--ln-2)'}`)}
-      style={{ display: 'grid', gridTemplateColumns: icon ? '16px 20px minmax(0,1fr) auto' : '16px minmax(0,1fr) auto', alignItems: 'center', gap: 12, minHeight: 56, padding: '10px 14px', border: `1px solid ${on ? 'var(--acc)' : 'var(--ln)'}`, background: on ? 'var(--acc-soft)' : 'transparent', boxShadow: on ? 'inset 0 0 0 1px var(--acc)' : 'none', opacity: disabled ? 0.45 : 1, textAlign: 'left', transition: 'border-color 100ms,background-color 100ms,box-shadow 100ms' }}
+      style={{ display: 'grid', gridTemplateColumns: icon ? '16px 20px minmax(0,1fr) auto' : '16px minmax(0,1fr) auto', alignItems: 'center', gap: 12, minHeight: 56, padding: '12px 16px', borderRadius: 'var(--r)', border: `1px solid ${on ? 'var(--acc)' : 'var(--ln-2)'}`, background: on ? 'var(--acc-soft)' : 'var(--panel)', boxShadow: on ? 'inset 0 0 0 1px var(--acc)' : 'none', opacity: disabled ? 0.45 : 1, textAlign: 'left', transition: 'border-color 100ms,background-color 100ms,box-shadow 100ms' }}
     >
       {radioDot(on)}
       {icon ? <Icon name={icon} size={20} style={{ color: on ? 'var(--acc)' : 'var(--tx-2)' }} /> : null}
       <span style={{ minWidth: 0 }}>
-        <span style={{ display: 'block', fontWeight: 600 }}>{title}</span>
+        <span style={{ display: 'block', fontWeight: 600, fontSize: 14 }}>{title}</span>
         {note ? <span style={{ display: 'block', fontSize: 13, lineHeight: '18px', color: 'var(--tx-2)' }}>{note}</span> : null}
       </span>
       {tag ? <Tag>{tag}</Tag> : <span />}
@@ -260,14 +261,14 @@ export function RadioCard({ on, onClick, title, note, tag, icon, disabled, why }
 export function Tag({ children, tone, style }: { children: ReactNode; tone?: 'acc' | 'warn' | 'err' | 'ok' | 'run'; style?: CSSProperties }) {
   const c = tone ? `var(--${tone === 'acc' ? 'acc-tx' : tone})` : 'var(--tx-2)';
   return (
-    <span style={{ flex: 'none', height: 20, padding: '0 6px', display: 'inline-flex', alignItems: 'center', gap: 4, border: `1px solid ${tone ? c : 'var(--ln-2)'}`, font: '11px/18px var(--f-ui)', color: c, whiteSpace: 'nowrap', ...style }}>
+    <span style={{ flex: 'none', height: 20, padding: '0 7px', display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 3, border: `1px solid ${tone ? `color-mix(in oklch, ${c} 45%, transparent)` : 'var(--ln-2)'}`, background: tone ? `color-mix(in oklch, ${c} 8%, transparent)` : 'var(--panel-2)', font: '500 11px/18px var(--f-ui)', color: c, whiteSpace: 'nowrap', ...style }}>
       {children}
     </span>
   );
 }
 
 // ---- form fields ----
-export const fieldLabel: CSSProperties = { font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' };
+export const fieldLabel: CSSProperties = { font: '500 13px/18px var(--f-ui)', color: 'var(--tx)' };
 const FOCUS = pc('focus', 'border-color:var(--acc)');
 
 export function Field({ id, label, hint, err, children, span, style }: { id?: string; label: ReactNode; hint?: ReactNode; err?: string | null; children: ReactNode; span?: number; style?: CSSProperties }) {
@@ -283,7 +284,7 @@ export function Field({ id, label, hint, err, children, span, style }: { id?: st
           {err}
         </span>
       ) : null}
-      {hint && !err ? <span style={{ fontSize: 13, lineHeight: '18px', color: 'var(--tx-2)', textWrap: 'pretty' } as CSSProperties}>{hint}</span> : null}
+      {hint && !err ? <span style={{ fontSize: 12, lineHeight: '17px', color: 'var(--tx-3)', textWrap: 'pretty' } as CSSProperties}>{hint}</span> : null}
     </div>
   );
 }
@@ -302,7 +303,7 @@ export function TextInput({ id, value, onChange, placeholder, type = 'text', inv
       aria-invalid={invalid ? 'true' : undefined}
       autoComplete="off"
       className={FOCUS}
-      style={{ width, height: 36, padding: '0 10px', background: 'var(--panel-2)', border: `1px solid ${invalid ? 'var(--err)' : 'var(--ln)'}`, font: mono ? '13px var(--f-ui)' : '14px var(--f-body)', color: readOnly ? 'var(--tx-2)' : 'var(--tx)', transition: 'border-color 100ms' }}
+      style={{ width, height: 34, padding: '0 10px', background: readOnly ? 'var(--panel-2)' : 'var(--panel)', border: `1px solid ${invalid ? 'var(--err)' : 'var(--ln-2)'}`, borderRadius: 'var(--r-sm)', font: mono ? '13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' : '14px var(--f-body)', color: readOnly ? 'var(--tx-2)' : 'var(--tx)', transition: 'border-color 100ms' }}
     />
   );
 }
@@ -315,7 +316,7 @@ export function SelectInput({ id, value, onChange, options, width, disabled }: {
       disabled={disabled}
       onChange={e => onChange(e.target.value)}
       className={FOCUS}
-      style={{ width, height: 36, padding: '0 8px', background: 'var(--panel-2)', border: '1px solid var(--ln)', font: '14px var(--f-body)', color: 'var(--tx)' }}
+      style={{ width, height: 34, padding: '0 8px', background: 'var(--panel)', border: '1px solid var(--ln-2)', borderRadius: 'var(--r-sm)', font: '14px var(--f-body)', color: 'var(--tx)' }}
     >
       {options.map(o => (typeof o === 'string' ? <option key={o} value={o}>{o}</option> : <option key={o.v} value={o.v} disabled={o.disabled}>{o.label}</option>))}
     </select>
@@ -331,7 +332,7 @@ export function TextArea({ id, value, onChange, rows = 3, placeholder, mono }: {
       placeholder={placeholder}
       onChange={e => onChange(e.target.value)}
       className={FOCUS}
-      style={{ padding: '8px 10px', background: 'var(--panel-2)', border: '1px solid var(--ln)', font: mono ? '12px/20px var(--f-ui)' : '14px/20px var(--f-body)', resize: 'vertical' }}
+      style={{ padding: '8px 10px', background: 'var(--panel)', border: '1px solid var(--ln-2)', borderRadius: 'var(--r-sm)', font: mono ? '12px/20px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' : '14px/20px var(--f-body)', resize: 'vertical' }}
     />
   );
 }

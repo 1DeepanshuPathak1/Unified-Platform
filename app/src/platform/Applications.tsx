@@ -258,7 +258,7 @@ function AppDrawer({ ctx, a, members, tab, setTab, closing, onClose, onEdit }: {
           <ol style={{ listStyle: 'none', padding: 0, border: '1px solid var(--ln)' }}>
             {order.map((w, i) => (
               <li key={w.id} style={{ display: 'grid', gridTemplateColumns: '28px 20px minmax(0,1fr) auto', gap: 10, alignItems: 'center', minHeight: 40, padding: '0 12px', borderBottom: i < order.length - 1 ? '1px solid var(--ln)' : 'none' }}>
-                <span style={{ font: '700 12px var(--f-ui)', color: 'var(--tx-3)' }}>{i + 1}</span>
+                <span style={{ font: '600 12px var(--f-ui)', color: 'var(--tx-3)' }}>{i + 1}</span>
                 <Icon name={W_ICON[w.type]} style={{ color: 'var(--tx-2)' }} />
                 <span style={{ fontWeight: 600 }}>{w.name}</span>
                 <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{w.type === 'DNS record' ? 'Update record' : w.type === 'Load balancer' ? 'Recreate listeners' : 'Wait until serving'}</span>

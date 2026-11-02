@@ -143,7 +143,7 @@ export function NotificationPreview({ t, extra }: { t: Template; extra?: Record<
       <Seg label="Brand" value={brand} onChange={setBrand} options={[{ v: 'host360', label: 'Host360' }, { v: 'cloudnest', label: 'CloudNest (white-label)' }]} />
       <div style={{ border: '1px solid var(--ln-2)', background: 'var(--panel-2)' }}>
         <div style={{ padding: '10px 14px', borderBottom: '1px solid var(--ln)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          {brand === 'host360' ? <Icon name="mark" size={20} /> : <span style={{ width: 20, height: 20, display: 'grid', placeItems: 'center', background: 'var(--tx)', color: 'var(--app)', font: '700 11px var(--f-ui)' }}>C</span>}
+          {brand === 'host360' ? <Icon name="mark" size={20} /> : <span style={{ width: 20, height: 20, display: 'grid', placeItems: 'center', background: 'var(--tx)', color: 'var(--app)', font: '600 11px var(--f-ui)' }}>C</span>}
           <strong style={{ fontWeight: 600 }}>{BRANDS[brand].logo}</strong>
           <span style={{ flex: 1 }} />
           <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>From {brand === 'host360' ? 'notify@host360.ai' : 'alerts@cloudnest.in'}</span>

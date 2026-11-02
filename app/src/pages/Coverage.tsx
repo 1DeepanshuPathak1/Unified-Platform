@@ -12,7 +12,7 @@ const ST: Record<CovStatus, [string, string]> = {
 };
 const readTheme = () => {
   try {
-    return localStorage.getItem('aegis.theme') || 'dark';
+    return localStorage.getItem('aegis.theme.v2') || 'light';
   } catch {
     return 'dark';
   }
@@ -29,7 +29,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
   const toggle = () => {
     const t = theme === 'dark' ? 'light' : 'dark';
     try {
-      localStorage.setItem('aegis.theme', t);
+      localStorage.setItem('aegis.theme.v2', t);
     } catch {
       /* the theme just will not persist */
     }
@@ -43,18 +43,18 @@ export default function Coverage({ hub }: { hub?: boolean }) {
   const tile = (label: string, value: string, sub: string, color?: string): ReactElement => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px', borderLeft: '1px solid var(--ln)', minWidth: 0 }}>
       <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>{label}</span>
-      <span style={{ font: '500 28px/36px var(--f-head)', fontVariantNumeric: 'tabular-nums', color: color || 'var(--tx)' }}>{value}</span>
+      <span style={{ font: '600 26px/34px var(--f-head)', fontVariantNumeric: 'tabular-nums', color: color || 'var(--tx)' }}>{value}</span>
       <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>{sub}</span>
     </div>
   );
   const consoleHref = hub ? '#/backup/inbox' : '#/';
   return (
     <div data-ae="" data-theme={theme} style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)' }}>
-      <header style={{ position: 'sticky', top: 0, zIndex: 10, height: 52, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', background: 'var(--hdr)', borderBottom: '1px solid var(--ln)' }}>
+      <header className="ae-hdr" style={{ color: 'var(--tx)', position: 'sticky', top: 0, zIndex: 10, height: 52, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', background: 'var(--hdr)', borderBottom: '1px solid var(--ln)' }}>
         <Icon name="mark" size={24} />
-        <span style={{ font: '500 17px/24px var(--f-head)' }}>Host360 Aegis</span>
+        <span style={{ font: '600 16px/24px var(--f-head)' }}>Host360 Aegis</span>
         <span style={{ width: 1, height: 24, background: 'var(--ln-2)' }} />
-        <span style={{ font: '500 16px/24px var(--f-head)', color: 'var(--tx-2)' }}>Coverage</span>
+        <span style={{ font: '600 15px/22px var(--f-head)', color: 'var(--tx-2)' }}>Coverage</span>
         <span style={{ flex: 1 }} />
         <a href="#/handoff" className={pc('hover', 'background:var(--hover)')} style={btn}>
           Handoff values
@@ -74,7 +74,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
       </header>
       <main style={{ maxWidth: 1360, padding: '32px 40px 80px', display: 'flex', flexDirection: 'column', gap: 32 }}>
         <section style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 880 }}>
-          <h1 style={{ font: '500 28px/36px var(--f-head)' }}>Unified Platform coverage</h1>
+          <h1 style={{ font: '600 26px/34px var(--f-head)' }}>Unified Platform coverage</h1>
           <p style={{ color: 'var(--tx-2)', textWrap: 'pretty' } as CSSProperties}>
             Every item in Parts 2 to 7 of the brief and every requirement group of the requirements workbook (Part 8, with the workbook’s own priorities), the screens that serve it, how far it is designed, its priority and the platform object it reads. Items are built in priority order, P0 first. This page is updated at the end of every turn; turn {CURRENT_TURN} is the latest.
           </p>
@@ -82,7 +82,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(5,minmax(0,1fr))', background: 'var(--panel)', border: '1px solid var(--ln)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '16px 18px', minWidth: 0 }}>
             <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>Items</span>
-            <span style={{ font: '500 28px/36px var(--f-head)' }}>{COVERAGE.length}</span>
+            <span style={{ font: '600 26px/34px var(--f-head)' }}>{COVERAGE.length}</span>
             <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Parts 2 to 8</span>
           </div>
           {tile('Designed', String(count('Designed')), `${Math.round((count('Designed') / COVERAGE.length) * 100)} % of the brief`, 'var(--ok)')}
@@ -92,11 +92,11 @@ export default function Coverage({ hub }: { hub?: boolean }) {
         </section>
         {changedRows.length ? (
           <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Changed in turn {CURRENT_TURN}</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Changed in turn {CURRENT_TURN}</h2>
             <ul style={{ listStyle: 'none', padding: 0, background: 'var(--panel)', border: '1px solid var(--ln)' }}>
               {changedRows.map(c => (
                 <li key={c.id} style={{ display: 'grid', gridTemplateColumns: '48px minmax(0,1fr) 300px', gap: 12, alignItems: 'center', minHeight: 40, padding: '6px 16px', borderBottom: '1px solid var(--ln)' }}>
-                  <span style={{ font: '700 12px var(--f-ui)', color: 'var(--tx-3)', alignSelf: c.added ? 'start' : undefined, paddingTop: c.added ? 2 : 0 }}>{c.id}</span>
+                  <span style={{ font: '600 12px var(--f-ui)', color: 'var(--tx-3)', alignSelf: c.added ? 'start' : undefined, paddingTop: c.added ? 2 : 0 }}>{c.id}</span>
                   <span style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
                     <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} data-tip={c.item} data-tip-overflow="">{c.item}</span>
                     {c.added ? <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>Added: {c.added}</span> : null}
@@ -118,7 +118,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
           </section>
         ) : null}
         <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Every item</h2>
+          <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Every item</h2>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
             <Seg label="Status" value={status} onChange={setStatus} options={[{ v: 'All', label: 'All', count: COVERAGE.length }, ...(['Designed', 'Partly designed', 'Not designed'] as CovStatus[]).map(s => ({ v: s, label: s, count: count(s) }))]} />
             <SelectFilter label="Priority" value={prio} onChange={setPrio} options={['All', 'P0', 'P1', 'P2', 'P3', 'P4']} />

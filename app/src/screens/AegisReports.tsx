@@ -69,7 +69,7 @@ export default class AegisReports extends DC {
             <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>
               Operations · <span>{v.productLabel}</span>
             </div>
-            <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Reports</h1>
+            <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Reports</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>
               Scheduled summaries for <span>{v.productLabel}</span>. Switch product in the header for the others.
             </p>
@@ -143,7 +143,7 @@ export default class AegisReports extends DC {
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--ln)', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <h2 style={{ font: '500 20px/28px var(--f-head)' }}>{v.r?.name}</h2>
+                <h2 style={{ font: '600 18px/26px var(--f-head)' }}>{v.r?.name}</h2>
                 <p style={{ marginTop: '2px', font: '13px var(--f-ui)', color: 'var(--tx-2)' }}>
                   Last generated <span>{v.r?.last}</span>
                 </p>
@@ -192,7 +192,7 @@ export default class AegisReports extends DC {
                   style={{ padding: '16px 20px', borderLeft: `1px solid ${f.bl}`, display: 'flex', flexDirection: 'column', gap: '4px' }}
                 >
                   <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}>{f.k}</span>
-                  <span style={{ font: '500 22px/30px var(--f-head)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                  <span style={{ font: '600 22px/30px var(--f-head)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                     {f.v}
                   </span>
                 </div>

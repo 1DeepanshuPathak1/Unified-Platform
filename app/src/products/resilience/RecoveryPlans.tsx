@@ -399,7 +399,7 @@ function RunbookDocument({ ctx, rb, draft }: { ctx: Ctx; rb: Runbook; draft: boo
   };
   const apps = appsOf(rb);
   const sec = { display: 'flex', flexDirection: 'column' as const, gap: 8 };
-  const h = { font: '500 18px/26px var(--f-head)' };
+  const h = { font: '600 18px/26px var(--f-head)' };
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <Toolbar style={{ padding: 0 }}>
@@ -415,7 +415,7 @@ function RunbookDocument({ ctx, rb, draft }: { ctx: Ctx; rb: Runbook; draft: boo
       <article style={{ maxWidth: 820, background: 'var(--panel)', border: '1px solid var(--ln)', padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24, userSelect: 'text' }}>
         <header style={{ display: 'flex', flexDirection: 'column', gap: 4, borderBottom: '1px solid var(--ln)', paddingBottom: 16 }}>
           <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>Recovery runbook · {custName(rb.customer)} · version {rb.version}{draft ? ' (draft)' : ''}</span>
-          <h2 style={{ font: '500 24px/32px var(--f-head)' }}>{rb.name}</h2>
+          <h2 style={{ font: '600 22px/30px var(--f-head)' }}>{rb.name}</h2>
           <span style={{ color: 'var(--tx-2)' }}>Generated {ctx.now()} by Host360 Aegis. Times are in India Standard Time.</span>
         </header>
         <section style={sec}>

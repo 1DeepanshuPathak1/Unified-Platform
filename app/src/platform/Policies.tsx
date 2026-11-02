@@ -180,7 +180,7 @@ export default function Policies({ ctx, fixedType }: { ctx: Ctx; fixedType?: Pol
                 {chain(d, s.policies).map((p, i, a) => (
                   <li key={p.id} style={{ display: 'grid', gridTemplateColumns: '28px minmax(0,1fr)', gap: 10, alignItems: 'start' }}>
                     <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', alignSelf: 'stretch' }}>
-                      <span style={{ width: 20, height: 20, marginTop: 10, display: 'grid', placeItems: 'center', border: `1px solid ${p.id === d.id ? 'var(--acc)' : 'var(--ln-2)'}`, background: p.id === d.id ? 'var(--acc)' : 'transparent', color: p.id === d.id ? 'var(--acc-ink)' : 'var(--tx-3)', font: '700 11px var(--f-ui)' }}>{i + 1}</span>
+                      <span style={{ width: 20, height: 20, marginTop: 10, display: 'grid', placeItems: 'center', border: `1px solid ${p.id === d.id ? 'var(--acc)' : 'var(--ln-2)'}`, background: p.id === d.id ? 'var(--acc)' : 'transparent', color: p.id === d.id ? 'var(--acc-ink)' : 'var(--tx-3)', font: '600 11px var(--f-ui)' }}>{i + 1}</span>
                       {i < a.length - 1 ? <span style={{ flex: 1, width: 2, background: 'var(--ln-2)' }} /> : null}
                     </span>
                     <div style={{ padding: '8px 0 16px' }}>

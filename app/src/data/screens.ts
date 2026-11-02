@@ -170,5 +170,6 @@ export const RULES: [string, string][] = [
   ['Bars, plurals and toasts', 'Amber warning bar, red danger bar. Correct plurals (1 workload, 2 workloads). Short toasts that name the object ("Backup started for SQL01").'],
   ['Sample data', 'Realistic and consistent: sites Chennai-proxmox-prod, Chennai_Lab_Proxmox, production-openstack, region-2-os; a vCenter at 172.25.10.177; repositories obj-check and repo-director-lab. No lorem ipsum.'],
   ['Disabled actions', 'Stay visible at 45 % opacity with aria-disabled, and say in their tooltip what is missing or which role is needed.'],
-  ['Platform objects', 'Every screen states the platform object it reads, its actions, its states, its priority and whether it is platform-level or product-level (catalogue below).']
+  ['Platform objects', 'Every screen states the platform object it reads, its actions, its states, its priority and whether it is platform-level or product-level (catalogue below).'],
+  ['Visual system', 'Light by default, dark one click away. Dark top bar, white management pane, cards on a light working area. One typeface (Inter). 4 px controls, 6 px cards and tables with a soft shadow, 8 px dialogs. KPI values in separate widgets; wizards list their steps on the left. The accent marks only the primary action, selection and focus.']
 ];

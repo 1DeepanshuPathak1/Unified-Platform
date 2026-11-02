@@ -855,7 +855,7 @@ export default class AegisSites extends DC {
         <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Infrastructure</div>
-            <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Sites</h1>
+            <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Sites</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>
               Platforms Aegis connects to in <span>{v.project}</span>, and what each one is used for.
             </p>
@@ -1013,7 +1013,7 @@ export default class AegisSites extends DC {
                 animation: 'ae-fade 120ms var(--ease)'
               }}
             >
-              <span style={{ font: '700 13px var(--f-ui)', marginRight: '12px', fontVariantNumeric: 'tabular-nums' }}>{v.selLabel}</span>
+              <span style={{ font: '600 13px var(--f-ui)', marginRight: '12px', fontVariantNumeric: 'tabular-nums' }}>{v.selLabel}</span>
               <button
                 onClick={v.bulkRefresh}
                 aria-disabled={v.opDis}
@@ -1137,7 +1137,7 @@ export default class AegisSites extends DC {
                 <h2
                   style={{
                     marginTop: '2px',
-                    font: '500 20px/28px var(--f-head)',
+                    font: '600 18px/26px var(--f-head)',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
@@ -1322,7 +1322,7 @@ export default class AegisSites extends DC {
                 <div
                   role="table"
                   aria-label="Nodes"
-                  style={{ font: '13px/18px var(--f-ui)', fontVariantNumeric: 'tabular-nums', animation: 'ae-fade 150ms var(--ease)' }}
+                  style={{ font: '13px/18px var(--f-ui)', animation: 'ae-fade 150ms var(--ease)' }}
                 >
                   <div
                     role="row"
@@ -1387,7 +1387,7 @@ export default class AegisSites extends DC {
                 <div
                   role="table"
                   aria-label="Storage"
-                  style={{ font: '13px/18px var(--f-ui)', fontVariantNumeric: 'tabular-nums', animation: 'ae-fade 150ms var(--ease)' }}
+                  style={{ font: '13px/18px var(--f-ui)', animation: 'ae-fade 150ms var(--ease)' }}
                 >
                   <div
                     role="row"
@@ -1497,7 +1497,7 @@ export default class AegisSites extends DC {
                     ))}
                   </dl>
                   <div>
-                    <h3 style={{ font: '600 15px/22px var(--f-body)', marginBottom: '8px' }}>What the account can do</h3>
+                    <h3 style={{ font: '600 14px/20px var(--f-body)', marginBottom: '8px' }}>What the account can do</h3>
                     {arr(v.d?.privs).map((pv: any, i: number) => (
                       <div
                         key={i}
@@ -1582,7 +1582,7 @@ export default class AegisSites extends DC {
             >
               <div style={{ flex: 'none', padding: '20px 16px 0 24px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <h2 id="wiz-title" style={{ font: '500 20px/28px var(--f-head)' }}>
+                  <h2 id="wiz-title" style={{ font: '600 18px/26px var(--f-head)' }}>
                     {v.w?.title}
                   </h2>
                   <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>{v.w?.sub}</p>
@@ -1638,7 +1638,7 @@ export default class AegisSites extends DC {
                           border: `1px solid ${ws.bd}`,
                           background: ws.bg,
                           color: ws.nfg,
-                          font: '700 11px var(--f-ui)',
+                          font: '600 11px var(--f-ui)',
                           transition: 'background-color 150ms,border-color 150ms'
                         }}
                       >
@@ -2104,8 +2104,8 @@ export default class AegisSites extends DC {
                         ) : null}
                         {v.w?.checked ? (
                           <section style={{ animation: 'ae-fade 150ms var(--ease)' }}>
-                            <h3 style={{ font: '600 15px/22px var(--f-body)', marginBottom: '8px' }}>{v.w?.capTitle}</h3>
-                            <div role="table" style={{ font: '13px/18px var(--f-ui)', fontVariantNumeric: 'tabular-nums' }}>
+                            <h3 style={{ font: '600 14px/20px var(--f-body)', marginBottom: '8px' }}>{v.w?.capTitle}</h3>
+                            <div role="table" style={{ font: '13px/18px var(--f-ui)' }}>
                               {arr(v.w?.caps).map((cp: any, i: number) => (
                                 <div
                                   key={i}
@@ -2316,7 +2316,7 @@ export default class AegisSites extends DC {
               }}
             >
               <div style={{ padding: '20px 24px 0' }}>
-                <h2 id="rm-title" style={{ font: '500 20px/28px var(--f-head)' }}>
+                <h2 id="rm-title" style={{ font: '600 18px/26px var(--f-head)' }}>
                   Remove site <span>{v.rm?.name}</span>
                 </h2>
                 <p style={{ marginTop: '4px', color: 'var(--tx-2)' }}>Aegis stops reading this site. Exactly this is removed:</p>

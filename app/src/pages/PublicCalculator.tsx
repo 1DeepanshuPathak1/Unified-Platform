@@ -7,7 +7,7 @@ import { CalculatorBody } from '../platform/Calculators';
 
 const readTheme = () => {
   try {
-    return localStorage.getItem('aegis.theme') || 'dark';
+    return localStorage.getItem('aegis.theme.v2') || 'light';
   } catch {
     return 'dark';
   }
@@ -24,16 +24,16 @@ export default function PublicCalculator() {
   const toast = (m: string) => setMsg(m);
   return (
     <div data-ae="" data-theme={theme} style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ height: 52, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', borderBottom: '1px solid var(--ln)', background: 'var(--hdr)' }}>
+      <header className="ae-hdr" style={{ color: 'var(--tx)', height: 52, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', borderBottom: '1px solid var(--ln)', background: 'var(--hdr)' }}>
         <Icon name="mark" size={24} />
-        <span style={{ font: '500 17px/24px var(--f-head)' }}>Host360 Aegis</span>
+        <span style={{ font: '600 16px/24px var(--f-head)' }}>Host360 Aegis</span>
         <span style={{ flex: 1 }} />
         <a href="#/signup" className={pc('hover', 'background:var(--hover)')} style={{ height: 32, display: 'inline-flex', alignItems: 'center', padding: '0 10px', color: 'var(--tx-2)', fontWeight: 600 }}>Start a trial</a>
         <a href="#/backup/home" className={pc('hover', 'background:var(--hover)')} style={{ height: 32, display: 'inline-flex', alignItems: 'center', padding: '0 10px', color: 'var(--tx-2)', fontWeight: 600 }}>Sign in</a>
       </header>
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16, padding: '32px 0 40px', maxWidth: 1240, width: '100%', margin: '0 auto' }}>
         <div style={{ padding: '0 24px' }}>
-          <h1 style={{ font: '500 26px/34px var(--f-head)' }}>Size backup, disaster recovery and migration</h1>
+          <h1 style={{ font: '600 26px/34px var(--f-head)' }}>Size backup, disaster recovery and migration</h1>
           <p style={{ color: 'var(--tx-2)', maxWidth: 760 }}>Three calculators on one set of assumptions, the same ones Host360 engineers use. Change the assumptions to match your data; every answer updates.</p>
         </div>
         {msg ? <div style={{ padding: '0 24px' }}><Bar tone="ok" actions={<Btn kind="ghost" size="sm" onClick={() => setMsg(null)}>Close</Btn>}>{msg}</Bar></div> : null}

@@ -257,7 +257,7 @@ export default class AegisOverview extends DC {
         <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>{v.section}</div>
-            <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Overview</h1>
+            <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Overview</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>{v.sub}</p>
           </div>
           <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{v.updated}</span>
@@ -339,7 +339,7 @@ export default class AegisOverview extends DC {
                     {k.ready ? (
                       <span
                         style={{
-                          font: '500 28px/36px var(--f-head)',
+                          font: '600 26px/34px var(--f-head)',
                           fontVariantNumeric: 'tabular-nums',
                           whiteSpace: 'nowrap',
                           fontStyle: k.fs,
@@ -383,7 +383,7 @@ export default class AegisOverview extends DC {
                       borderBottom: '1px solid var(--ln)'
                     }}
                   >
-                    <h2 style={{ font: '600 15px/22px var(--f-body)' }}>{v.leftTitle}</h2>
+                    <h2 style={{ font: '600 14px/20px var(--f-body)' }}>{v.leftTitle}</h2>
                     <a
                       href={v.leftHref}
                       style={{ display: 'flex', alignItems: 'center', gap: '4px', font: '600 13px var(--f-body)', color: 'var(--acc-tx)' }}
@@ -498,7 +498,7 @@ export default class AegisOverview extends DC {
                             className={pc('hover', 'background:var(--hover)')}
                           >
                             <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>{st.label}</span>
-                            <span style={{ font: '500 24px/32px var(--f-head)', fontVariantNumeric: 'tabular-nums' }}>{st.n}</span>
+                            <span style={{ font: '600 22px/30px var(--f-head)', fontVariantNumeric: 'tabular-nums' }}>{st.n}</span>
                             <span style={{ height: '3px', background: st.c }} />
                           </a>
                         ))}
@@ -520,7 +520,7 @@ export default class AegisOverview extends DC {
                       borderBottom: '1px solid var(--ln)'
                     }}
                   >
-                    <h2 style={{ font: '600 15px/22px var(--f-body)' }}>Current issues</h2>
+                    <h2 style={{ font: '600 14px/20px var(--f-body)' }}>Current issues</h2>
                     <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{v.issueCount}</span>
                   </div>
                   {arr(v.issues).map((is: any, i: number) => (
@@ -558,7 +558,7 @@ export default class AegisOverview extends DC {
                     borderBottom: '1px solid var(--ln)'
                   }}
                 >
-                  <h2 style={{ font: '600 15px/22px var(--f-body)' }}>{v.bottomTitle}</h2>
+                  <h2 style={{ font: '600 14px/20px var(--f-body)' }}>{v.bottomTitle}</h2>
                   <a
                     href={v.bottomHref}
                     style={{ display: 'flex', alignItems: 'center', gap: '4px', font: '600 13px var(--f-body)', color: 'var(--acc-tx)' }}
@@ -567,7 +567,7 @@ export default class AegisOverview extends DC {
                     <Icon name="arrow-right" />
                   </a>
                 </div>
-                <div role="table" style={{ font: '13px/18px var(--f-ui)', fontVariantNumeric: 'tabular-nums' }}>
+                <div role="table" style={{ font: '13px/18px var(--f-ui)' }}>
                   {arr(v.bottom).map((r: any, i: number) => (
                     <div
                       key={i}

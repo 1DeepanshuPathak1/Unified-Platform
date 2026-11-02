@@ -142,12 +142,12 @@ function Editor({ ctx, brand, onBack, onSave }: { ctx: Ctx; brand: Brand; onBack
 function Preview({ b, view }: { b: Brand; view: 'login' | 'mail' | 'report' }) {
   const acc = validHex(b.accent) ? b.accent : '#888888';
   const ink = validHex(b.accent) && contrast(b.accent, '#ffffff') >= 4.5 ? '#ffffff' : '#111111';
-  const logo = <span style={{ width: 22, height: 22, display: 'grid', placeItems: 'center', background: acc, color: ink, font: '700 12px var(--f-ui)' }}>{b.name[0]}</span>;
+  const logo = <span style={{ width: 22, height: 22, display: 'grid', placeItems: 'center', background: acc, color: ink, font: '600 12px var(--f-ui)' }}>{b.name[0]}</span>;
   if (view === 'login')
     return (
       <div style={{ border: '1px solid var(--ln-2)', background: 'var(--app)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', font: '600 15px var(--f-ui)' }}>{logo}{b.name}</span>
-        <span style={{ font: '500 18px/24px var(--f-head)' }}>{b.login || 'Sign in'}</span>
+        <span style={{ font: '600 18px/24px var(--f-head)' }}>{b.login || 'Sign in'}</span>
         <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{b.domain || 'aegis.host360.ai'}</span>
         <span style={{ height: 34, border: '1px solid var(--ln-2)', padding: '0 10px', display: 'flex', alignItems: 'center', color: 'var(--tx-3)' }}>Work e-mail</span>
         <span style={{ height: 34, display: 'grid', placeItems: 'center', background: acc, color: ink, fontWeight: 600 }}>Continue</span>
@@ -171,7 +171,7 @@ function Preview({ b, view }: { b: Brand; view: 'login' | 'mail' | 'report' }) {
       <div style={{ height: 10, background: acc }} />
       <div style={{ padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
         <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', fontWeight: 600 }}>{logo}{b.name}</span>
-        <span style={{ font: '500 22px/28px var(--f-head)', marginTop: 24 }}>Monthly service review</span>
+        <span style={{ font: '600 22px/28px var(--f-head)', marginTop: 24 }}>Monthly service review</span>
         <span style={{ color: 'var(--tx-2)' }}>{custName(b.applies[0])} · October 2026</span>
         <span style={{ flex: 1 }} />
         <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{b.footer}</span>

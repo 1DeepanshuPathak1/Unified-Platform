@@ -1,94 +1,123 @@
-/* Host360 Aegis — design tokens. Dark is the default; [data-theme="light"] overrides.
-   Square corners throughout (radius 0). Motion ≤ 150 ms. */
-[data-ae] {
+/* Host360 Aegis — design tokens.
+   Light is the default (enterprise consoles open light; dark and system are a choice).
+   The frame: a dark top bar, a white management pane, cards on a light working area.
+   One typeface (Inter) at a fixed scale; 4 px controls, 6 px cards, 8 px dialogs. Motion ≤ 150 ms. */
+[data-ae],
+[data-ae] .ae-hdr .ae-pop {
   /* Chart series for the three products, validated for colour-blind separation (dataviz palette slots 1–3). */
-  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
-  --f-head: "ES Build", Jost, "Source Sans 3", sans-serif;
-  --f-body: "Source Sans 3", sans-serif;
-  --f-ui: Tahoma, Verdana, "DejaVu Sans", sans-serif;
+  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a;
+  --f-head: Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --f-body: var(--f-head);
+  --f-ui: var(--f-head);
   --ease: cubic-bezier(.2, .7, .3, 1);
   --t1: 100ms; --t2: 150ms;
+  --r-sm: 4px; --r: 6px; --r-lg: 8px;
 
-  --app: oklch(0.175 0.012 255);
-  --hdr: oklch(0.155 0.012 255);
-  --nav: oklch(0.155 0.012 255);
-  --panel: oklch(0.2 0.013 255);
-  --panel-2: oklch(0.222 0.014 255);
-  --hover: oklch(0.25 0.016 255);
-  --overlay: oklch(0.215 0.014 255);
-  --ln: oklch(0.285 0.015 255);
-  --ln-2: oklch(0.37 0.018 255);
-  --tx: oklch(0.94 0.008 255);
-  --tx-2: oklch(0.80 0.013 255);
-  --tx-3: oklch(0.68 0.016 255);
-  --skel: oklch(0.27 0.015 255);
-
-  --acc: oklch(0.76 0.115 188);
-  --acc-h: oklch(0.81 0.105 188);
-  --acc-p: oklch(0.71 0.115 188);
-  --acc-ink: oklch(0.19 0.03 205);
-  --acc-soft: oklch(0.76 0.115 188 / 0.14);
-  --acc-tx: oklch(0.80 0.11 188);
-
-  --ok: oklch(0.78 0.14 152);   --ok-s: oklch(0.78 0.14 152 / 0.13);
-  --warn: oklch(0.82 0.14 80);  --warn-s: oklch(0.82 0.14 80 / 0.12);
-  --err: oklch(0.72 0.16 25);   --err-s: oklch(0.72 0.16 25 / 0.13);
-  --run: oklch(0.76 0.11 245);  --run-s: oklch(0.76 0.11 245 / 0.13);
-
-  --scrim: oklch(0.08 0.01 255 / 0.62);
-  --sh-menu: 0 0 0 1px oklch(0 0 0 / 0.35), 0 8px 24px oklch(0 0 0 / 0.45);
-  --sh-over: 0 0 0 1px oklch(0 0 0 / 0.4), 0 20px 56px oklch(0 0 0 / 0.55);
-  --tip-bg: oklch(0.92 0.01 255);
-  --tip-tx: oklch(0.2 0.015 255);
-  color-scheme: dark;
-}
-[data-ae][data-theme="light"] {
-  --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a;
-  --app: oklch(0.962 0.007 255);
-  --hdr: oklch(1 0 0);
-  --nav: oklch(0.948 0.009 255);
+  --app: oklch(0.966 0.004 240);
+  --hdr: oklch(0.235 0.02 222);
+  --nav: oklch(1 0 0);
   --panel: oklch(1 0 0);
-  --panel-2: oklch(0.977 0.005 255);
-  --hover: oklch(0.94 0.01 255);
+  --panel-2: oklch(0.979 0.003 240);
+  --hover: oklch(0.954 0.006 240);
   --overlay: oklch(1 0 0);
-  --ln: oklch(0.895 0.01 255);
-  --ln-2: oklch(0.82 0.014 255);
-  --tx: oklch(0.23 0.02 255);
-  --tx-2: oklch(0.42 0.02 255);
-  --tx-3: oklch(0.515 0.02 255);
-  --skel: oklch(0.92 0.01 255);
+  --ln: oklch(0.915 0.007 240);
+  --ln-2: oklch(0.85 0.011 240);
+  --tx: oklch(0.245 0.012 240);
+  --tx-2: oklch(0.44 0.014 240);
+  --tx-3: oklch(0.545 0.014 240);
+  --skel: oklch(0.93 0.006 240);
 
-  --acc: oklch(0.50 0.088 194);
-  --acc-h: oklch(0.45 0.085 194);
-  --acc-p: oklch(0.40 0.08 194);
+  --acc: oklch(0.52 0.09 192);
+  --acc-h: oklch(0.47 0.088 192);
+  --acc-p: oklch(0.42 0.08 192);
   --acc-ink: oklch(1 0 0);
-  --acc-soft: oklch(0.50 0.088 194 / 0.10);
-  --acc-tx: oklch(0.45 0.085 194);
+  --acc-soft: oklch(0.52 0.09 192 / 0.09);
+  --acc-tx: oklch(0.46 0.088 192);
 
-  --ok: oklch(0.50 0.13 152);   --ok-s: oklch(0.55 0.13 152 / 0.10);
-  --warn: oklch(0.53 0.12 65);  --warn-s: oklch(0.80 0.13 80 / 0.20);
-  --err: oklch(0.52 0.18 27);   --err-s: oklch(0.60 0.18 27 / 0.09);
-  --run: oklch(0.50 0.13 250);  --run-s: oklch(0.55 0.13 250 / 0.09);
+  --ok: oklch(0.53 0.13 150);   --ok-s: oklch(0.6 0.13 150 / 0.10);
+  --warn: oklch(0.58 0.13 68);  --warn-s: oklch(0.82 0.13 80 / 0.20);
+  --err: oklch(0.53 0.19 27);   --err-s: oklch(0.62 0.18 27 / 0.09);
+  --run: oklch(0.52 0.15 255);  --run-s: oklch(0.58 0.14 255 / 0.09);
 
-  --scrim: oklch(0.2 0.02 255 / 0.36);
-  --sh-menu: 0 0 0 1px oklch(0.25 0.02 255 / 0.08), 0 8px 24px oklch(0.25 0.02 255 / 0.12);
-  --sh-over: 0 0 0 1px oklch(0.25 0.02 255 / 0.08), 0 20px 56px oklch(0.25 0.02 255 / 0.18);
-  --tip-bg: oklch(0.25 0.02 255);
-  --tip-tx: oklch(0.97 0.005 255);
+  --scrim: oklch(0.2 0.02 240 / 0.40);
+  --sh-card: 0 1px 2px oklch(0.25 0.02 240 / 0.05), 0 1px 3px oklch(0.25 0.02 240 / 0.06);
+  --sh-menu: 0 0 0 1px oklch(0.25 0.02 240 / 0.06), 0 8px 24px oklch(0.25 0.02 240 / 0.14);
+  --sh-over: 0 0 0 1px oklch(0.25 0.02 240 / 0.06), 0 24px 64px oklch(0.25 0.02 240 / 0.22);
+  --tip-bg: oklch(0.26 0.014 240);
+  --tip-tx: oklch(0.97 0.004 240);
   color-scheme: light;
 }
+
+[data-ae][data-theme="dark"],
+[data-ae][data-theme="dark"] .ae-hdr .ae-pop {
+  --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70;
+  --app: oklch(0.185 0.006 240);
+  --hdr: oklch(0.15 0.008 230);
+  --nav: oklch(0.205 0.007 240);
+  --panel: oklch(0.218 0.007 240);
+  --panel-2: oklch(0.238 0.008 240);
+  --hover: oklch(0.262 0.009 240);
+  --overlay: oklch(0.232 0.008 240);
+  --ln: oklch(0.3 0.009 240);
+  --ln-2: oklch(0.39 0.012 240);
+  --tx: oklch(0.94 0.004 240);
+  --tx-2: oklch(0.79 0.008 240);
+  --tx-3: oklch(0.665 0.01 240);
+  --skel: oklch(0.28 0.009 240);
+
+  --acc: oklch(0.72 0.1 188);
+  --acc-h: oklch(0.77 0.095 188);
+  --acc-p: oklch(0.67 0.1 188);
+  --acc-ink: oklch(0.18 0.03 205);
+  --acc-soft: oklch(0.72 0.1 188 / 0.13);
+  --acc-tx: oklch(0.78 0.095 188);
+
+  --ok: oklch(0.76 0.13 152);   --ok-s: oklch(0.76 0.13 152 / 0.12);
+  --warn: oklch(0.81 0.13 80);  --warn-s: oklch(0.81 0.13 80 / 0.12);
+  --err: oklch(0.71 0.15 25);   --err-s: oklch(0.71 0.15 25 / 0.13);
+  --run: oklch(0.75 0.11 245);  --run-s: oklch(0.75 0.11 245 / 0.13);
+
+  --scrim: oklch(0.08 0.01 240 / 0.6);
+  --sh-card: none;
+  --sh-menu: 0 0 0 1px oklch(0 0 0 / 0.35), 0 8px 24px oklch(0 0 0 / 0.45);
+  --sh-over: 0 0 0 1px oklch(0 0 0 / 0.4), 0 24px 64px oklch(0 0 0 / 0.55);
+  --tip-bg: oklch(0.93 0.006 240);
+  --tip-tx: oklch(0.2 0.012 240);
+  color-scheme: dark;
+}
+
+/* The top bar is dark in both themes. Its menus switch back to the page tokens (.ae-pop above). */
+[data-ae] .ae-hdr {
+  --tx: oklch(0.975 0.004 220);
+  --tx-2: oklch(0.85 0.01 220);
+  --tx-3: oklch(0.72 0.013 220);
+  --ln: oklch(0.34 0.016 222);
+  --ln-2: oklch(0.43 0.018 222);
+  --hover: oklch(0.31 0.02 222);
+  --panel: oklch(0.29 0.018 222);
+  --panel-2: oklch(0.285 0.018 222);
+  --acc: oklch(0.76 0.11 188);
+  --acc-ink: oklch(0.18 0.03 205);
+  --acc-soft: oklch(0.76 0.11 188 / 0.16);
+  --acc-tx: oklch(0.8 0.1 188);
+  color-scheme: dark;
+}
+[data-ae] .ae-hdr .ae-pop { color: var(--tx); color-scheme: light; }
+[data-ae][data-theme="dark"] .ae-hdr .ae-pop { color-scheme: dark; }
 
 [data-ae], [data-ae] * { box-sizing: border-box; }
 [data-ae] { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
 [data-ae] button { font: inherit; color: inherit; background: none; border: 0; padding: 0; margin: 0; cursor: pointer; text-align: inherit; }
 [data-ae] button[aria-disabled="true"] { cursor: not-allowed; }
-[data-ae] input, [data-ae] textarea, [data-ae] select { font: inherit; color: inherit; margin: 0; }
+[data-ae] input, [data-ae] textarea, [data-ae] select { font: inherit; color: inherit; margin: 0; border-radius: var(--r-sm); }
 [data-ae] :focus { outline: none; }
 [data-ae] :focus-visible { outline: 2px solid var(--acc) !important; outline-offset: 1px !important; }
 [data-ae] ::selection { background: var(--acc-soft); }
 [data-ae] ::placeholder { color: var(--tx-3); opacity: 1; }
 [data-ae] * { scrollbar-width: thin; scrollbar-color: var(--ln-2) transparent; }
 [data-ae] h1, [data-ae] h2, [data-ae] h3, [data-ae] p, [data-ae] dl, [data-ae] dd, [data-ae] ol, [data-ae] ul { margin: 0; }
+[data-ae] h1 { letter-spacing: -0.012em; }
+[data-ae] h2 { letter-spacing: -0.006em; }
 
 @keyframes ae-pop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 @keyframes ae-fade { from { opacity: 0; } to { opacity: 1; } }

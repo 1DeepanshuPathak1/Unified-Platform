@@ -394,7 +394,7 @@ export default class AegisRestore extends DC {
         <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Protection</div>
-            <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Restore</h1>
+            <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Restore</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Bring back a whole VM, single disks or files from a recovery point.</p>
           </div>
           <Btn kind="outline" icon="database" onClick={v.openApps}>
@@ -427,12 +427,12 @@ export default class AegisRestore extends DC {
                     placeItems: 'center',
                     border: '1px solid var(--acc)',
                     color: 'var(--acc-tx)',
-                    font: '700 11px var(--f-ui)'
+                    font: '600 11px var(--f-ui)'
                   }}
                 >
                   1
                 </span>
-                <h2 style={{ flex: 1, font: '600 15px/22px var(--f-body)' }}>Recovery point</h2>
+                <h2 style={{ flex: 1, font: '600 14px/20px var(--f-body)' }}>Recovery point</h2>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', font: '12px var(--f-ui)', color: 'var(--tx-2)' }}>
                   Guest
                   <select
@@ -520,12 +520,12 @@ export default class AegisRestore extends DC {
                     placeItems: 'center',
                     border: '1px solid var(--acc)',
                     color: 'var(--acc-tx)',
-                    font: '700 11px var(--f-ui)'
+                    font: '600 11px var(--f-ui)'
                   }}
                 >
                   2
                 </span>
-                <h2 style={{ flex: 1, font: '600 15px/22px var(--f-body)' }}>What to restore</h2>
+                <h2 style={{ flex: 1, font: '600 14px/20px var(--f-body)' }}>What to restore</h2>
                 <Ind mode="fill" role="radiogroup" aria-label="Restore type" style={{ display: 'flex', border: '1px solid var(--ln-2)' }}>
                   {arr(v.kinds).map((k: any, i: number) => (
                     <button
@@ -683,12 +683,12 @@ export default class AegisRestore extends DC {
                     placeItems: 'center',
                     border: '1px solid var(--acc)',
                     color: 'var(--acc-tx)',
-                    font: '700 11px var(--f-ui)'
+                    font: '600 11px var(--f-ui)'
                   }}
                 >
                   3
                 </span>
-                <h2 style={{ flex: 1, font: '600 15px/22px var(--f-body)' }}>Where to</h2>
+                <h2 style={{ flex: 1, font: '600 14px/20px var(--f-body)' }}>Where to</h2>
               </div>
               <div
                 role="radiogroup"
@@ -805,7 +805,7 @@ export default class AegisRestore extends DC {
           </div>
           <aside style={{ position: 'sticky', top: 0, background: 'var(--panel)', border: '1px solid var(--ln)' }}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--ln)' }}>
-              <h2 style={{ font: '600 15px/22px var(--f-body)' }}>Summary</h2>
+              <h2 style={{ font: '600 14px/20px var(--f-body)' }}>Summary</h2>
             </div>
             <dl style={{ display: 'grid', gridTemplateColumns: '110px minmax(0,1fr)', padding: '0 16px', font: '13px/18px var(--f-ui)' }}>
               {arr(v.summary).map((s: any, i: number) => (

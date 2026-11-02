@@ -667,7 +667,7 @@ export default class AegisDrServers extends DC {
         <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Resilience</div>
-            <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Protected servers</h1>
+            <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Protected servers</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Servers replicated from a primary site to a recovery site.</p>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -904,7 +904,7 @@ export default class AegisDrServers extends DC {
                 <h2
                   style={{
                     marginTop: '2px',
-                    font: '500 20px/28px var(--f-head)',
+                    font: '600 18px/26px var(--f-head)',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
@@ -1129,7 +1129,7 @@ export default class AegisDrServers extends DC {
                 <div
                   role="table"
                   aria-label="Recovery points"
-                  style={{ font: '13px/18px var(--f-ui)', fontVariantNumeric: 'tabular-nums', animation: 'ae-fade 150ms var(--ease)' }}
+                  style={{ font: '13px/18px var(--f-ui)', animation: 'ae-fade 150ms var(--ease)' }}
                 >
                   <div
                     role="row"
@@ -1186,7 +1186,7 @@ export default class AegisDrServers extends DC {
                 <div
                   role="table"
                   aria-label="Sync history"
-                  style={{ font: '13px/18px var(--f-ui)', fontVariantNumeric: 'tabular-nums', animation: 'ae-fade 150ms var(--ease)' }}
+                  style={{ font: '13px/18px var(--f-ui)', animation: 'ae-fade 150ms var(--ease)' }}
                 >
                   <div
                     role="row"
@@ -1285,7 +1285,7 @@ export default class AegisDrServers extends DC {
               <div style={{ flex: 'none', padding: '20px 16px 0 24px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>{v.dlg?.server}</div>
-                  <h2 id="dlg-title" style={{ marginTop: '2px', font: '500 20px/28px var(--f-head)' }}>
+                  <h2 id="dlg-title" style={{ marginTop: '2px', font: '600 18px/26px var(--f-head)' }}>
                     {v.dlg?.title}
                   </h2>
                   <p style={{ marginTop: '4px', color: 'var(--tx-2)', textWrap: 'pretty' }}>{v.dlg?.desc}</p>

@@ -7,10 +7,10 @@ import { AEGIS_SPEC } from '../data/spec';
 import { RULES, SCREENS } from '../data/screens';
 
 export default class AegisHandoff extends DC {
-  state: any = { theme: 'dark', vals: null, css: 'Reading…' };
+  state: any = { theme: 'light', vals: null, css: 'Reading…' };
   componentDidMount() {
     try {
-      const t = localStorage.getItem('aegis.theme');
+      const t = localStorage.getItem('aegis.theme.v2');
       if (t) this.setState({ theme: t });
     } catch (e) {}
     let tries = 0;
@@ -65,7 +65,7 @@ export default class AegisHandoff extends DC {
       toggleTheme: () => {
         const t = s.theme === 'dark' ? 'light' : 'dark';
         try {
-          localStorage.setItem('aegis.theme', t);
+          localStorage.setItem('aegis.theme.v2', t);
         } catch (e) {}
         this.setState({ theme: t });
       },
@@ -80,8 +80,9 @@ export default class AegisHandoff extends DC {
         ['aegis-tokens.css', 'Colour, font and motion tokens for both themes, resets, focus ring, keyframes, reduced-motion rule'],
         ['aegis-icons.js', '<ae-icon name size spin> web component; the brand mark is name="mark"'],
         ['aegis-ui.js', '<ae-ind mode> sliding indicator for tabs, segments and navigation; data-tip tooltips'],
-        ['Fonts to self-host', 'ES Build 500 and 600 (woff2); Source Sans 3 400, 400 italic, 600, 700 (woff2); Tahoma is a system font'],
-        ['Radius', '0 everywhere'],
+        ['Fonts to self-host', 'Inter 400, 400 italic, 500, 600, 700 (woff2, from @fontsource/inter)'],
+        ['Radius', '--r-sm 4 px controls · --r 6 px cards, tables, menus, toasts · --r-lg 8 px dialogs'],
+        ['Card shadow', `--sh-card dark: ${V.dark['--sh-card'] || ''} · light: ${V.light['--sh-card'] || ''}`],
         ['Shadows', `--sh-menu dark: ${V.dark['--sh-menu'] || ''} · light: ${V.light['--sh-menu'] || ''}`],
         ['Overlay shadow', `--sh-over dark: ${V.dark['--sh-over'] || ''} · light: ${V.light['--sh-over'] || ''}`]
       ]),
@@ -156,7 +157,7 @@ export default class AegisHandoff extends DC {
         data-theme={v.theme}
         style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)' }}
       >
-        <header
+        <header className="ae-hdr"
           style={{
             position: 'sticky',
             top: 0,
@@ -167,13 +168,14 @@ export default class AegisHandoff extends DC {
             gap: '12px',
             padding: '0 24px',
             background: 'var(--hdr)',
+            color: 'var(--tx)',
             borderBottom: '1px solid var(--ln)'
           }}
         >
           <Icon name="mark" size="24" />
-          <span style={{ font: '500 17px/24px var(--f-head)' }}>Host360 Aegis</span>
+          <span style={{ font: '600 16px/24px var(--f-head)' }}>Host360 Aegis</span>
           <span style={{ width: '1px', height: '24px', background: 'var(--ln-2)' }} />
-          <span style={{ font: '500 16px/24px var(--f-head)', color: 'var(--tx-2)' }}>Handoff</span>
+          <span style={{ font: '600 15px/22px var(--f-head)', color: 'var(--tx-2)' }}>Handoff</span>
           <span style={{ flex: 1 }} />
           <a
             href={v.dsHref}
@@ -203,7 +205,7 @@ export default class AegisHandoff extends DC {
         </header>
         <main style={{ maxWidth: '1280px', padding: '32px 40px 80px', display: 'flex', flexDirection: 'column', gap: '48px' }}>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '860px' }}>
-            <h1 style={{ font: '500 28px/36px var(--f-head)' }}>Every value, as text</h1>
+            <h1 style={{ font: '600 26px/34px var(--f-head)' }}>Every value, as text</h1>
             <p style={{ color: 'var(--tx-2)', textWrap: 'pretty' }}>
               {
                 'Rebuild the console in plain HTML and CSS from this page and the screens. Colours are CSS custom properties on an element with the data-ae attribute; add data-theme="light" for the light theme. Dark is the default. All values below are read live from aegis-tokens.css.'
@@ -228,7 +230,7 @@ export default class AegisHandoff extends DC {
             </dl>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Colour tokens</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Colour tokens</h2>
             <div
               role="table"
               style={{
@@ -284,7 +286,7 @@ export default class AegisHandoff extends DC {
             </div>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Type</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Type</h2>
             <div role="table" style={{ background: 'var(--panel)', border: '1px solid var(--ln)', font: '13px/18px var(--f-ui)' }}>
               <div
                 role="row"
@@ -333,13 +335,13 @@ export default class AegisHandoff extends DC {
             </div>
             <p style={{ fontSize: '13px', lineHeight: '18px', color: 'var(--tx-2)' }}>
               {
-                'Stacks: --f-head "ES Build", Jost (stand-in until the files are added), "Source Sans 3", sans-serif · --f-body "Source Sans 3", sans-serif · --f-ui Tahoma, Verdana, "DejaVu Sans", sans-serif. Numbers use font-variant-numeric: tabular-nums. Units always follow the number with a space: 148 MB/s, 4.4×, 15 min, 62 %.'
+                'Stack: --f-head, --f-body and --f-ui are all Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif. Numbers that line up in columns use font-variant-numeric: tabular-nums (not names: Inter widens hyphens in tabular mode). Units always follow the number with a space: 148 MB/s, 4.4×, 15 min, 62 %.'
               }
             </p>
           </section>
           <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.6fr)', gap: '16px', alignItems: 'start' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Spacing</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Spacing</h2>
               <dl
                 style={{
                   display: 'grid',
@@ -359,7 +361,7 @@ export default class AegisHandoff extends DC {
               </dl>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Layout and sizes</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Layout and sizes</h2>
               <dl
                 style={{
                   display: 'grid',
@@ -380,7 +382,7 @@ export default class AegisHandoff extends DC {
             </div>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Motion</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Motion</h2>
             <dl
               style={{
                 display: 'grid',
@@ -400,7 +402,7 @@ export default class AegisHandoff extends DC {
             </dl>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Components</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Components</h2>
             <dl
               style={{
                 display: 'grid',
@@ -420,7 +422,7 @@ export default class AegisHandoff extends DC {
             </dl>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Rules that apply to every screen</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Rules that apply to every screen</h2>
             <dl
               style={{
                 display: 'grid',
@@ -440,7 +442,7 @@ export default class AegisHandoff extends DC {
             </dl>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Platform rules (Part 7)</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Platform rules (Part 7)</h2>
             <dl
               style={{
                 display: 'grid',
@@ -460,7 +462,7 @@ export default class AegisHandoff extends DC {
             </dl>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Screen catalogue</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Screen catalogue</h2>
             <p style={{ font: '13px/20px var(--f-ui)', color: 'var(--tx-2)' }}>
               Every screen with the platform object it reads, its actions, its states, its priority and whether it is platform-level or product-level. {SCREENS.length} screens. “All list states” means live, Reading… (8 skeleton rows), empty (one sentence and one primary action), no matches (Clear filters) and Could not be read: &lt;reason&gt;.
             </p>
@@ -494,7 +496,7 @@ export default class AegisHandoff extends DC {
             </div>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Icon names</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Icon names</h2>
             <p
               style={{
                 font: '13px/22px var(--f-ui)',
@@ -509,7 +511,7 @@ export default class AegisHandoff extends DC {
             </p>
           </section>
           <section style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <h2 style={{ font: '500 24px/32px var(--f-head)' }}>aegis-tokens.css</h2>
+            <h2 style={{ font: '600 22px/30px var(--f-head)' }}>aegis-tokens.css</h2>
             <pre
               style={{
                 margin: 0,

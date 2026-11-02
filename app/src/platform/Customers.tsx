@@ -327,7 +327,7 @@ function Hierarchy({ ctx }: { ctx: Ctx }) {
     <div style={{ flex: 1, minHeight: 0, padding: '0 24px 24px', display: 'grid', gridTemplateColumns: 'minmax(320px,1fr) minmax(0,1.2fr)', gap: 16 }}>
       <section style={{ background: 'var(--panel)', border: '1px solid var(--ln)', overflow: 'auto', minHeight: 0 }} aria-label="Hierarchy">
         <div style={{ position: 'sticky', top: 0, display: 'flex', alignItems: 'center', gap: 8, height: 44, padding: '0 8px 0 16px', borderBottom: '1px solid var(--ln)', background: 'var(--panel)', zIndex: 1 }}>
-          <h2 style={{ flex: 1, font: '600 15px/22px var(--f-body)' }}>Organisation</h2>
+          <h2 style={{ flex: 1, font: '600 14px/20px var(--f-body)' }}>Organisation</h2>
           <Btn kind="ghost" size="sm" icon="plus" disabled={kind !== 'c'} why="Choose a customer first." perm={ctx.can('admin', 'Changing the hierarchy')} onClick={() => { setNm(''); setAdd('dept'); }}>
             Department or site
           </Btn>

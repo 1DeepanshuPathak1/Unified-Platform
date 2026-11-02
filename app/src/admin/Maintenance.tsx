@@ -218,12 +218,12 @@ function MaintenancePage({ d }: { d: Maint }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <Seg label="Brand" value={brand} onChange={setBrand} options={[{ v: 'host360', label: 'Host360' }, { v: 'cloudnest', label: 'CloudNest (white-label)' }]} />
       <div style={{ border: '1px solid var(--ln-2)', background: 'var(--app)', padding: '40px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, textAlign: 'center' }}>
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, font: '500 17px var(--f-head)' }}>
-          {brand === 'host360' ? <Icon name="mark" size={22} /> : <span style={{ width: 22, height: 22, display: 'grid', placeItems: 'center', background: 'var(--tx)', color: 'var(--app)', font: '700 12px var(--f-ui)' }}>C</span>}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, font: '600 17px var(--f-head)' }}>
+          {brand === 'host360' ? <Icon name="mark" size={22} /> : <span style={{ width: 22, height: 22, display: 'grid', placeItems: 'center', background: 'var(--tx)', color: 'var(--app)', font: '600 12px var(--f-ui)' }}>C</span>}
           {brand === 'host360' ? 'Host360 Aegis' : 'CloudNest Resilience'}
         </span>
         <Icon name="calendar-clock" size={32} style={{ color: 'var(--tx-2)' }} />
-        <h3 style={{ font: '500 20px/28px var(--f-head)' }}>Planned maintenance</h3>
+        <h3 style={{ font: '600 18px/26px var(--f-head)' }}>Planned maintenance</h3>
         <p style={{ maxWidth: 420, color: 'var(--tx-2)' }}>We are upgrading the service. It is back by {d.endUtc.split(', ')[1].replace(' UTC', '')} UTC ({d.ist.split(' to ')[1]}). Your backups and replication keep running; nothing you scheduled is lost.</p>
         <p style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{brand === 'host360' ? 'status.host360.ai' : 'status.cloudnest.in'} · this page refreshes every minute</p>
       </div>

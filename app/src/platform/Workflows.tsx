@@ -231,7 +231,7 @@ function Builder({ ctx, flow, onBack, onSave }: { ctx: Ctx; flow: Flow; onBack: 
           {cur ? (
             <div style={{ border: '1px solid var(--ln)', background: 'var(--panel)', padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <span style={{ display: 'flex', gap: 8, alignItems: 'center', font: '12px var(--f-ui)', color: 'var(--tx-3)' }}><Icon name={KIND[cur.kind].icon} />{KIND[cur.kind].label}</span>
-              <strong style={{ font: '500 16px/22px var(--f-head)' }}>{cur.title}</strong>
+              <strong style={{ font: '600 16px/22px var(--f-head)' }}>{cur.title}</strong>
               <Facts labelW={90} items={[{ k: 'Does', v: cur.detail }, ...(cur.branch ? [{ k: cur.branchLabel || 'Otherwise', v: cur.branch.map(b => b.title).join(', then ') }] : [])]} />
               {cur.kind === 'delete' ? <Bar tone="info" icon="lock">Immutability locks are always respected: a locked point is never deleted, whoever approves.</Bar> : null}
               <div style={{ display: 'flex', gap: 8 }}>

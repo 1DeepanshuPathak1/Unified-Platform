@@ -28,7 +28,7 @@ const fmtD = (d: Date) => `${pad(d.getDate())} ${MON[d.getMonth()]} ${d.getFullY
 
 const readTheme = () => {
   try {
-    return localStorage.getItem('aegis.theme') || 'dark';
+    return localStorage.getItem('aegis.theme.v2') || 'light';
   } catch {
     return 'dark';
   }
@@ -71,7 +71,7 @@ export default function AdminPortal() {
   const toggle = () => {
     const t = theme === 'dark' ? 'light' : 'dark';
     try {
-      localStorage.setItem('aegis.theme', t);
+      localStorage.setItem('aegis.theme.v2', t);
     } catch {
       /* the theme just will not persist */
     }
@@ -123,11 +123,11 @@ export default function AdminPortal() {
   const sec = r.sec;
   return (
     <div data-ae="" data-theme={theme} style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)' }}>
-      <header style={{ height: 52, flex: 'none', display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px 0 20px', background: 'var(--hdr)', borderBottom: '1px solid var(--ln)' }}>
+      <header className="ae-hdr" style={{ color: 'var(--tx)', height: 52, flex: 'none', display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px 0 20px', background: 'var(--hdr)', borderBottom: '1px solid var(--ln)' }}>
         <Icon name="mark" size={24} />
-        <span style={{ font: '500 17px/24px var(--f-head)', whiteSpace: 'nowrap' }}>Host360 Aegis</span>
+        <span style={{ font: '600 16px/24px var(--f-head)', whiteSpace: 'nowrap' }}>Host360 Aegis</span>
         <span style={{ width: 1, height: 24, background: 'var(--ln-2)' }} />
-        <span style={{ font: '500 16px/24px var(--f-head)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>Internal admin</span>
+        <span style={{ font: '600 15px/22px var(--f-head)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>Internal admin</span>
         <Tag tone="warn">Host360 staff only</Tag>
         <span style={{ flex: 1 }} />
         <a href="#/backup/home" className={pc('hover', 'background:var(--hover)')} style={hdrBtn}>
@@ -141,7 +141,7 @@ export default function AdminPortal() {
         <button type="button" aria-label={theme === 'dark' ? 'Light theme' : 'Dark theme'} data-tip={theme === 'dark' ? 'Light theme' : 'Dark theme'} onClick={toggle} className={pc('hover', 'background:var(--hover)')} style={{ width: 32, height: 32, display: 'grid', placeItems: 'center', color: 'var(--tx-2)' }}>
           <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
         </button>
-        <span aria-label="Priya Raman, Host360" data-tip="priya.raman@host360.ai · Head of cloud operations" style={{ width: 28, height: 28, display: 'grid', placeItems: 'center', background: 'var(--panel-2)', border: '1px solid var(--ln-2)', font: '700 11px var(--f-ui)' }}>PR</span>
+        <span aria-label="Priya Raman, Host360" data-tip="priya.raman@host360.ai · Head of cloud operations" style={{ width: 28, height: 28, display: 'grid', placeItems: 'center', background: 'var(--panel-2)', border: '1px solid var(--ln-2)', font: '600 11px var(--f-ui)' }}>PR</span>
       </header>
       <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
         <aside style={{ width: 232, flex: 'none', borderRight: '1px solid var(--ln)', background: 'var(--nav)', display: 'flex', flexDirection: 'column' }}>

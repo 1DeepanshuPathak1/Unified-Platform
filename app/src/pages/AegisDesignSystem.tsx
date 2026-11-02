@@ -8,10 +8,10 @@ import { AEGIS_SPEC } from '../data/spec';
 
 const STATES = ['Default', 'Hover', 'Focus', 'Active', 'Disabled', 'Loading'];
 export default class AegisDesignSystem extends DC {
-  state: any = { theme: 'dark', vals: null, seg: 'All', tab: 'Overview', open: true };
+  state: any = { theme: 'light', vals: null, seg: 'All', tab: 'Overview', open: true };
   componentDidMount() {
     try {
-      const t = localStorage.getItem('aegis.theme');
+      const t = localStorage.getItem('aegis.theme.v2');
       if (t) this.setState({ theme: t });
     } catch (e) {}
     let tries = 0;
@@ -66,7 +66,7 @@ export default class AegisDesignSystem extends DC {
       toggleTheme: () => {
         const t = s.theme === 'dark' ? 'light' : 'dark';
         try {
-          localStorage.setItem('aegis.theme', t);
+          localStorage.setItem('aegis.theme.v2', t);
         } catch (e) {}
         this.setState({ theme: t });
       }
@@ -119,7 +119,7 @@ export default class AegisDesignSystem extends DC {
         ll: lok ? `Passes ${need} : 1` : `Below ${need} : 1`
       };
     });
-    const fam = f => (f.startsWith('ES') ? 'var(--f-head)' : f.startsWith('Tahoma') ? 'var(--f-ui)' : 'var(--f-body)');
+    const fam = (_f: string) => 'var(--f-head)';
     const SAMPLE = {
       'Display (KPI value)': '1187.84 GB',
       'Page title': 'Protected servers',
@@ -412,7 +412,7 @@ export default class AegisDesignSystem extends DC {
         data-theme={v.theme}
         style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)' }}
       >
-        <header
+        <header className="ae-hdr"
           style={{
             position: 'sticky',
             top: 0,
@@ -423,13 +423,14 @@ export default class AegisDesignSystem extends DC {
             gap: '12px',
             padding: '0 24px',
             background: 'var(--hdr)',
+            color: 'var(--tx)',
             borderBottom: '1px solid var(--ln)'
           }}
         >
           <Icon name="mark" size="24" />
-          <span style={{ font: '500 17px/24px var(--f-head)' }}>Host360 Aegis</span>
+          <span style={{ font: '600 16px/24px var(--f-head)' }}>Host360 Aegis</span>
           <span style={{ width: '1px', height: '24px', background: 'var(--ln-2)' }} />
-          <span style={{ font: '500 16px/24px var(--f-head)', color: 'var(--tx-2)' }}>Design system</span>
+          <span style={{ font: '600 15px/22px var(--f-head)', color: 'var(--tx-2)' }}>Design system</span>
           <span style={{ flex: 1 }} />
           <a
             href={v.handoffHref}
@@ -506,19 +507,21 @@ export default class AegisDesignSystem extends DC {
           </nav>
           <main style={{ padding: '32px 40px 80px', display: 'flex', flexDirection: 'column', gap: '56px', minWidth: 0 }}>
             <section id="intro" style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '820px' }}>
-              <h1 style={{ font: '500 28px/36px var(--f-head)' }}>{'One system for Backup & Recovery, Disaster Recovery and Migration'}</h1>
+              <h1 style={{ font: '600 26px/34px var(--f-head)' }}>{'One system for Backup & Recovery, Disaster Recovery and Migration'}</h1>
               <p style={{ color: 'var(--tx-2)', textWrap: 'pretty' }}>
-                Flat surfaces with hairline borders, square corners, one teal accent for the primary action, selection and focus, and status
-                colours only for status. Toggle the theme above; every value on this page is read from the live tokens in aegis-tokens.css.
+                The frame of an enterprise backup console: a dark top bar, a white management pane, and cards on a light working area.
+                One typeface, 4 px controls and 6 px cards with a soft shadow, one teal accent for the primary action, selection and focus,
+                and status colours only for status. Light is the default; toggle the theme above. Every value on this page is read from the
+                live tokens in aegis-tokens.css.
               </p>
               <p style={{ fontSize: '13px', lineHeight: '18px', color: 'var(--tx-3)' }}>
-                Headings render in Jost until the self-hosted ES Build files are added; the font stack already names ES Build first. Tahoma
-                falls back to Verdana where it is not installed. A shield always means encryption and a padlock always means immutability;
-                neither icon is used for anything else.
+                Everything is set in Inter, self-hosted, falling back to Segoe UI and the system font. Tabular figures are used only where
+                numbers line up in columns. A shield always means encryption and a padlock always means immutability; neither icon is used
+                for anything else.
               </p>
             </section>
             <section id="colour" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Colour tokens</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Colour tokens</h2>
               <div role="table" style={{ background: 'var(--panel)', border: '1px solid var(--ln)', font: '13px/18px var(--f-ui)' }}>
                 <div
                   role="row"
@@ -601,7 +604,7 @@ export default class AegisDesignSystem extends DC {
                   </div>
                 ))}
               </div>
-              <h3 style={{ font: '600 15px/22px var(--f-body)', marginTop: '8px' }}>Contrast (WCAG 2.1 AA)</h3>
+              <h3 style={{ font: '600 14px/20px var(--f-body)', marginTop: '8px' }}>Contrast (WCAG 2.1 AA)</h3>
               <div role="table" style={{ background: 'var(--panel)', border: '1px solid var(--ln)', font: '13px/18px var(--f-ui)' }}>
                 {arr(v.contrast).map((k: any, i: number) => (
                   <div
@@ -633,7 +636,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="type" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Type scale</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Type scale</h2>
               <div role="table" style={{ background: 'var(--panel)', border: '1px solid var(--ln)' }}>
                 <div
                   role="row"
@@ -697,7 +700,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="space" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Spacing, grid, borders, radius and elevation</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Spacing, grid, borders, radius and elevation</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1.4fr)', gap: '16px', alignItems: 'start' }}>
                 <div
                   style={{
@@ -798,7 +801,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="icons" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Icons</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Icons</h2>
               <p style={{ color: 'var(--tx-2)', maxWidth: '760px' }}>
                 Lucide geometry on a 24 px grid with a 1.5 stroke, drawn at 16 px in tables, buttons and navigation, and at 20 px for
                 product marks, close buttons and empty states. Icons inherit the text colour.
@@ -834,7 +837,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="buttons" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Buttons</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Buttons</h2>
               <div style={{ background: 'var(--panel)', border: '1px solid var(--ln)', overflowX: 'auto' }}>
                 <div style={{ minWidth: '1110px' }}>
                   <div
@@ -903,7 +906,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="forms" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Inputs and choices</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Inputs and choices</h2>
               <div
                 style={{
                   background: 'var(--panel)',
@@ -1081,7 +1084,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="nav" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Tabs and sub-tabs</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Tabs and sub-tabs</h2>
               <div
                 style={{
                   background: 'var(--panel)',
@@ -1122,7 +1125,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="table" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Table</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Table</h2>
               <div
                 role="table"
                 style={{
@@ -1252,7 +1255,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="status" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Badges, status, progress, stepper, timeline, KPI tile</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Badges, status, progress, stepper, timeline, KPI tile</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '16px' }}>
                 <div
                   style={{
@@ -1393,7 +1396,7 @@ export default class AegisDesignSystem extends DC {
                               border: `1px solid ${s.bd}`,
                               background: s.bg,
                               color: s.nfg,
-                              font: '700 11px var(--f-ui)'
+                              font: '600 11px var(--f-ui)'
                             }}
                           >
                             {s.mark}
@@ -1464,7 +1467,7 @@ export default class AegisDesignSystem extends DC {
                         {k.label}
                       </span>
                       <span
-                        style={{ font: '500 28px/36px var(--f-head)', fontVariantNumeric: 'tabular-nums', fontStyle: k.fs, color: k.vc }}
+                        style={{ font: '600 26px/34px var(--f-head)', fontVariantNumeric: 'tabular-nums', fontStyle: k.fs, color: k.vc }}
                       >
                         {k.v}
                         <span style={{ font: '400 15px var(--f-body)', color: 'var(--tx-2)', marginLeft: '6px' }}>{k.u}</span>
@@ -1476,7 +1479,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="overlays" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Drawer, dialogs and wizard</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Drawer, dialogs and wizard</h2>
               <div
                 style={{
                   position: 'relative',
@@ -1486,7 +1489,7 @@ export default class AegisDesignSystem extends DC {
                   overflow: 'hidden'
                 }}
               >
-                <div style={{ padding: '20px 24px', width: '28%', font: '500 20px/28px var(--f-head)', color: 'var(--tx-3)' }}>
+                <div style={{ padding: '20px 24px', width: '28%', font: '600 18px/26px var(--f-head)', color: 'var(--tx-3)' }}>
                   Page content
                 </div>
                 <aside
@@ -1506,7 +1509,7 @@ export default class AegisDesignSystem extends DC {
                   <div style={{ padding: '20px 16px 0 24px', display: 'flex', gap: '12px' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>Site · Proxmox VE</div>
-                      <div style={{ font: '500 20px/28px var(--f-head)' }}>Chennai-proxmox-prod</div>
+                      <div style={{ font: '600 18px/26px var(--f-head)' }}>Chennai-proxmox-prod</div>
                       <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px', font: '13px var(--f-ui)' }}>
                         <Icon name="circle-check" style={{ color: 'var(--ok)' }} />
                         Online
@@ -1544,7 +1547,7 @@ export default class AegisDesignSystem extends DC {
                     <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{d.size}</span>
                     <div style={{ background: 'var(--overlay)', border: '1px solid var(--ln-2)', boxShadow: 'var(--sh-over)' }}>
                       <div style={{ padding: '20px 24px 0' }}>
-                        <div style={{ font: '500 20px/28px var(--f-head)' }}>{d.title}</div>
+                        <div style={{ font: '600 18px/26px var(--f-head)' }}>{d.title}</div>
                         <p style={{ marginTop: '4px', fontSize: '13px', lineHeight: '18px', color: 'var(--tx-2)' }}>{d.desc}</p>
                       </div>
                       <div style={{ padding: '16px 24px' }}>
@@ -1579,7 +1582,7 @@ export default class AegisDesignSystem extends DC {
               </div>
             </section>
             <section id="feedback" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              <h2 style={{ font: '500 24px/32px var(--f-head)' }}>Feedback and content</h2>
+              <h2 style={{ font: '600 22px/30px var(--f-head)' }}>Feedback and content</h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '16px', alignItems: 'start' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {arr(v.toasts).map((t: any, i: number) => (

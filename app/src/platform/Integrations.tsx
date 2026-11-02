@@ -38,7 +38,7 @@ export function IntegrationsTab({ ctx }: { ctx: Ctx }) {
         {rows.map(i => (
           <button key={i.id} type="button" onClick={() => (i.manage ? ctx.go(i.manage) : i.state === 'available' ? connect.open(i.id) : drawer.open(i.id))} className={pc('hover', 'border-color:var(--ln-2);background:var(--hover)')} style={{ textAlign: 'left', border: '1px solid var(--ln)', background: 'var(--panel)', padding: 16, display: 'flex', flexDirection: 'column', gap: 8, minHeight: 128 }}>
             <span style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <span aria-hidden style={{ width: 28, height: 28, display: 'grid', placeItems: 'center', border: '1px solid var(--ln-2)', font: '700 12px var(--f-ui)', color: 'var(--tx-2)' }}>{i.name.slice(0, 2)}</span>
+              <span aria-hidden style={{ width: 28, height: 28, display: 'grid', placeItems: 'center', border: '1px solid var(--ln-2)', font: '600 12px var(--f-ui)', color: 'var(--tx-2)' }}>{i.name.slice(0, 2)}</span>
               <strong style={{ fontWeight: 600, flex: 1 }}>{i.name}</strong>
               <Status icon={ST[i.state][0]} tone={ST[i.state][1]} label={ST[i.state][2]} />
             </span>

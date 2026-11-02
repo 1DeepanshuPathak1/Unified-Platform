@@ -731,7 +731,7 @@ export default class AegisMigServers extends DC {
         <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Mobility</div>
-            <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Servers</h1>
+            <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Servers</h1>
             <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>
               Virtual machines on VMware sources, and where each one is in its migration.
             </p>
@@ -905,7 +905,7 @@ export default class AegisMigServers extends DC {
                 <h2
                   style={{
                     marginTop: '2px',
-                    font: '500 20px/28px var(--f-head)',
+                    font: '600 18px/26px var(--f-head)',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
@@ -1039,7 +1039,7 @@ export default class AegisMigServers extends DC {
                     </div>
                   ) : null}
                   <section>
-                    <h3 style={{ font: '600 15px/22px var(--f-body)', marginBottom: '4px' }}>Actions</h3>
+                    <h3 style={{ font: '600 14px/20px var(--f-body)', marginBottom: '4px' }}>Actions</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid var(--ln)' }}>
                       {arr(v.d?.actions).map((ac: any, i: number) => (
                         <div
@@ -1086,7 +1086,7 @@ export default class AegisMigServers extends DC {
                   </section>
                   {v.d?.win ? (
                     <section>
-                      <h3 style={{ font: '600 15px/22px var(--f-body)', marginBottom: '4px' }}>Drivers injected</h3>
+                      <h3 style={{ font: '600 14px/20px var(--f-body)', marginBottom: '4px' }}>Drivers injected</h3>
                       <p style={{ fontSize: '13px', lineHeight: '18px', color: 'var(--tx-2)', marginBottom: '8px' }}>
                         Windows guests get VirtIO drivers during the first pass so they boot on the destination.
                       </p>
@@ -1172,7 +1172,7 @@ export default class AegisMigServers extends DC {
                 <div
                   role="table"
                   aria-label="Passes"
-                  style={{ font: '13px/18px var(--f-ui)', fontVariantNumeric: 'tabular-nums', animation: 'ae-fade 150ms var(--ease)' }}
+                  style={{ font: '13px/18px var(--f-ui)', animation: 'ae-fade 150ms var(--ease)' }}
                 >
                   <div
                     role="row"
@@ -1301,7 +1301,6 @@ export default class AegisMigServers extends DC {
                     background: 'var(--panel-2)',
                     border: '1px solid var(--ln)',
                     font: '12px/20px var(--f-ui)',
-                    fontVariantNumeric: 'tabular-nums',
                     animation: 'ae-fade 150ms var(--ease)'
                   }}
                 >
@@ -1357,7 +1356,7 @@ export default class AegisMigServers extends DC {
             >
               <div style={{ flex: 'none', padding: '20px 16px 0 24px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <h2 id="mig-title" style={{ font: '500 20px/28px var(--f-head)' }}>
+                  <h2 id="mig-title" style={{ font: '600 18px/26px var(--f-head)' }}>
                     {v.dlg?.title}
                   </h2>
                   <p style={{ marginTop: '4px', color: 'var(--tx-2)', textWrap: 'pretty' }}>{v.dlg?.desc}</p>

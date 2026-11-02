@@ -117,7 +117,7 @@ export function CutoverDialog({ ctx, srv, closing, onClose, onGo }: { ctx: Ctx; 
       }
     >
       <section>
-        <h3 style={{ font: '600 15px/22px var(--f-body)', marginBottom: 8 }}>Go/no-go checks</h3>
+        <h3 style={{ font: '600 14px/20px var(--f-body)', marginBottom: 8 }}>Go/no-go checks</h3>
         <ul style={{ listStyle: 'none', padding: 0, border: '1px solid var(--ln)' }}>
           {checks.map((c, i) => (
             <li key={i} style={{ display: 'grid', gridTemplateColumns: '16px 190px minmax(0,1fr)', gap: 10, padding: '8px 12px', borderBottom: i < checks.length - 1 ? '1px solid var(--ln)' : 'none' }}>
@@ -148,7 +148,7 @@ export function CutoverDialog({ ctx, srv, closing, onClose, onGo }: { ctx: Ctx; 
             The application owner{wl ? ` (${wl.owner})` : ''} has confirmed users can be cut off now
           </CheckBox>
           <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <h3 style={{ font: '600 15px/22px var(--f-body)' }}>Approval</h3>
+            <h3 style={{ font: '600 14px/20px var(--f-body)' }}>Approval</h3>
             {pending ? (
               <Bar tone="info" icon="user-check" multiline>
                 {pending.id}: {given} of {pending.needed} approvals given ({pending.given.map(g => g.who).join(', ')}). {pending.needed - given > 0 ? `${pending.needed - given} more needed.` : ''}

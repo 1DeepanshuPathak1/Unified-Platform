@@ -59,7 +59,7 @@ export function MigServersPage({ ctx }: { ctx: Ctx }) {
     <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-page 150ms var(--ease)' }}>
       <div style={{ flex: 'none', padding: '20px 24px 16px' }}>
         <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 4 }}>Mobility</div>
-        <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Servers</h1>
+        <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Servers</h1>
         <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>{tab === 'replication' ? 'How each moving server is copied, how far behind the target is, and what was reset.' : 'Servers that were cut over and can still go back, with changes copied back to the source as they happen.'}</p>
       </div>
       {tabs}

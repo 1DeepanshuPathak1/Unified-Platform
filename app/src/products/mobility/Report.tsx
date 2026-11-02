@@ -44,7 +44,7 @@ export function AudienceReport({ ctx, list, initial }: { ctx: Ctx; list: Assesse
   const vmw = f.find(x => x.id === 'vmw');
   const name = custName(cust);
   const sec = { display: 'flex', flexDirection: 'column' as const, gap: 8 };
-  const h = { font: '500 18px/26px var(--f-head)' };
+  const h = { font: '600 18px/26px var(--f-head)' };
   const title: Record<Audience, string> = { engineer: 'Migration assessment: engineering detail', cio: 'Migration assessment: summary for the CIO', msp: 'Migration assessment: delivery plan and commercials', sales: 'Moving off VMware: what it means for you' };
 
   const body: Record<Audience, ReactNode> = {
@@ -149,7 +149,7 @@ export function AudienceReport({ ctx, list, initial }: { ctx: Ctx; list: Assesse
       <article style={{ maxWidth: 900, background: 'var(--panel)', border: '1px solid var(--ln)', padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 24, userSelect: 'text' }}>
         <header style={{ display: 'flex', flexDirection: 'column', gap: 4, borderBottom: '1px solid var(--ln)', paddingBottom: 16 }}>
           <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)' }}>{name} · for the {AUDIENCES.find(a => a.v === who)!.label === 'MSP' ? 'managed service team' : AUDIENCES.find(a => a.v === who)!.label.toLowerCase() === 'cio' ? 'CIO' : AUDIENCES.find(a => a.v === who)!.label.toLowerCase() + ' team'}</span>
-          <h2 style={{ font: '500 24px/32px var(--f-head)' }}>{title[who]}</h2>
+          <h2 style={{ font: '600 22px/30px var(--f-head)' }}>{title[who]}</h2>
           <span style={{ color: 'var(--tx-2)' }}>From the discovery of Chennai vCenter and esxi-edge-07 on 21 Oct 2026, 15:30 IST.</span>
         </header>
         {body[who]}

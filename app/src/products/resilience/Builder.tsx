@@ -160,7 +160,7 @@ export function Canvas({ rb, run, findings, editable, onChange, onEditStep, onAd
             <li key={st.id} style={{ display: 'flex', alignItems: 'flex-start' }}>
               <section aria-label={`Stage ${si + 1}: ${st.name}`} style={{ width: 248, flex: 'none', background: 'var(--panel)', border: `1px solid ${active ? 'var(--acc)' : 'var(--ln-2)'}`, boxShadow: active ? 'inset 0 0 0 1px var(--acc)' : 'none', opacity: inRun ? 1 : 0.5, transition: 'border-color 150ms, opacity 150ms' }}>
                 <header style={{ display: 'flex', alignItems: 'center', gap: 8, height: 40, padding: '0 4px 0 10px', borderBottom: '1px solid var(--ln)' }}>
-                  <span style={{ width: 20, height: 20, flex: 'none', display: 'grid', placeItems: 'center', background: active ? 'var(--acc)' : 'transparent', border: '1px solid var(--acc)', color: active ? 'var(--acc-ink)' : 'var(--acc-tx)', font: '700 11px var(--f-ui)' }}>{si + 1}</span>
+                  <span style={{ width: 20, height: 20, flex: 'none', display: 'grid', placeItems: 'center', background: active ? 'var(--acc)' : 'transparent', border: '1px solid var(--acc)', color: active ? 'var(--acc-ink)' : 'var(--acc-tx)', font: '600 11px var(--f-ui)' }}>{si + 1}</span>
                   {renaming === st.id ? (
                     <input
                       autoFocus

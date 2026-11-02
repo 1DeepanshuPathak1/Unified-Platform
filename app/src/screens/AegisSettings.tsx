@@ -199,7 +199,7 @@ export default class AegisSettings extends DC {
         <>
         <div style={{ flex: 'none', padding: '20px 24px 0' }}>
           <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Administration</div>
-          <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Settings</h1>
+          <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Settings</h1>
           <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Notifications, Aegis’s own backup, tunables and licence.</p>
         </div>
         <Ind
@@ -238,7 +238,7 @@ export default class AegisSettings extends DC {
                     borderBottom: '1px solid var(--ln)'
                   }}
                 >
-                  <h2 style={{ font: '600 15px/22px var(--f-body)' }}>Mail server</h2>
+                  <h2 style={{ font: '600 14px/20px var(--f-body)' }}>Mail server</h2>
                   <span style={{ display: 'flex', alignItems: 'center', gap: '6px', font: '12px var(--f-ui)', color: 'var(--tx-2)' }}>
                     <Icon name={v.mailI} spin={v.mailSpin} style={{ color: v.mailC }} />
                     {v.mailState}
@@ -336,7 +336,7 @@ export default class AegisSettings extends DC {
                     borderBottom: '1px solid var(--ln)'
                   }}
                 >
-                  <h2 style={{ font: '600 15px/22px var(--f-body)' }}>Channels</h2>
+                  <h2 style={{ font: '600 14px/20px var(--f-body)' }}>Channels</h2>
                   <button
                     onClick={v.addChannel}
                     aria-disabled={v.admDis}
@@ -657,7 +657,7 @@ export default class AegisSettings extends DC {
               }}
             >
               <div style={{ padding: '16px', borderBottom: '1px solid var(--ln)' }}>
-                <h2 style={{ font: '500 18px/24px var(--f-head)' }}>{v.lic?.edition}</h2>
+                <h2 style={{ font: '600 18px/24px var(--f-head)' }}>{v.lic?.edition}</h2>
                 <p style={{ marginTop: '2px', font: '13px var(--f-ui)', color: 'var(--tx-2)' }}>
                   Licensed to <span>{v.lic?.holder}</span> · key <span>{v.lic?.key}</span>
                 </p>

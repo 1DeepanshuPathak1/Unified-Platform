@@ -40,7 +40,7 @@ export function OverviewPage({ ctx }: { ctx: Ctx }) {
     <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-page 150ms var(--ease)' }}>
       <div style={{ flex: 'none', padding: '20px 24px 16px' }}>
         <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 4 }}>Protection</div>
-        <h1 style={{ font: '500 24px/32px var(--f-head)' }}>Overview</h1>
+        <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Overview</h1>
         <p style={{ marginTop: 2, color: 'var(--tx-2)' }}>Proof that backups restore: points booted in a sandbox every night, checked and timed.</p>
       </div>
       {tabs}
