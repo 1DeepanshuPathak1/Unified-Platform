@@ -19,7 +19,7 @@ export const AEGIS_SPEC: any = (function () {
   const layout = [
     ['Grid unit', '8 px; 4 px for tight icon gaps'], ['Frame', 'Dark top bar, white management pane on the left, light working area with cards: the layout of enterprise backup consoles'], ['Header height', '52 px, dark in both themes; its menus use the page colours'], ['Navigation width', '240 px; collapsed 56 px; collapses itself below 1200 px'], ['Navigation item', '32 px high, 10 px side padding, 4 px corners, 12 px icon gap; current item --acc-soft fill and --acc-tx text'],
     ['Product block in navigation', '168 px fixed height (5 items), so shared groups never move between products'], ['Navigation group label', '30 px high, upper case 11 px, sits 7 px above its first item'], ['Page padding', '24 px on every side; 24 px above the title, 20 px below the header block'],
-    ['Toolbar row', '44 px minimum, 12 px gap, 12 px below'], ['Table header row', '38 px on --panel-2'], ['Table row', '40 px, one line, 8 px cell padding, checkbox column 44 px'], ['Table footer', '38 px on --panel-2'],
+    ['Toolbar row', '44 px minimum, 12 px gap, 12 px below; wraps onto a second row when narrow, actions stay on the right'], ['Table header row', '38 px on --panel-2'], ['Table row', '40 px, one line, 8 px cell padding, checkbox column 44 px'], ['Table footer', '38 px on --panel-2'],
     ['Drawer', '560–680 px wide, full height of the content area, 24 px padding, sub-tabs 40 px'], ['Dialog', 'Small 440 px, medium 600 px, large 720 px; 24 px padding; footer 60 px on --panel-2'], ['Wizard', '920 px; steps listed down a 208 px left pane, the step’s page on the right, Back and Next in the footer; body at least 440 px high'],
     ['Menu and popover', '280–440 px wide, item 36–44 px, 4 px vertical padding'], ['Toast', '320–440 px wide, 24 px from the bottom-right corner, stack gap 8 px, 5.2 s on screen'],
     ['Minimum width', '1024 px usable; designed for 1280–1920 px'], ['Corner radius', '4 px controls (--r-sm), 6 px cards, tables, menus and toasts (--r), 8 px dialogs (--r-lg); toggles and avatars are round'], ['Borders', '1 px hairline: --ln for cards and rules, --ln-2 for controls'],
@@ -50,7 +50,7 @@ export const AEGIS_SPEC: any = (function () {
     ['Progress bar', '6 px high, round ends, on --ln; --run while running, --ok when done, --err when failed; phase name and percentage above it.'],
     ['Stepper', 'Even columns; each has a 3 px bar (--acc when reached) and a 20 px round marker with the number or a check.'],
     ['Timeline', 'Five stages in a row; 20 px markers joined by 2 px lines; done stages filled --acc; current outlined with a spinner when a job runs.'],
-    ['KPI widget', 'One card per value with a 12–16 px gap: 6 px corners, 1 px --ln border, --sh-card, 16 × 20 px padding; title Inter 500 13 px --tx-2 with a status icon, value Inter 600 26/34 px, one line of context 12 px --tx-3; optional 6 px segmented bar. A widget with a link lifts on hover and opens its filtered list.'],
+    ['KPI widget', 'One card per value with a 12–16 px gap: 6 px corners, 1 px --ln border, --sh-card, 16 × 20 px padding; title Inter 500 13 px --tx-2 with a status icon, value Inter 600 26/34 px, up to two lines of context 12 px --tx-3; optional 6 px segmented bar at the foot. A widget with a link lifts on hover and opens its filtered list.'],
     ['Panel (widget)', 'Card: --panel fill, 1 px --ln border, 6 px corners, --sh-card; 48 px header with a 14 px 600 title on the left and a link or control on the right. Panels never nest.'],
     ['Warning bar', 'Min 40 px high, padding 0 12 px, 4 px corners, --warn-s fill, a tinted border and a 3 px --warn edge on the left, triangle icon in --warn; text starts “Could not be read:” when something is unreachable.'],
     ['Danger bar', 'Same shape with --err-s fill, an --err edge and an --err icon.'],
@@ -61,7 +61,7 @@ export const AEGIS_SPEC: any = (function () {
     ['File card', '1 px --ln-2 border, --panel-2 fill, 6 px corners, 12 px padding, 20 px file icon, name in 600, meta in 12 px, remove button 28 px.'],
     ['Menu', '--overlay, 1 px --ln border, 6 px corners, --sh-menu; items 36–44 px with a 16 px icon; selected item shows a check in --acc. Menus opened from the top bar use the page colours.'],
     ['Toast', '--overlay, 1 px --ln border, 6 px corners, --sh-menu; status icon, text that names the object, optional action in --acc-tx, dismiss button.'],
-    ['Drawer', 'From the right over the content, --overlay, 1 px --ln-2 left border, --sh-over; kicker 12 px 500, title Inter 600 18/26 px, status line, actions row, sub-tabs, scrolling body.'],
+    ['Drawer', 'From the right over the content at the full height of the working area (never the height of the list), --overlay, 1 px --ln-2 left border, --sh-over; kicker 12 px 500, title Inter 600 18/26 px, status line, actions row, sub-tabs, scrolling body.'],
     ['Dialog', 'Centred on --scrim; --overlay, 1 px --ln border, 8 px corners, --sh-over; footer on --panel-2. Confirmations are armed inside the same dialog. Destructive dialogs list exactly what is removed and ask for the name.'],
     ['Wizard', 'Dialog with the steps listed in a left pane (number in a 22 px circle, done steps checked, current step on --acc-soft); the step’s title heads the page on the right.']
   ];

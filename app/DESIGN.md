@@ -33,6 +33,8 @@ We did **not** copy Veeam's brand: no Veeam green, logo, wordmark or typeface. T
 | Forms | 36 px inputs on a tinted fill, 12 px grey labels | 34 px white inputs with 4 px corners, 13 px dark labels, 12 px muted hints | `ui/controls.tsx` |
 | Toggles, checkboxes | Square | Pill toggles, 3 px checkbox corners | `ui/controls.tsx` |
 | Wizards | Horizontal stepper on top | Steps down a 208 px left pane, page on the right, buttons in a tinted footer, 920 px wide | `Wizard` in `ui/overlay.tsx` |
+| Side panels | Some legacy screens opened their drawer inside the list's box, so it was only as tall as the table | Every drawer is moved to the working area and runs from the top bar to the bottom edge | `ToMain` in `ui/overlay.tsx`; `data-drawer-host` on `<main>` in `pages/AegisConsole.tsx` and `pages/AdminPortal.tsx` |
+| Fit at 1440 px | 17 tables and two toolbars scrolled sideways beside the navigation | Fixed text columns may give up 30 % of their width and flexible minimums 15 %, while numeric columns keep theirs so figures are never cut; toolbars wrap with their actions kept on the right | `flexCol` in `components/AegisTable.tsx`; `Toolbar` in `ui/layout.tsx` |
 | Bars and toasts | Flat fills | Tinted fill with a 3 px edge in the tone colour | `Bar` in `ui/layout.tsx`, toasts in `pages/AegisConsole.tsx` |
 
 The Design System page (`#/design-system`) and Handoff page (`#/handoff`) read these values live, and their written specification (`src/data/spec.ts`) was rewritten to match.

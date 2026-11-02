@@ -1,4 +1,4 @@
-import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
+import { Children, Fragment, isValidElement, useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { Icon } from '../lib/Icon';
 import { pc } from '../lib/pseudo';
 import { Tabs, type Opt } from './controls';
@@ -56,11 +56,25 @@ export function Section<V extends string>({ kicker, title, sub, tabs, tab, onTab
   );
 }
 
-export function Toolbar({ children, style }: { children: ReactNode; style?: CSSProperties }) {
-  return <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: 12, minHeight: 44, ...style }}>{children}</div>;
-}
-
 export const Spacer = () => <span style={{ flex: 1 }} />;
+
+/** Children with fragments opened one level, so a Spacer inside a fragment is still found. */
+const flatKids = (children: ReactNode): ReactNode[] =>
+  Children.toArray(children).flatMap(c => (isValidElement(c) && c.type === Fragment ? Children.toArray((c.props as { children?: ReactNode }).children) : [c]));
+
+/**
+ * Toolbar row. Everything after a Spacer is kept together on the right; when the row is too narrow it wraps,
+ * and the right-hand group stays at the right edge of the next line.
+ */
+export function Toolbar({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  const kids = flatKids(children);
+  const at = kids.findIndex(c => isValidElement(c) && c.type === Spacer);
+  return (
+    <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 12px', minHeight: 44, ...style }}>
+      {at < 0 ? kids : [...kids.slice(0, at), <div key="ae-right" style={{ marginLeft: 'auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center', gap: '8px 12px' }}>{kids.slice(at + 1)}</div>]}
+    </div>
+  );
+}
 
 /** Replaces the toolbar while rows are selected. */
 export function BulkBar({ label, children, onClear }: { label: string; children: ReactNode; onClear: () => void }) {
@@ -104,7 +118,7 @@ export function Panel({ title, right, children, style, bodyStyle, id }: { title:
     <section id={id} style={{ background: 'var(--panel)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', boxShadow: 'var(--sh-card)', minWidth: 0, ...style }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, height: 48, padding: '0 16px', borderBottom: '1px solid var(--ln)' }}>
         <h2 style={{ font: '600 14px/20px var(--f-body)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>{title}</h2>
-        {right}
+        {right ? <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>{right}</div> : null}
       </div>
       <div style={bodyStyle}>{children}</div>
     </section>
@@ -141,9 +155,9 @@ export function Tiles({ items }: { items: Kpi[] }) {
                 {k.unit ? <span style={{ font: '400 14px var(--f-body)', color: 'var(--tx-3)', marginLeft: 6, letterSpacing: 0 }}>{k.unit}</span> : null}
               </span>
             )}
-            {k.sub ? <span data-tip={k.sub} data-tip-overflow="" style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.sub}</span> : null}
+            {k.sub ? <span data-tip={k.sub} data-tip-overflow="" style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{k.sub}</span> : null}
             {k.segs ? (
-              <span style={{ display: 'flex', height: 6, gap: 2, marginTop: 4, borderRadius: 3, overflow: 'hidden', background: 'var(--ln)' }}>
+              <span style={{ display: 'flex', height: 6, gap: 2, marginTop: 'auto', borderRadius: 3, overflow: 'hidden', background: 'var(--ln)' }}>
                 {k.segs.map((s, j) => <span key={j} style={{ height: 6, width: s.w, background: s.c, transition: 'width 150ms var(--ease)' }} />)}
               </span>
             ) : null}

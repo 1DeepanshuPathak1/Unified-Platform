@@ -22,7 +22,7 @@ export function installTooltips() {
   const show = (el: HTMLElement) => {
     const t = el.getAttribute('data-tip');
     if (!t) return;
-    if (el.hasAttribute('data-tip-overflow') && el.scrollWidth <= el.clientWidth) return;
+    if (el.hasAttribute('data-tip-overflow') && el.scrollWidth <= el.clientWidth && el.scrollHeight <= el.clientHeight + 1) return;
     const T = ensure();
     const root = el.closest('[data-ae]');
     const cs = root ? getComputedStyle(root) : null;

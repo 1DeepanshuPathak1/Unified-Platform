@@ -254,11 +254,11 @@ export default class AegisOverview extends DC {
     const v = this.vals();
     return (
       <div style={{ height: '100%', minHeight: 0, overflow: 'auto', animation: 'ae-page 150ms var(--ease)' }}>
-        <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
+        <div style={{ padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>{v.section}</div>
+            <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>{v.section}</div>
             <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Overview</h1>
-            <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>{v.sub}</p>
+            <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>{v.sub}</p>
           </div>
           <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{v.updated}</span>
         </div>
@@ -310,8 +310,7 @@ export default class AegisOverview extends DC {
                 style={{
                   display: 'grid',
                   gridTemplateColumns: `repeat(${v.tileN},minmax(0,1fr))`,
-                  background: 'var(--panel)',
-                  border: '1px solid var(--ln)'
+                  gap: '16px'
                 }}
               >
                 {arr(v.tiles).map((k: any, i: number) => (
@@ -321,16 +320,19 @@ export default class AegisOverview extends DC {
                     style={{
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '6px',
-                      padding: '16px 18px',
-                      borderLeft: `1px solid ${k.bl}`,
+                      gap: '8px',
+                      padding: '16px 20px 18px',
+                      background: 'var(--panel)',
+                      border: '1px solid var(--ln)',
+                      borderRadius: 'var(--r)',
+                      boxShadow: 'var(--sh-card)',
                       minWidth: 0,
-                      transition: 'background-color 100ms'
+                      transition: 'border-color 100ms,box-shadow 100ms'
                     }}
-                    className={pc('hover', 'background:var(--hover)')}
+                    className={pc('hover', 'border-color:var(--ln-2);box-shadow:var(--sh-menu)')}
                   >
                     <span
-                      style={{ display: 'flex', alignItems: 'center', gap: '6px', font: '12px/16px var(--f-ui)', color: 'var(--tx-2)' }}
+                      style={{ display: 'flex', alignItems: 'center', gap: '8px', font: '500 13px/18px var(--f-ui)', color: 'var(--tx-2)' }}
                     >
                       <Icon name={k.i} style={{ color: k.ic }} />
                       {k.label}
@@ -347,7 +349,7 @@ export default class AegisOverview extends DC {
                         }}
                       >
                         {k.value}
-                        <span style={{ font: '400 15px var(--f-body)', color: 'var(--tx-2)', marginLeft: '6px' }}>{k.unit}</span>
+                        <span style={{ font: '400 14px var(--f-body)', color: 'var(--tx-3)', marginLeft: '6px' }}>{k.unit}</span>
                       </span>
                     ) : null}
                     <span
@@ -362,7 +364,7 @@ export default class AegisOverview extends DC {
                       {k.sub}
                     </span>
                     {k.hasSegs ? (
-                      <span style={{ display: 'flex', height: '6px', gap: '1px', marginTop: '2px' }}>
+                      <span style={{ display: 'flex', height: '6px', gap: '2px', marginTop: 'auto', borderRadius: '3px', overflow: 'hidden', background: 'var(--ln)' }}>
                         {arr(k.segs).map((sg: any, j: number) => (
                           <span key={j} style={{ height: '6px', width: sg.w, background: sg.c }} />
                         ))}

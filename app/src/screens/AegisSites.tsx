@@ -853,11 +853,11 @@ export default class AegisSites extends DC {
           animation: 'ae-page 150ms var(--ease)'
         }}
       >
-        <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
+        <div style={{ flex: 'none', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Infrastructure</div>
+            <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Infrastructure</div>
             <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Sites</h1>
-            <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>
+            <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>
               Platforms Aegis connects to in <span>{v.project}</span>, and what each one is used for.
             </p>
           </div>
@@ -945,7 +945,7 @@ export default class AegisSites extends DC {
             </button>
           </div>
         ) : null}
-        <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '44px' }}>
+        <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '44px', flexWrap: 'wrap', rowGap: '8px' }}>
           {v.noSel ? (
             <>
               <Ind
@@ -974,7 +974,7 @@ export default class AegisSites extends DC {
                   </button>
                 ))}
               </Ind>
-              <div style={{ position: 'relative', width: '260px' }}>
+              <div style={{ position: 'relative', flex: 'none', width: '260px' }}>
                 <Icon
                   name="filter"
                   style={{ position: 'absolute', left: '10px', top: '8px', color: 'var(--tx-3)', pointerEvents: 'none' }}
@@ -997,7 +997,7 @@ export default class AegisSites extends DC {
                 />
               </div>
               <span style={{ flex: 1 }} />
-              <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{v.lastRead}</span>
+              <span style={{ marginLeft: 'auto', font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{v.lastRead}</span>
             </>
           ) : null}
           {v.hasSel ? (
@@ -1588,7 +1588,7 @@ export default class AegisSites extends DC {
                   <h2 id="wiz-title" style={{ font: '600 18px/26px var(--f-head)' }}>
                     {v.w?.title}
                   </h2>
-                  <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>{v.w?.sub}</p>
+                  <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>{v.w?.sub}</p>
                 </div>
                 <button
                   onClick={v.closeWizard}
@@ -1611,7 +1611,7 @@ export default class AegisSites extends DC {
                 style={{
                   flex: 'none',
                   listStyle: 'none',
-                  padding: '20px 24px 16px',
+                  padding: '24px 24px 20px',
                   display: 'grid',
                   gridTemplateColumns: 'repeat(4,minmax(0,1fr))',
                   gap: '8px',

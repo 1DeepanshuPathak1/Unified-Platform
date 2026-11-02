@@ -163,7 +163,7 @@ export const RULES: [string, string][] = [
   ['Icons with fixed meaning', 'A shield always means encryption. A padlock always means immutability. Neither is used for anything else.'],
   ['Time', 'Times are in the orchestrator’s time zone with the zone named (21 Oct 2026, 16:05 IST). Customer-facing schedules also show the customer’s own zone.'],
   ['Explanations', 'At most two info icons per view. Explanations go in their tooltips, not in paragraphs.'],
-  ['Drawers', 'Kicker, title, status line, action row, sub-tabs. Edit in a dialog, list in the drawer. One-line rows. Tiles only on a drawer’s Overview tab.'],
+  ['Drawers', 'Open from the right at the full height of the working area (top bar to bottom edge), never the height of the list they came from. Kicker, title, status line, action row, sub-tabs. Edit in a dialog, list in the drawer. One-line rows. Tiles only on a drawer’s Overview tab.'],
   ['Long-running actions', 'Show the live log in the drawer that started them, and keep running if the drawer closes; the running-jobs tray in the header follows them.'],
   ['Destructive and irreversible actions', 'Confirmation is armed inside the same dialog (never a dialog opened from another dialog), with the exact list of what will be removed, the name typed to confirm, step-up MFA, and approval where policy requires it.'],
   ['Tables', 'Never wrap names, badges or buttons; truncate with a tooltip. Numbers are right-aligned with units. Tables fit 1440 px without a horizontal scroll; secondary columns move into the drawer.'],

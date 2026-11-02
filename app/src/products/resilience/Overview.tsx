@@ -148,7 +148,7 @@ function Readiness({ ctx }: { ctx: Ctx }) {
                         const top = checks.find(c => c.state === 'block') || checks.find(c => c.state === 'unread') || checks.find(c => c.state === 'warn');
                         return (
                           <li key={rb.id}>
-                            <button type="button" onClick={() => ctx.go('dr/recovery', rb.id)} className={pc('hover', 'background:var(--hover)')} style={{ width: '100%', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 96px 48px', gap: 12, alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid var(--ln)', textAlign: 'left', transition: 'background-color 100ms' }}>
+                            <button type="button" onClick={() => ctx.go('dr/recovery', rb.id)} className={pc('hover', 'background:var(--hover)')} style={{ width: '100%', display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 96px 64px', gap: 12, alignItems: 'center', padding: '10px 16px', borderBottom: '1px solid var(--ln)', textAlign: 'left', transition: 'background-color 100ms' }}>
                               <span style={{ minWidth: 0 }}>
                                 <span style={{ display: 'block', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{rb.name}</span>
                                 <span data-tip={top ? `${top.obj}: ${top.result}` : undefined} style={{ display: 'flex', alignItems: 'center', gap: 6, font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', whiteSpace: 'nowrap', overflow: 'hidden' }}>
@@ -157,7 +157,7 @@ function Readiness({ ctx }: { ctx: Ctx }) {
                                 </span>
                               </span>
                               <Meter score={score} />
-                              <span style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums', fontWeight: 600, fontStyle: score == null ? 'italic' : 'normal', color: score == null ? 'var(--tx-3)' : 'var(--tx)' }}>{score == null ? 'Not read' : `${score} %`}</span>
+                              <span style={{ textAlign: 'right', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums', fontWeight: 600, fontStyle: score == null ? 'italic' : 'normal', color: score == null ? 'var(--tx-3)' : 'var(--tx)' }}>{score == null ? 'Not read' : `${score} %`}</span>
                             </button>
                           </li>
                         );

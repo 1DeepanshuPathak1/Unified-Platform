@@ -282,9 +282,9 @@ export default class AegisMigServers extends DC {
       { k: 'src', label: 'Source', w: 'minmax(110px,1fr)', dim: true },
       { k: 'os', label: 'Guest OS', w: 'minmax(140px,1.2fr)', dim: true },
       { k: 'spec', label: 'CPU and memory', w: '128px', dim: true },
-      { k: 'disks', label: 'Disks', w: '64px', r: true },
-      { k: 'size', label: 'Size', w: '96px', r: true },
-      { k: 'cbt', label: 'Change tracking', w: '128px' },
+      { k: 'disks', label: 'Disks', w: '56px', r: true },
+      { k: 'size', label: 'Size', w: '88px', r: true },
+      { k: 'cbt', label: 'Change tracking', w: '120px' },
       { k: 'stage', label: 'Stage', w: 'minmax(150px,1.3fr)' },
       { k: 'next', label: 'Next step', w: 'minmax(120px,1fr)', dim: true },
       { k: 'last', label: 'Last pass', w: '112px', dim: true },
@@ -729,11 +729,11 @@ export default class AegisMigServers extends DC {
           animation: 'ae-page 150ms var(--ease)'
         }}
       >
-        <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
+        <div style={{ flex: 'none', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Mobility</div>
+            <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Mobility</div>
             <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Servers</h1>
-            <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>
+            <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>
               Virtual machines on VMware sources, and where each one is in its migration.
             </p>
           </div>
@@ -758,7 +758,7 @@ export default class AegisMigServers extends DC {
           </a>
         </div>
         {this.props.tabs}
-        <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px' }}>
+        <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px', flexWrap: 'wrap', rowGap: '8px' }}>
           {arr(v.filters).map((fl: any, i: number) => (
             <label
               key={i}
@@ -789,7 +789,7 @@ export default class AegisMigServers extends DC {
               </select>
             </label>
           ))}
-          <div style={{ position: 'relative', width: '200px' }}>
+          <div style={{ position: 'relative', flex: 'none', width: '200px' }}>
             <Icon name="filter" style={{ position: 'absolute', left: '10px', top: '8px', color: 'var(--tx-3)', pointerEvents: 'none' }} />
             <input
               value={v.q ?? ''}
@@ -808,7 +808,7 @@ export default class AegisMigServers extends DC {
             />
           </div>
           <span style={{ flex: 1 }} />
-          <span style={{ font: '13px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>{v.selLabel}</span>
+          <span style={{ marginLeft: 'auto', font: '13px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>{v.selLabel}</span>
           <button
             onClick={v.tMigrate}
             aria-disabled={v.bm?.dis}

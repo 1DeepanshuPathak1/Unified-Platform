@@ -82,7 +82,11 @@ export default class AegisTable extends DC {
         );
       });
     }
-    const grid = (selectable ? '44px ' : '') + cols.map(c => c.w || 'minmax(0,1fr)').join(' ') + (chev ? ' 36px' : '');
+    // Fixed columns keep their width when there is room and give up to 30 % when there is not,
+    // so a table always fits beside the navigation without scrolling sideways.
+    const flex = (w: string) => w.replace(/(^|[\s(,])(\d+)px(?=$|[\s),])/g, (_m, pre, n) => (+n >= 64 ? `${pre}minmax(${Math.round(+n * 0.7)}px,${n}px)` : `${pre}${n}px`));
+    const flexCol = (w: string) => (/^\d+px$/.test(w) ? flex(w) : w.replace(/minmax\((\d+)px,/g, (_m, n) => `minmax(${Math.round(+n * 0.85)}px,`));
+    const grid = (selectable ? '44px ' : '') + cols.map(c => (c.w ? (c.r && /^\d+px$/.test(c.w) ? c.w : flexCol(c.w)) : 'minmax(0,1fr)')).join(' ') + (chev ? ' 36px' : '');
     const heads = cols.map(c => {
       const on = sk === c.k;
       return {

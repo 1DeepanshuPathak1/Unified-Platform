@@ -665,11 +665,11 @@ export default class AegisDrServers extends DC {
           animation: 'ae-page 150ms var(--ease)'
         }}
       >
-        <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
+        <div style={{ flex: 'none', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Resilience</div>
+            <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Resilience</div>
             <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Protected servers</h1>
-            <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Servers replicated from a primary site to a recovery site.</p>
+            <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>Servers replicated from a primary site to a recovery site.</p>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <a
@@ -713,7 +713,7 @@ export default class AegisDrServers extends DC {
           </div>
         </div>
         {this.props.tabs}
-        <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '44px' }}>
+        <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '44px', flexWrap: 'wrap', rowGap: '8px' }}>
           <Ind
             mode="fill"
             role="radiogroup"
@@ -744,7 +744,7 @@ export default class AegisDrServers extends DC {
               </button>
             ))}
           </Ind>
-          <div style={{ position: 'relative', width: '220px' }}>
+          <div style={{ position: 'relative', flex: 'none', width: '220px' }}>
             <Icon name="filter" style={{ position: 'absolute', left: '10px', top: '8px', color: 'var(--tx-3)', pointerEvents: 'none' }} />
             <input
               value={v.q ?? ''}
@@ -763,8 +763,8 @@ export default class AegisDrServers extends DC {
             />
           </div>
           <span style={{ flex: 1 }} />
-          <span style={{ font: '13px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>{v.selLabel}</span>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <span style={{ marginLeft: 'auto', font: '13px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>{v.selLabel}</span>
+          <div style={{ display: 'flex', gap: '8px', marginLeft: 'auto' }}>
             <button
               onClick={v.aOnline}
               aria-disabled={v.b?.online?.dis}

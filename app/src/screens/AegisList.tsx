@@ -320,14 +320,14 @@ export default class AegisList extends DC {
         ],
         cols: [
           { k: 'name', label: 'Name', w: 'minmax(150px,1.3fr)' },
-          { k: 'type', label: 'Type', w: '120px', dim: true },
-          { k: 'site', label: 'Site', w: 'minmax(140px,1.2fr)', dim: true },
-          { k: 'node', label: 'Node', w: 'minmax(130px,1.1fr)', dim: true },
-          { k: 'used', label: 'Used and capacity', w: 'minmax(220px,1.6fr)' },
-          { k: 'red', label: 'Data reduction', w: '120px', r: true },
-          { k: 'lock', label: 'Lock', w: '148px' },
-          { k: 'enc', label: 'Encryption', w: '112px' },
-          { k: 'status', label: 'Status', w: '120px' }
+          { k: 'type', label: 'Type', w: '104px', dim: true },
+          { k: 'site', label: 'Site', w: 'minmax(110px,1fr)', dim: true },
+          { k: 'node', label: 'Node', w: 'minmax(100px,0.9fr)', dim: true },
+          { k: 'used', label: 'Used and capacity', w: 'minmax(250px,1.6fr)' },
+          { k: 'red', label: 'Reduction', w: '88px', r: true },
+          { k: 'lock', label: 'Lock', w: '140px' },
+          { k: 'enc', label: 'Encryption', w: '100px' },
+          { k: 'status', label: 'Status', w: '104px' }
         ],
         drawer: id => {
           const r = repos.find(x => x.id === id);
@@ -1629,11 +1629,11 @@ export default class AegisList extends DC {
           animation: 'ae-page 150ms var(--ease)'
         }}
       >
-        <div style={{ flex: 'none', padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
+        <div style={{ flex: 'none', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>{v.section}</div>
+            <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>{v.section}</div>
             <h1 style={{ font: '600 22px/30px var(--f-head)' }}>{v.title}</h1>
-            <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>{v.sub}</p>
+            <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>{v.sub}</p>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             {arr(v.actions).map((a: any, i: number) => (
@@ -1664,7 +1664,7 @@ export default class AegisList extends DC {
             ))}
           </div>
         </div>
-        <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '44px' }}>
+        <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', alignItems: 'center', gap: '12px', minHeight: '44px', flexWrap: 'wrap', rowGap: '8px' }}>
           {v.hasViews ? (
             <Ind
               mode="fill"
@@ -1728,7 +1728,7 @@ export default class AegisList extends DC {
               </select>
             </label>
           ))}
-          <div style={{ position: 'relative', width: '220px' }}>
+          <div style={{ position: 'relative', flex: 'none', width: '220px' }}>
             <Icon name="filter" style={{ position: 'absolute', left: '10px', top: '8px', color: 'var(--tx-3)', pointerEvents: 'none' }} />
             <input
               value={v.q ?? ''}
@@ -1747,7 +1747,7 @@ export default class AegisList extends DC {
             />
           </div>
           <span style={{ flex: 1 }} />
-          <span style={{ font: '13px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>{v.selLabel}</span>
+          <span style={{ marginLeft: 'auto', font: '13px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap' }}>{v.selLabel}</span>
           {arr(v.bulk).map((bk: any, i: number) => (
             <button
               key={i}
@@ -2319,7 +2319,7 @@ export default class AegisList extends DC {
                   <h2 id="pd-title" style={{ font: '600 18px/26px var(--f-head)' }}>
                     {v.pd?.title}
                   </h2>
-                  <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>{v.pd?.sub}</p>
+                  <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>{v.pd?.sub}</p>
                 </div>
                 <button
                   onClick={v.pdClose}

@@ -391,11 +391,11 @@ export default class AegisRestore extends DC {
     const v = this.vals();
     return (
       <div style={{ height: '100%', minHeight: 0, overflow: 'auto', animation: 'ae-page 150ms var(--ease)' }}>
-        <div style={{ padding: '20px 24px 16px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
+        <div style={{ padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '4px' }}>Protection</div>
+            <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Protection</div>
             <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Restore</h1>
-            <p style={{ marginTop: '2px', color: 'var(--tx-2)' }}>Bring back a whole VM, single disks or files from a recovery point.</p>
+            <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>Bring back a whole VM, single disks or files from a recovery point.</p>
           </div>
           <Btn kind="outline" icon="database" onClick={v.openApps}>
             Application items…
