@@ -178,16 +178,20 @@ export function Tiles({ items }: { items: Kpi[] }) {
 export function DrawerTiles({ items }: { items: { label: string; value: ReactNode; sub?: string; icon?: string; tone?: string }[] }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: `repeat(${items.length},minmax(0,1fr))`, gap: 8 }}>
-      {items.map((k, i) => (
+      {items.map((k, i) => {
+        // Figures read large; a phrase such as "Online at recovery site" drops to body size so it fits and keeps its words.
+        const words = typeof k.value === 'string' && !/^[\d.,\s%×₹$:/-]+[A-Za-z]{0,3}$/.test(k.value);
+        return (
         <div key={i} style={{ padding: '12px 14px', background: 'var(--panel-2)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-          <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', whiteSpace: 'nowrap' }}>{k.label}</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 6, font: '600 18px/26px var(--f-head)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-            {k.icon ? <Icon name={k.icon} style={{ color: k.tone ? TONE[k.tone] : 'var(--tx-2)' }} /> : null}
-            {k.value}
+          <span style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-3)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.label}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6, minHeight: 26, fontFamily: 'var(--f-head)', fontWeight: 600, fontSize: words ? 15 : 18, lineHeight: words ? '22px' : '26px', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', minWidth: 0 }}>
+            {k.icon ? <Icon name={k.icon} style={{ color: k.tone ? TONE[k.tone] : 'var(--tx-2)', flex: 'none' }} /> : null}
+            <span data-tip={words ? String(k.value) : undefined} data-tip-overflow="" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.value}</span>
           </span>
           {k.sub ? <span data-tip={k.sub} data-tip-overflow="" style={{ font: '12px/16px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{k.sub}</span> : null}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Dialog, Drawer, useClosable } from '../ui/overlay';
 import type { Ctx, LiveJob } from '../ui/ctx';
 import { custName } from './common';
 import { diagnose } from './errors';
+import { SessionCounters, SessionObjects, ThroughputChart, fmtDur, fmtSize, parseDur, sessionStats } from './SessionStats';
 
 type Q = {
   id: string;
@@ -67,7 +68,7 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
   useEffect(() => {
     if (ctx.openId) {
       drawer.open(ctx.openId);
-      setTab('Progress');
+      setTab(QUEUED.some(j => j.id === ctx.openId && j.state === 'queued') ? 'Progress' : 'Statistics');
       if (!ctx.jobs.some(j => j.id === ctx.openId) && !QUEUED.some(j => j.id === ctx.openId)) setView('history');
     }
   }, [ctx.nonce]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -101,6 +102,8 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
   const find = (id: string) => [...queue, ...finished].find(j => j.id === id);
   const d = drawer.value ? find(drawer.value) : null;
   const selIds = Object.keys(sel).filter(k => sel[k] && rows.some(r => r.id === k));
+  const openRow = (id: string) => { drawer.open(id); setTab(find(id)?.state === 'queued' ? 'Progress' : 'Statistics'); };
+
 
   const act = (ids: string[], a: 'pause' | 'resume' | 'cancel') => {
     ids.forEach(id => {
@@ -156,19 +159,39 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
         <TableArea>
           <AegisTable
             label={view === 'queue' ? 'Job queue' : 'Job history'}
-            cols={[
-              { k: 'prio', label: 'Priority', w: '76px' },
-              { k: 'name', label: 'Job', w: 'minmax(140px,1.2fr)' },
-              { k: 'object', label: 'Object', w: 'minmax(120px,1fr)' },
-              { k: 'product', label: 'Product', w: '88px', dim: true },
-              { k: 'proxy', label: 'Runs on', w: 'minmax(120px,1fr)', dim: true },
-              { k: 'state', label: 'State', w: 'minmax(150px,1.2fr)' },
-              { k: 'pct', label: 'Progress', w: '130px' },
-              ...(view === 'queue' ? [{ k: 'eta', label: 'Ends', w: '72px', r: true }, { k: 'rate', label: 'Throughput', w: '92px', r: true }, { k: 'bn', label: 'Bottleneck', w: '100px' }] : [{ k: 'dur', label: 'Duration', w: '104px', r: true }, { k: 'started', label: 'Started', w: '176px', dim: true }])
-            ]}
+            cols={
+              view === 'queue'
+                ? [
+                    { k: 'prio', label: 'Priority', w: '76px' },
+                    { k: 'name', label: 'Job', w: 'minmax(140px,1.2fr)' },
+                    { k: 'object', label: 'Object', w: 'minmax(120px,1fr)' },
+                    { k: 'product', label: 'Product', w: '88px', dim: true },
+                    { k: 'proxy', label: 'Runs on', w: 'minmax(120px,1fr)', dim: true },
+                    { k: 'state', label: 'State', w: 'minmax(150px,1.2fr)' },
+                    { k: 'pct', label: 'Progress', w: '130px' },
+                    { k: 'eta', label: 'Ends', w: '72px', r: true },
+                    { k: 'rate', label: 'Throughput', w: '92px', r: true },
+                    { k: 'bn', label: 'Bottleneck', w: '100px' }
+                  ]
+                : [
+                    { k: 'name', label: 'Job', w: 'minmax(140px,1.2fr)' },
+                    { k: 'object', label: 'Object', w: 'minmax(130px,1.1fr)' },
+                    { k: 'product', label: 'Product', w: '88px', dim: true },
+                    { k: 'state', label: 'Result', w: '112px' },
+                    { k: 'started', label: 'Started', w: '168px', dim: true },
+                    { k: 'ended', label: 'Ended', w: '84px', dim: true, r: true },
+                    { k: 'dur', label: 'Duration', w: '104px', r: true },
+                    { k: 'proc', label: 'Processed', w: '96px', r: true },
+                    { k: 'txd', label: 'Transferred', w: '100px', r: true },
+                    { k: 'proxy', label: 'Runs on', w: 'minmax(120px,1fr)', dim: true }
+                  ]
+            }
             rows={rows.map(j => {
               const b = j.state === 'run' ? bottleneck(j.id, ctx.tick) : null;
               const st = ST[j.state];
+              const ss = view === 'history' ? sessionStats(j) : null;
+              const t0 = /(\d{2}):(\d{2})/.exec(j.started);
+              const endS = t0 ? +t0[1] * 3600 + +t0[2] * 60 + parseDur(j.duration) : 0;
               return {
                 id: j.id,
                 prio: { v: PRIO_L[j.prio].split(' · ')[0], s: j.prio, tip: PRIO_L[j.prio], strong: j.prio === 1 },
@@ -181,17 +204,20 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
                 eta: (() => { const e = etaOf(j, rows); return e ? { v: e.at, s: e.min, tip: e.tip } : { v: '—', muted: true, s: 1e6 }; })(),
                 rate: j.state === 'run' ? j.rate || '—' : { v: '—', muted: true },
                 bn: b ? { t: 'status', i: b.at === 'source' ? 'hard-drive' : b.at === 'network' ? 'wifi' : 'database', l: b.at[0].toUpperCase() + b.at.slice(1), c: 'warn', tip: `Source ${b.src} % busy · network ${b.net} % · target ${b.tgt} %` } : { v: '—', muted: true },
-                dur: j.duration || '—',
-                started: j.started
+                dur: j.duration ? { v: fmtDur(parseDur(j.duration)), s: parseDur(j.duration) } : '—',
+                started: j.started,
+                ended: t0 && j.duration ? { v: `${String(Math.floor(endS / 3600) % 24).padStart(2, '0')}:${String(Math.floor((endS % 3600) / 60)).padStart(2, '0')}`, s: endS } : { v: '—', muted: true },
+                proc: ss ? { v: fmtSize(ss.processed), s: ss.processed } : '—',
+                txd: ss ? (ss.moves ? { v: fmtSize(ss.tx), s: ss.tx } : { v: '—', muted: true, s: 0 }) : '—'
               };
             })}
             sel={view === 'queue' ? sel : undefined}
             onSel={view === 'queue' ? (id: string) => setSel(x => ({ ...x, [id]: !x[id] })) : undefined}
             onSelAll={(ids: string[], on: boolean) => setSel(x => ({ ...x, ...Object.fromEntries(ids.map(i => [i, on])) }))}
-            onRow={(id: string) => { drawer.open(id); setTab('Progress'); }}
+            onRow={openRow}
             active={drawer.value}
             state={ctx.ui}
-            unit={['job', 'jobs']}
+            unit={view === 'history' ? ['session', 'sessions'] : ['job', 'jobs']}
             filtered={prod !== 'All' || !!ql}
             onClear={() => { setProd('All'); setQ(''); }}
             emptyText={view === 'queue' ? 'Nothing is running or waiting. Scheduled jobs appear here when they start.' : 'No finished jobs yet.'}
@@ -204,7 +230,7 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
       {d ? (
         <Drawer
           label="Job details"
-          width={640}
+          width={720}
           kicker={`Job · ${d.product} · ${custName(d.customer)}`}
           title={`${d.name} · ${d.object}`}
           status={
@@ -213,7 +239,7 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
                 <Icon name={ST[d.state][0]} spin={d.state === 'run'} style={{ color: `var(--${ST[d.state][2] === 'tx' ? 'tx-3' : ST[d.state][2]})` }} />
                 <span style={{ color: 'var(--tx)' }}>{ST[d.state][1]}</span>
               </span>
-              <span>{PRIO_L[d.prio]}</span>
+              {d.state === 'run' || d.state === 'queued' || d.state === 'paused' ? <span>{PRIO_L[d.prio]}</span> : d.duration ? <span>Took {fmtDur(parseDur(d.duration))}</span> : null}
               <span>{d.proxy}</span>
             </>
           }
@@ -235,12 +261,36 @@ export function JobsTab({ ctx, jobCtl }: { ctx: Ctx; jobCtl: (id: string, a: 'pa
               </Btn>
             ) : undefined
           }
-          tabs={[{ v: 'Progress', label: 'Progress' }, { v: 'Log', label: 'Log', count: d.live ? d.live.log.length : undefined }, { v: 'Limits', label: 'Limits' }]}
+          tabs={
+            d.state === 'queued'
+              ? [{ v: 'Progress', label: 'Progress' }, { v: 'Log', label: 'Log' }, { v: 'Limits', label: 'Limits' }]
+              : [{ v: 'Statistics', label: 'Statistics' }, { v: 'Objects', label: 'Objects', count: sessionStats(d).total }, { v: 'Log', label: 'Log', count: d.live ? d.live.log.length : undefined }, { v: 'Limits', label: 'Limits' }]
+          }
           tab={tab}
           onTab={setTab}
           closing={drawer.closing}
           onClose={drawer.close}
         >
+          {tab === 'Statistics' && d.state !== 'queued' ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              {d.why ? <p style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--tx-2)' }}><Icon name="info" />{d.why}</p> : null}
+              {d.note && (d.state === 'err' || d.state === 'warn') ? <Diagnosis key={d.id} ctx={ctx} note={d.note} object={d.object} tone={d.state} /> : null}
+              {d.state === 'run' || d.state === 'paused' ? (
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', font: '13px/18px var(--f-ui)', marginBottom: 6 }}>
+                    <span>{d.phases[d.phase]}{d.phases.length > 1 ? <span style={{ color: 'var(--tx-3)' }}> · step {d.phase + 1} of {d.phases.length}</span> : null}</span>
+                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>{Math.floor(d.pct)} %</span>
+                  </div>
+                  <Progress pct={d.pct} tone={d.state === 'paused' ? 'warn' : 'run'} slow />
+                </div>
+              ) : null}
+              <SessionCounters s={sessionStats(d, d.state === 'run' ? bottleneck(d.id, ctx.tick).at : undefined)} state={d.state} />
+              <ThroughputChart s={sessionStats(d, d.state === 'run' ? bottleneck(d.id, ctx.tick).at : undefined)} state={d.state} />
+              {d.state === 'run' ? <BottleneckPanel id={d.id} tick={ctx.tick} /> : null}
+              <Facts items={[{ k: 'Started', v: d.started }, ...(etaOf(d, rows) ? [{ k: 'Ends about', v: `${etaOf(d, rows)!.at} IST · ${etaOf(d, rows)!.tip}` }] : []), ...(d.dependsOn ? [{ k: 'Waits for', v: d.dependsOn, icon: 'workflow' }] : []), { k: 'Runs on', v: d.proxy }, { k: 'Customer', v: custName(d.customer) }]} />
+            </div>
+          ) : null}
+          {tab === 'Objects' && d.state !== 'queued' ? <SessionObjects key={d.id} s={sessionStats(d)} src={d} /> : null}
           {tab === 'Progress' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {d.why ? <p style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--tx-2)' }}><Icon name="info" />{d.why}</p> : null}

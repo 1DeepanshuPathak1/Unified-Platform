@@ -1,7 +1,133 @@
 /* Ported from project/AegisTable.dc.html */
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { DC, arr } from '../lib/dc';
+import { setActiveList } from '../lib/activeList';
 import { pc } from '../lib/pseudo';
 import { Icon } from '../lib/Icon';
+
+const colKey = (label: string) => `aegis.cols.v1.${label}`;
+const readHidden = (label: string): string[] => {
+  try {
+    const v = JSON.parse(localStorage.getItem(colKey(label)) || '[]');
+    return Array.isArray(v) ? v.filter(x => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+};
+const writeHidden = (label: string, hidden: string[]) => {
+  try {
+    if (hidden.length) localStorage.setItem(colKey(label), JSON.stringify(hidden));
+    else localStorage.removeItem(colKey(label));
+  } catch {
+    /* storage can be unavailable; the choice then lasts until the page reloads */
+  }
+};
+
+type ColDef = { k: string; label: string };
+
+/** Column chooser at the right end of a table header: show or hide columns; the first column always stays. */
+function ColumnMenu({ cols, hidden, label, onToggle, onReset }: { cols: ColDef[]; hidden: string[]; label: string; onToggle: (k: string) => void; onReset: () => void }) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; right: number; host: HTMLElement } | null>(null);
+  const btn = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: MouseEvent) => {
+      if (menu.current?.contains(e.target as Node) || btn.current?.contains(e.target as Node)) return;
+      setOpen(false);
+    };
+    const key = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setOpen(false);
+        btn.current?.focus();
+      }
+    };
+    const close = () => setOpen(false);
+    document.addEventListener('mousedown', away);
+    document.addEventListener('keydown', key, true);
+    window.addEventListener('resize', close);
+    menu.current?.querySelector<HTMLElement>('[role=menuitemcheckbox]:not([aria-disabled])')?.focus();
+    return () => {
+      document.removeEventListener('mousedown', away);
+      document.removeEventListener('keydown', key, true);
+      window.removeEventListener('resize', close);
+    };
+  }, [open]);
+  const toggle = () => {
+    const b = btn.current;
+    if (!b) return;
+    const r = b.getBoundingClientRect();
+    const host = (b.closest('[data-ae]') as HTMLElement | null) || document.body;
+    setPos({ top: r.bottom + 4, right: Math.max(8, window.innerWidth - r.right), host });
+    setOpen(o => !o);
+  };
+  const shown = cols.filter((c, i) => i === 0 || !hidden.includes(c.k)).length;
+  return (
+    <>
+      <button
+        ref={btn}
+        type="button"
+        aria-label={`Choose columns for ${label}`}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        data-tip={hidden.length ? `Columns: ${hidden.length} hidden` : 'Columns'}
+        onClick={toggle}
+        className={pc('hover', 'background:var(--hover);color:var(--tx)')}
+        style={{ width: 28, height: 28, display: 'grid', placeItems: 'center', borderRadius: 'var(--r-sm)', color: hidden.length ? 'var(--acc-tx)' : 'var(--tx-3)', transition: 'background-color 100ms,color 100ms' }}
+      >
+        <Icon name="columns-3" />
+      </button>
+      {open && pos
+        ? createPortal(
+            <div
+              ref={menu}
+              role="menu"
+              aria-label={`Columns of ${label}`}
+              style={{ position: 'fixed', top: pos.top, right: pos.right, zIndex: 60, width: 248, maxHeight: 'min(420px, calc(100vh - 80px))', overflow: 'auto', padding: '6px 0', background: 'var(--overlay)', color: 'var(--tx)', border: '1px solid var(--ln-2)', borderRadius: 'var(--r)', boxShadow: 'var(--sh-menu)', animation: 'ae-pop 140ms var(--ease)' }}
+            >
+              <div style={{ padding: '4px 12px 6px', font: '600 11px/16px var(--f-ui)', letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--tx-3)' }}>Columns</div>
+              {cols.map((c, i) => {
+                const on = i === 0 || !hidden.includes(c.k);
+                return (
+                  <button
+                    key={c.k}
+                    type="button"
+                    role="menuitemcheckbox"
+                    aria-checked={on}
+                    aria-disabled={i === 0 ? 'true' : undefined}
+                    onClick={() => i && onToggle(c.k)}
+                    className={i ? pc('hover', 'background:var(--hover)') : undefined}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', height: 32, padding: '0 12px', font: '13px var(--f-ui)', color: i === 0 ? 'var(--tx-3)' : 'var(--tx)', cursor: i === 0 ? 'default' : 'pointer', textAlign: 'left' }}
+                  >
+                    <span style={{ width: 16, height: 16, flex: 'none', display: 'grid', placeItems: 'center', borderRadius: 3, border: `1px solid ${on ? (i === 0 ? 'var(--ln-2)' : 'var(--acc)') : 'var(--ln-2)'}`, background: on ? (i === 0 ? 'var(--panel-2)' : 'var(--acc)') : 'var(--panel)', color: i === 0 ? 'var(--tx-3)' : 'var(--acc-ink)' }}>
+                      {on ? <Icon name="check" size="12" /> : null}
+                    </span>
+                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.label}</span>
+                    {i === 0 ? <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>Always shown</span> : null}
+                  </button>
+                );
+              })}
+              <div style={{ marginTop: 6, padding: '8px 12px 4px', borderTop: '1px solid var(--ln)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{shown} of {cols.length} shown</span>
+                <button
+                  type="button"
+                  onClick={onReset}
+                  aria-disabled={hidden.length ? undefined : 'true'}
+                  style={{ font: '500 13px var(--f-ui)', color: hidden.length ? 'var(--acc-tx)' : 'var(--tx-3)', cursor: hidden.length ? 'pointer' : 'default' }}
+                >
+                  Show all
+                </button>
+              </div>
+            </div>,
+            pos.host
+          )
+        : null}
+    </>
+  );
+}
 
 const COLORS = { ok: 'var(--ok)', warn: 'var(--warn)', err: 'var(--err)', run: 'var(--run)', tx: 'var(--tx-3)', acc: 'var(--acc)' };
 const SKW = ['72%', '56%', '84%', '40%', '64%', '48%', '76%', '60%'];
@@ -16,7 +142,16 @@ const sortVal = c => {
 };
 
 export default class AegisTable extends DC {
-  state: any = { sk: undefined, sd: 1 };
+  state: any = { sk: undefined, sd: 1, hidden: readHidden(this.props.label || 'Table') };
+
+  componentWillUnmount() {
+    setActiveList(null, this);
+  }
+
+  setHidden(hidden: string[]) {
+    writeHidden(this.props.label || 'Table', hidden);
+    this.setState({ hidden });
+  }
 
   cell(raw, col) {
     const obj = raw && typeof raw === 'object' && !Array.isArray(raw);
@@ -60,7 +195,11 @@ export default class AegisTable extends DC {
 
   renderVals() {
     const p = this.props;
-    const cols = p.cols || [];
+    const allCols = p.cols || [];
+    const named = allCols.filter(c => c.label && c.k);
+    const chooser = p.colMenu !== false && named.length >= 5;
+    const hidden: string[] = chooser ? (this.state.hidden || []).filter((k: string) => named.some((c, i) => c.k === k && c !== allCols[0])) : [];
+    const cols = allCols.filter((c, i) => i === 0 || !hidden.includes(c.k));
     const sk = this.state.sk !== undefined ? this.state.sk : p.sort || null;
     const sd = this.state.sk !== undefined ? this.state.sd : p.dir || 1;
     const selectable = !!p.onSel;
@@ -86,7 +225,8 @@ export default class AegisTable extends DC {
     // so a table always fits beside the navigation without scrolling sideways.
     const flex = (w: string) => w.replace(/(^|[\s(,])(\d+)px(?=$|[\s),])/g, (_m, pre, n) => (+n >= 64 ? `${pre}minmax(${Math.round(+n * 0.7)}px,${n}px)` : `${pre}${n}px`));
     const flexCol = (w: string) => (/^\d+px$/.test(w) ? flex(w) : w.replace(/minmax\((\d+)px,/g, (_m, n) => `minmax(${Math.round(+n * 0.85)}px,`));
-    const grid = (selectable ? '44px ' : '') + cols.map(c => (c.w ? (c.r && /^\d+px$/.test(c.w) ? c.w : flexCol(c.w)) : 'minmax(0,1fr)')).join(' ') + (chev ? ' 36px' : '');
+    const tail = chev || chooser;
+    const grid = (selectable ? '44px ' : '') + cols.map(c => (c.w ? (c.r && /^\d+px$/.test(c.w) ? c.w : flexCol(c.w)) : 'minmax(0,1fr)')).join(' ') + (tail ? ' 36px' : '');
     const heads = cols.map(c => {
       const on = sk === c.k;
       return {
@@ -104,6 +244,8 @@ export default class AegisTable extends DC {
       };
     });
     const ids = rows.map(r => r.id);
+    if (p.onRow && p.active != null && ids.includes(p.active)) setActiveList({ owner: this, ids, active: p.active, open: p.onRow, noun: (p.unit && p.unit[0]) || 'item' }, this);
+    else setActiveList(null, this);
     const selN = ids.filter(id => sel[id]).length;
     const all = ids.length > 0 && selN === ids.length;
     const some = selN > 0 && !all;
@@ -139,7 +281,7 @@ export default class AegisTable extends DC {
       cells: [].concat(
         selectable ? [{ w: '16px', jc: 'flex-start' }] : [],
         cols.map((c, j) => ({ w: c.r ? '40%' : SKW[(i + j) % SKW.length], jc: c.r ? 'flex-end' : 'flex-start' })),
-        chev ? [{ w: '0', jc: 'center' }] : []
+        tail ? [{ w: '0', jc: 'center' }] : []
       )
     }));
     const unit = p.unit || ['item', 'items'];
@@ -151,6 +293,16 @@ export default class AegisTable extends DC {
       rows: R,
       selectable,
       chev,
+      tail,
+      colMenu: chooser ? (
+        <ColumnMenu
+          cols={named.map(c => ({ k: c.k, label: c.label }))}
+          hidden={hidden}
+          label={p.label || 'Table'}
+          onToggle={(k: string) => this.setHidden(hidden.includes(k) ? hidden.filter(x => x !== k) : [...hidden, k])}
+          onReset={() => this.setHidden([])}
+        />
+      ) : null,
       rowH: (p.rowH || 40) + 'px',
       label: p.label || 'Table',
       allAria: all ? 'true' : some ? 'mixed' : 'false',
@@ -292,7 +444,11 @@ export default class AegisTable extends DC {
                 </button>
               </div>
             ))}
-            {v.chev ? <div role="columnheader" aria-label="Open" /> : null}
+            {v.tail ? (
+              <div role="columnheader" aria-label={v.colMenu ? 'Columns' : 'Open'} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                {v.colMenu}
+              </div>
+            ) : null}
           </div>
           {v.isLive ? (
             <>
@@ -462,6 +618,8 @@ export default class AegisTable extends DC {
                     <div role="cell" style={{ display: 'flex', justifyContent: 'center', color: 'var(--tx-3)' }}>
                       <Icon name="chevron-right" />
                     </div>
+                  ) : v.tail ? (
+                    <div role="cell" />
                   ) : null}
                 </div>
               ))}

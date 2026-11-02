@@ -1,4 +1,5 @@
-import type { CSSProperties, ReactNode, MouseEvent, ChangeEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode, type MouseEvent, type ChangeEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
 import { pc } from '../lib/pseudo';
@@ -128,29 +129,143 @@ export function Seg<V extends string>({ value, options, onChange, label, panel =
   );
 }
 
-/** Tabs and sub-tabs: 40 px, Inter 500 14 px, 2 px --acc underline that slides. */
+/** Tabs and sub-tabs: 40 px, Inter 500 14 px, 2 px --acc underline that slides.
+ *  When the row is too narrow (a drawer with many sections), the tabs that do not fit move into a "More" menu
+ *  instead of being cut off; the menu button carries the underline while one of its tabs is open. */
 export function Tabs<V extends string>({ value, tabs, onChange, label, style }: { value: V; tabs: Opt<NoInfer<V>>[]; onChange: (v: NoInfer<V>) => void; label: string; style?: CSSProperties }) {
+  const host = useRef<HTMLDivElement>(null);
+  const meas = useRef<HTMLDivElement>(null);
+  const moreBtn = useRef<HTMLButtonElement>(null);
+  const menuEl = useRef<HTMLDivElement>(null);
+  const [fit, setFit] = useState(tabs.length);
+  const [menu, setMenu] = useState<{ top: number; left: number; host: HTMLElement } | null>(null);
+  const sig = tabs.map(t => `${t.v}:${t.label}:${t.count ?? ''}`).join('|');
+  useLayoutEffect(() => {
+    const w = host.current;
+    const m = meas.current;
+    if (!w || !m) return;
+    const calc = () => {
+      const cs = getComputedStyle(w);
+      const avail = w.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      const widths = [...m.children].map(c => (c as HTMLElement).offsetWidth);
+      if (!avail || widths.reduce((a, b) => a + b, 0) <= avail + 1) return setFit(widths.length);
+      let used = 0;
+      let n = 0;
+      for (const wd of widths) {
+        if (used + wd > avail - 104) break;
+        used += wd;
+        n++;
+      }
+      setFit(Math.max(1, n));
+    };
+    calc();
+    const ro = new ResizeObserver(calc);
+    ro.observe(w);
+    return () => ro.disconnect();
+  }, [sig]);
+  useEffect(() => {
+    if (!menu) return;
+    const away = (e: globalThis.MouseEvent) => {
+      if (menuEl.current?.contains(e.target as Node) || moreBtn.current?.contains(e.target as Node)) return;
+      setMenu(null);
+    };
+    const key = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setMenu(null);
+        moreBtn.current?.focus();
+      }
+    };
+    document.addEventListener('mousedown', away);
+    document.addEventListener('keydown', key, true);
+    menuEl.current?.querySelector<HTMLElement>('[role=menuitemradio]')?.focus();
+    return () => {
+      document.removeEventListener('mousedown', away);
+      document.removeEventListener('keydown', key, true);
+    };
+  }, [menu]);
+  const shown = tabs.slice(0, fit);
+  const extra = tabs.slice(fit);
+  const selExtra = extra.find(t => t.v === value);
+  const pill = (t: Opt, on: boolean) =>
+    t.count != null && t.count !== '' ? <span style={{ minWidth: 20, height: 18, padding: '0 6px', borderRadius: 9, display: 'inline-grid', placeItems: 'center', background: on ? 'var(--acc-soft)' : 'var(--hover)', font: '500 11px/18px var(--f-ui)', color: on ? 'var(--acc-tx)' : 'var(--tx-2)', fontVariantNumeric: 'tabular-nums' }}>{t.count}</span> : null;
+  const tabStyle = (on: boolean): CSSProperties => ({ height: 40, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6, flex: 'none', font: '500 14px/20px var(--f-ui)', whiteSpace: 'nowrap', color: on ? 'var(--acc-tx)' : 'var(--tx-2)', transition: 'color 100ms' });
+  const inner = (t: Opt, on: boolean) => (
+    <>
+      {t.icon ? <Icon name={t.icon} style={{ color: on ? 'var(--acc)' : 'var(--tx-3)' }} /> : null}
+      {t.label}
+      {pill(t, on)}
+    </>
+  );
+  const openMenu = () => {
+    const b = moreBtn.current;
+    if (!b) return;
+    if (menu) return setMenu(null);
+    const r = b.getBoundingClientRect();
+    setMenu({ top: r.bottom + 4, left: Math.max(8, Math.min(r.left, window.innerWidth - 248)), host: (b.closest('[data-ae]') as HTMLElement | null) || document.body });
+  };
   return (
-    <Ind mode="underline" role="tablist" aria-label={label} style={{ flex: 'none', display: 'flex', padding: '0 16px', borderBottom: '1px solid var(--ln)', overflowX: 'auto', overflowY: 'hidden', ...style }}>
-      {tabs.map(t => {
-        const on = t.v === value;
-        return (
+    <Ind mode="underline" role="tablist" aria-label={label} style={{ position: 'relative', flex: 'none', display: 'flex', padding: '0 16px', borderBottom: '1px solid var(--ln)', overflowX: 'hidden', overflowY: 'hidden', ...style }}>
+      <div ref={meas} aria-hidden style={{ position: 'absolute', left: 0, top: 0, width: 0, height: 0, overflow: 'hidden', display: 'flex', visibility: 'hidden', pointerEvents: 'none' }}>
+        {tabs.map(t => (
+          <span key={t.v} style={tabStyle(t.v === value)}>{inner(t, t.v === value)}</span>
+        ))}
+      </div>
+      <div ref={host} style={{ display: 'flex', flex: 1, minWidth: 0 }}>
+        {shown.map(t => {
+          const on = t.v === value;
+          return (
+            <button key={t.v} type="button" role="tab" aria-selected={on} data-tip={t.tip} onClick={() => onChange(t.v)} className={HOVER_TX} style={tabStyle(on)}>
+              {inner(t, on)}
+            </button>
+          );
+        })}
+        {extra.length ? (
           <button
-            key={t.v}
+            ref={moreBtn}
             type="button"
             role="tab"
-            aria-selected={on}
-            data-tip={t.tip}
-            onClick={() => onChange(t.v)}
+            aria-selected={!!selExtra}
+            aria-haspopup="menu"
+            aria-expanded={!!menu}
+            aria-label={selExtra ? `${selExtra.label}, more sections` : `More sections: ${extra.map(t => t.label).join(', ')}`}
+            onClick={openMenu}
             className={HOVER_TX}
-            style={{ height: 40, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 6, font: '500 14px/20px var(--f-ui)', whiteSpace: 'nowrap', color: on ? 'var(--acc-tx)' : 'var(--tx-2)', transition: 'color 100ms' }}
+            style={tabStyle(!!selExtra)}
           >
-            {t.icon ? <Icon name={t.icon} style={{ color: on ? 'var(--acc)' : 'var(--tx-3)' }} /> : null}
-            {t.label}
-            {t.count != null && t.count !== '' ? <span style={{ minWidth: 20, height: 18, padding: '0 6px', borderRadius: 9, display: 'inline-grid', placeItems: 'center', background: on ? 'var(--acc-soft)' : 'var(--hover)', font: '500 11px/18px var(--f-ui)', color: on ? 'var(--acc-tx)' : 'var(--tx-2)', fontVariantNumeric: 'tabular-nums' }}>{t.count}</span> : null}
+            {selExtra ? inner(selExtra, true) : <>More <span style={{ font: '500 11px/18px var(--f-ui)', color: 'var(--tx-3)' }}>{extra.length}</span></>}
+            <Icon name="chevron-down" style={{ color: 'var(--tx-3)' }} />
           </button>
-        );
-      })}
+        ) : null}
+      </div>
+      {menu
+        ? createPortal(
+            <div ref={menuEl} role="menu" aria-label={`More ${label.toLowerCase()}`} style={{ position: 'fixed', top: menu.top, left: menu.left, zIndex: 60, minWidth: 200, padding: '6px 0', background: 'var(--overlay)', color: 'var(--tx)', border: '1px solid var(--ln-2)', borderRadius: 'var(--r)', boxShadow: 'var(--sh-menu)', animation: 'ae-pop 140ms var(--ease)' }}>
+              {extra.map(t => {
+                const on = t.v === value;
+                return (
+                  <button
+                    key={t.v}
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={on}
+                    onClick={() => {
+                      setMenu(null);
+                      onChange(t.v);
+                    }}
+                    className={HOVER}
+                    style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', height: 34, padding: '0 12px', font: `${on ? 600 : 400} 13px var(--f-ui)`, color: on ? 'var(--acc-tx)' : 'var(--tx)', textAlign: 'left' }}
+                  >
+                    <span style={{ width: 16, flex: 'none', display: 'grid', placeItems: 'center' }}>{on ? <Icon name="check" /> : null}</span>
+                    <span style={{ flex: 1, whiteSpace: 'nowrap' }}>{t.label}</span>
+                    {pill(t, on)}
+                  </button>
+                );
+              })}
+            </div>,
+            menu.host
+          )
+        : null}
     </Ind>
   );
 }

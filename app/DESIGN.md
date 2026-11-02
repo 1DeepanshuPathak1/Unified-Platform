@@ -35,6 +35,10 @@ We did **not** copy Veeam's brand: no Veeam green, logo, wordmark or typeface. T
 | Wizards | Horizontal stepper on top | Steps down a 208 px left pane, page on the right, buttons in a tinted footer, 920 px wide | `Wizard` in `ui/overlay.tsx` |
 | Side panels | Some legacy screens opened their drawer inside the list's box, so it was only as tall as the table | Every drawer is moved to the working area and runs from the top bar to the bottom edge | `ToMain` in `ui/overlay.tsx`; `data-drawer-host` on `<main>` in `pages/AegisConsole.tsx` and `pages/AdminPortal.tsx` |
 | Fit at 1440 px | 17 tables and two toolbars scrolled sideways beside the navigation | Fixed text columns may give up 30 % of their width and flexible minimums 15 %, while numeric columns keep theirs so figures are never cut; toolbars wrap with their actions kept on the right | `flexCol` in `components/AegisTable.tsx`; `Toolbar` in `ui/layout.tsx` |
+| Job sessions | A progress bar and a log | Each run is a session with statistics, after Veeam's job statistics window: Summary (duration, processing rate, bottleneck), Data (processed, read, transferred) and Status (success, warnings, errors) boxes; a read-against-transferred throughput graph with hover read-outs and a table view; the objects processed, each with its own action log; previous and next session | `platform/SessionStats.tsx`; job drawer in `platform/Jobs.tsx` |
+| Column chooser | Fixed columns | A columns button at the right end of every table header, like Veeam ONE's property chooser; the first column stays; the choice is remembered per table in the browser | `ColumnMenu` in `components/AegisTable.tsx` |
+| Moving through a list | Close the drawer, open the next row | "10 of 32" with previous and next beside Close, in the table's sort order, on every drawer opened from a table | `lib/activeList.ts`; `Drawer` in `ui/overlay.tsx` |
+| Narrow tab rows | Tabs cut off at the drawer edge | Tabs that do not fit move into a More menu, which carries the underline while one of its tabs is open | `Tabs` in `ui/controls.tsx` |
 | Bars and toasts | Flat fills | Tinted fill with a 3 px edge in the tone colour | `Bar` in `ui/layout.tsx`, toasts in `pages/AegisConsole.tsx` |
 
 The Design System page (`#/design-system`) and Handoff page (`#/handoff`) read these values live, and their written specification (`src/data/spec.ts`) was rewritten to match.
@@ -48,6 +52,9 @@ The Design System page (`#/design-system`) and Handoff page (`#/handoff`) read t
 - Veeam Service Provider Console overview dashboard: https://helpcenter.veeam.com/docs/vac/provider_admin/overview.html
 - VBR job wizard, finishing step: https://helpcenter.veeam.com/docs/vbr/userguide/sch_backup_job_create_summary.html
 - VeeamON 2025, v13 web UI and Overview dashboard: https://jorgedelacruz.uk/2025/05/12/veeamon-2025-v13-veeam-software-appliance-new-webui-ha-universal-cdp-instant-recovery-from-vault-and-more/
+- VBR job statistics, Summary, Data and Status boxes and the throughput graph: https://helpcenter.veeam.com/docs/vbr/userguide/realtime_statistics.html, https://helpcenter.veeam.com/docs/vbr/userguide/session_results.html
+- VBR web UI session results (Protection Overview, Session Details): https://helpcenter.veeam.com/docs/vbr/userguide/session_results_web.html
+- Veeam ONE list property chooser (ellipsis on the list header): https://helpcenter.veeam.com/archive/vac/60/provider_admin/export_one_details.html
 - Veeam Brand Resource Center: https://www.veeam.com/company/brand-resource-center.html
 
 These pages were found through web search. The build environment could not open them or their screenshots directly (network policy), so the conventions above come from their published descriptions, not from pixel measurements.

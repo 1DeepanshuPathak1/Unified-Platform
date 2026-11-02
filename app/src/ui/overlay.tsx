@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { getActiveList } from '../lib/activeList';
 import { Icon } from '../lib/Icon';
 import { pc } from '../lib/pseudo';
 import { Btn, IconBtn, Tabs, TextInput, fieldLabel, type Opt } from './controls';
@@ -70,11 +71,16 @@ type DrawerProps<V extends string> = {
   width?: number;
   label: string;
   children: ReactNode;
+  /** Step to the previous or next item of the list the drawer was opened from, like moving between sessions in a console. */
+  nav?: { pos: string; onPrev?: () => void; onNext?: () => void; noun?: string };
 };
 
 /** Drawer: kicker, title, status line, action row, sub-tabs, scrolling body. Lists live here; edits open dialogs. */
-export function Drawer<V extends string>({ kicker, title, status, actions, tabs, tab, onTab, closing, onClose, width = 600, label, children }: DrawerProps<V>) {
+export function Drawer<V extends string>({ kicker, title, status, actions, tabs, tab, onTab, closing, onClose, width = 600, label, children, nav: navIn }: DrawerProps<V>) {
   useEscape(onClose);
+  const list = navIn ? null : getActiveList();
+  const at = list ? list.ids.indexOf(list.active) : -1;
+  const nav = navIn || (list && at >= 0 && list.ids.length > 1 ? { pos: `${at + 1} of ${list.ids.length}`, noun: list.noun, onPrev: at > 0 ? () => list.open(list.ids[at - 1]) : undefined, onNext: at < list.ids.length - 1 ? () => list.open(list.ids[at + 1]) : undefined } : undefined);
   return (
     <ToMain>
     <aside
@@ -88,6 +94,14 @@ export function Drawer<V extends string>({ kicker, title, status, actions, tabs,
           <h2 style={{ marginTop: 4, font: '600 18px/26px var(--f-head)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h2>
           {status ? <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 16, font: '13px/18px var(--f-ui)', color: 'var(--tx-2)', whiteSpace: 'nowrap', overflow: 'hidden' }}>{status}</div> : null}
         </div>
+        {nav ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2, flex: 'none' }}>
+            <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)', marginRight: 4, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{nav.pos}</span>
+            <IconBtn icon="chevron-up" label={`Previous ${nav.noun || 'item'}`} onClick={nav.onPrev} perm={nav.onPrev ? undefined : { ok: false, op: 0, why: `This is the first ${nav.noun || 'item'} in the list` }} />
+            <IconBtn icon="chevron-down" label={`Next ${nav.noun || 'item'}`} onClick={nav.onNext} perm={nav.onNext ? undefined : { ok: false, op: 0, why: `This is the last ${nav.noun || 'item'} in the list` }} />
+            <span style={{ width: 1, height: 20, background: 'var(--ln)', margin: '0 6px' }} />
+          </div>
+        ) : null}
         <IconBtn icon="x" iconSize={20} label={`Close ${label.toLowerCase()}`} onClick={onClose} />
       </div>
       {actions ? <div style={{ flex: 'none', padding: '16px 24px', display: 'flex', gap: 8, flexWrap: 'nowrap', overflow: 'hidden' }}>{actions}</div> : <div style={{ height: 16 }} />}

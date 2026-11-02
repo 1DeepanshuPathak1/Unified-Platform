@@ -421,13 +421,15 @@ export default class AegisRestore extends DC {
               >
                 <span
                   style={{
-                    width: '20px',
-                    height: '20px',
+                    width: '22px',
+                    height: '22px',
+                    flex: 'none',
                     display: 'grid',
                     placeItems: 'center',
-                    border: '1px solid var(--acc)',
+                    borderRadius: '50%',
+                    background: 'var(--acc-soft)',
                     color: 'var(--acc-tx)',
-                    font: '600 11px var(--f-ui)'
+                    font: '600 12px var(--f-ui)'
                   }}
                 >
                   1
@@ -514,13 +516,15 @@ export default class AegisRestore extends DC {
               >
                 <span
                   style={{
-                    width: '20px',
-                    height: '20px',
+                    width: '22px',
+                    height: '22px',
+                    flex: 'none',
                     display: 'grid',
                     placeItems: 'center',
-                    border: '1px solid var(--acc)',
+                    borderRadius: '50%',
+                    background: 'var(--acc-soft)',
                     color: 'var(--acc-tx)',
-                    font: '600 11px var(--f-ui)'
+                    font: '600 12px var(--f-ui)'
                   }}
                 >
                   2
@@ -677,13 +681,15 @@ export default class AegisRestore extends DC {
               >
                 <span
                   style={{
-                    width: '20px',
-                    height: '20px',
+                    width: '22px',
+                    height: '22px',
+                    flex: 'none',
                     display: 'grid',
                     placeItems: 'center',
-                    border: '1px solid var(--acc)',
+                    borderRadius: '50%',
+                    background: 'var(--acc-soft)',
                     color: 'var(--acc-tx)',
-                    font: '600 11px var(--f-ui)'
+                    font: '600 12px var(--f-ui)'
                   }}
                 >
                   3

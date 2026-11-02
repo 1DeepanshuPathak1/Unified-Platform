@@ -61,7 +61,7 @@ export const AEGIS_SPEC: any = (function () {
     ['File card', '1 px --ln-2 border, --panel-2 fill, 6 px corners, 12 px padding, 20 px file icon, name in 600, meta in 12 px, remove button 28 px.'],
     ['Menu', '--overlay, 1 px --ln border, 6 px corners, --sh-menu; items 36–44 px with a 16 px icon; selected item shows a check in --acc. Menus opened from the top bar use the page colours.'],
     ['Toast', '--overlay, 1 px --ln border, 6 px corners, --sh-menu; status icon, text that names the object, optional action in --acc-tx, dismiss button.'],
-    ['Drawer', 'From the right over the content at the full height of the working area (never the height of the list), --overlay, 1 px --ln-2 left border, --sh-over; kicker 12 px 500, title Inter 600 18/26 px, status line, actions row, sub-tabs, scrolling body.'],
+    ['Drawer', 'From the right over the content at the full height of the working area (never the height of the list); position in the list with previous and next beside Close; --overlay, 1 px --ln-2 left border, --sh-over; kicker 12 px 500, title Inter 600 18/26 px, status line, actions row, sub-tabs, scrolling body.'],
     ['Dialog', 'Centred on --scrim; --overlay, 1 px --ln border, 8 px corners, --sh-over; footer on --panel-2. Confirmations are armed inside the same dialog. Destructive dialogs list exactly what is removed and ask for the name.'],
     ['Wizard', 'Dialog with the steps listed in a left pane (number in a 22 px circle, done steps checked, current step on --acc-soft); the step’s title heads the page on the right.']
   ];
