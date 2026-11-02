@@ -172,7 +172,7 @@ export default function AdminPortal() {
             <div>VPN and hardware key required</div>
           </div>
         </aside>
-        <main key={sec} style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <main key={sec} data-drawer-host="" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', minHeight: 0, position: 'relative' }}>
           {sec === 'tenants' ? <TenantsSection ctx={ctx} /> : null}
           {sec === 'signups' ? <SignupsSection ctx={ctx} /> : null}
           {sec === 'managed' ? <ManagedSection ctx={ctx} /> : null}

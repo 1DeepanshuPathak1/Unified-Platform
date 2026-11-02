@@ -1285,6 +1285,7 @@ export default class AegisConsole extends DC {
           </aside>
           <main
             id="ae-main"
+            data-drawer-host=""
             style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
           >
             {v.is?.sites ? (

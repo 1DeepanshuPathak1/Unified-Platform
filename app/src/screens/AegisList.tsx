@@ -2,6 +2,7 @@
 import React, { Fragment } from 'react';
 import { DC, arr } from '../lib/dc';
 import { pc } from '../lib/pseudo';
+import { ToMain } from '../ui/overlay';
 import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
 import { AEGIS } from '../data/aegis';
@@ -1926,6 +1927,7 @@ export default class AegisList extends DC {
           </div>
         ) : null}
         {v.dOpen ? (
+          <ToMain>
           <aside
             role="dialog"
             aria-label="Details"
@@ -2281,6 +2283,7 @@ export default class AegisList extends DC {
               ) : null}
             </div>
           </aside>
+          </ToMain>
         ) : null}
         {v.pdOpen ? (
           <div

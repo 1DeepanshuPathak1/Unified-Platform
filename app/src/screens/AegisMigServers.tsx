@@ -2,6 +2,7 @@
 import React, { Fragment } from 'react';
 import { DC, arr } from '../lib/dc';
 import { pc } from '../lib/pseudo';
+import { ToMain } from '../ui/overlay';
 import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
 import { AEGIS } from '../data/aegis';
@@ -878,6 +879,7 @@ export default class AegisMigServers extends DC {
           </div>
         </div>
         {v.dOpen ? (
+          <ToMain>
           <aside
             role="dialog"
             aria-label="Migration details"
@@ -1324,6 +1326,7 @@ export default class AegisMigServers extends DC {
               ) : null}
             </div>
           </aside>
+          </ToMain>
         ) : null}
         {v.dlgOpen ? (
           <div

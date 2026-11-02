@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from '../lib/Icon';
 import { pc } from '../lib/pseudo';
 import { Btn, IconBtn, Tabs, TextInput, fieldLabel, type Opt } from './controls';
@@ -36,6 +37,26 @@ function useEscape(onClose: () => void) {
   }, [onClose]);
 }
 
+/**
+ * Renders side panels into the working area that contains them (the element marked data-drawer-host), so a
+ * drawer always runs the full height from under the top bar to the bottom of the window, wherever it is opened
+ * from: a tab body, a table area or a panel. Outside a working area it renders in place.
+ */
+export function ToMain({ children }: { children: ReactNode }) {
+  const mark = useRef<HTMLSpanElement>(null);
+  const [host, setHost] = useState<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    const h = (mark.current?.closest('[data-drawer-host]') as HTMLElement | null) || null;
+    if (h !== host) setHost(h);
+  });
+  return (
+    <>
+      <span ref={mark} hidden />
+      {host ? createPortal(children, host) : children}
+    </>
+  );
+}
+
 type DrawerProps<V extends string> = {
   kicker: ReactNode;
   title: ReactNode;
@@ -55,6 +76,7 @@ type DrawerProps<V extends string> = {
 export function Drawer<V extends string>({ kicker, title, status, actions, tabs, tab, onTab, closing, onClose, width = 600, label, children }: DrawerProps<V>) {
   useEscape(onClose);
   return (
+    <ToMain>
     <aside
       role="dialog"
       aria-label={label}
@@ -74,6 +96,7 @@ export function Drawer<V extends string>({ kicker, title, status, actions, tabs,
         {children}
       </div>
     </aside>
+    </ToMain>
   );
 }
 
