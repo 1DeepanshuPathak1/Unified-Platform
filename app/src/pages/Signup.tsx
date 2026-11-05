@@ -3,6 +3,7 @@ import { Icon } from '../lib/Icon';
 import { pc } from '../lib/pseudo';
 import { Btn, CheckBox, Field, RadioCard, SelectInput, TextInput } from '../ui/controls';
 import { Facts, Stepper } from '../ui/layout';
+import { useUiStyle } from '../lib/uiStyle';
 
 const readTheme = () => {
   try {
@@ -21,6 +22,7 @@ const FREE_MAIL = /@(gmail|yahoo|outlook|hotmail|rediffmail)\./i;
  * No console chrome: this is what a prospect sees at aegis.host360.ai/signup.
  */
 export default function Signup() {
+  const [uiStyle] = useUiStyle();
   const [theme] = useState(readTheme);
   const [step, setStep] = useState(0);
   const [email, setEmail] = useState('');
@@ -58,7 +60,7 @@ export default function Signup() {
   ][step];
   const review = check === 'mismatch';
   return (
-    <div data-ae="" data-theme={theme} style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)', display: 'flex', flexDirection: 'column' }}>
+    <div data-ae="" data-theme={theme} data-style={uiStyle} style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)', display: 'flex', flexDirection: 'column' }}>
       <header className="ae-hdr" style={{ color: 'var(--tx)', height: 52, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', borderBottom: '1px solid var(--ln)', background: 'var(--hdr)' }}>
         <Icon name="mark" size={24} />
         <span style={{ font: '600 16px/24px var(--f-head)' }}>Host360 Aegis</span>

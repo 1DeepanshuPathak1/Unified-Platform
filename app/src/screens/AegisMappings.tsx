@@ -96,9 +96,9 @@ export default class AegisMappings extends DC {
     const v = this.vals();
     return (
       <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-page 150ms var(--ease)' }}>
-        <div style={{ flex: 'none', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
+        <div className="ae-ph" style={{ flex: 'none', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Infrastructure</div>
+            <div className="ae-kicker" style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Infrastructure</div>
             <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Mappings</h1>
             <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>How networks, storage and sizes translate from one site to another.</p>
           </div>

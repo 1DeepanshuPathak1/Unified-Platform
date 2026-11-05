@@ -342,6 +342,7 @@ export default class AegisTable extends DC {
     const v = this.vals();
     return (
       <div
+        className="ae-grid"
         style={{
           height: '100%',
           minHeight: 0,

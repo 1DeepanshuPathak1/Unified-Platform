@@ -85,6 +85,7 @@ export function Drawer<V extends string>({ kicker, title, status, actions, tabs,
     <ToMain>
     <aside
       role="dialog"
+      className="ae-drawer"
       aria-label={label}
       style={{ position: 'absolute', top: 0, right: 0, bottom: 0, width, maxWidth: '100%', zIndex: 20, display: 'flex', flexDirection: 'column', background: 'var(--overlay)', borderLeft: '1px solid var(--ln-2)', boxShadow: 'var(--sh-over)', animation: closing ? 'ae-drawer-out 150ms var(--ease) forwards' : 'ae-drawer 150ms var(--ease)' }}
     >
@@ -137,6 +138,7 @@ export function Dialog({ title, sub, size = 'md', closing, onClose, footer, foot
     <div style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'grid', placeItems: 'center', padding: 24, background: 'var(--scrim)', animation: closing ? 'ae-fade-out 150ms var(--ease) forwards' : 'ae-fade 120ms var(--ease)' }}>
       <div
         role={alert ? 'alertdialog' : 'dialog'}
+        className="ae-dialog"
         aria-modal="true"
         aria-labelledby={id}
         style={{ width: SIZE[size], maxWidth: '100%', maxHeight: 'calc(100vh - 48px)', display: 'flex', flexDirection: 'column', background: 'var(--overlay)', border: '1px solid var(--ln)', borderRadius: 'var(--r-lg)', overflow: 'hidden', boxShadow: 'var(--sh-over)', animation: closing ? 'ae-dialog-out 150ms var(--ease) forwards' : 'ae-dialog 150ms var(--ease)' }}

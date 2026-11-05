@@ -4,6 +4,7 @@ import { pc } from '../lib/pseudo';
 import { COVERAGE, CURRENT_TURN, type CovItem, type CovStatus } from '../data/coverage';
 import { FilterInput, Seg, SelectFilter, Toggle } from '../ui/controls';
 import { plural } from '../ui/layout';
+import { useUiStyle } from '../lib/uiStyle';
 
 const ST: Record<CovStatus, [string, string]> = {
   Designed: ['circle-check', 'var(--ok)'],
@@ -20,6 +21,7 @@ const readTheme = () => {
 
 /** Coverage of the Unified Platform brief: every item, its screens, status, priority and the object it reads. */
 export default function Coverage({ hub }: { hub?: boolean }) {
+  const [uiStyle] = useUiStyle();
   const [theme, setTheme] = useState(readTheme);
   const [status, setStatus] = useState<'All' | CovStatus>('All');
   const [prio, setPrio] = useState('All');
@@ -49,7 +51,7 @@ export default function Coverage({ hub }: { hub?: boolean }) {
   );
   const consoleHref = hub ? '#/backup/inbox' : '#/';
   return (
-    <div data-ae="" data-theme={theme} style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)' }}>
+    <div data-ae="" data-theme={theme} data-style={uiStyle} style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)' }}>
       <header className="ae-hdr" style={{ color: 'var(--tx)', position: 'sticky', top: 0, zIndex: 10, height: 52, display: 'flex', alignItems: 'center', gap: 12, padding: '0 24px', background: 'var(--hdr)', borderBottom: '1px solid var(--ln)' }}>
         <Icon name="mark" size={24} />
         <span style={{ font: '600 16px/24px var(--f-head)' }}>Host360 Aegis</span>

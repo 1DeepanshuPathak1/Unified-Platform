@@ -171,5 +171,6 @@ export const RULES: [string, string][] = [
   ['Sample data', 'Realistic and consistent: sites Chennai-proxmox-prod, Chennai_Lab_Proxmox, production-openstack, region-2-os; a vCenter at 172.25.10.177; repositories obj-check and repo-director-lab. No lorem ipsum.'],
   ['Disabled actions', 'Stay visible at 45 % opacity with aria-disabled, and say in their tooltip what is missing or which role is needed.'],
   ['Platform objects', 'Every screen states the platform object it reads, its actions, its states, its priority and whether it is platform-level or product-level (catalogue below).'],
+  ['Styles', 'Two complete designs share every screen: Classic (default) and Graphite. Switch styles in the user menu, under the theme switch; each works in light and dark. Screens use tokens and the shared components only, so a style is one stylesheet (styles/graphite.css) plus the frame order.'],
   ['Visual system', 'Light by default, dark one click away. Dark top bar, white management pane, cards on a light working area. One typeface (Inter). 4 px controls, 6 px cards and tables with a soft shadow, 8 px dialogs. KPI values in separate widgets; wizards list their steps on the left. The accent marks only the primary action, selection and focus.']
 ];

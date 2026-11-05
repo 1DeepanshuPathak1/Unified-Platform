@@ -60,8 +60,8 @@ export function MappingsPage({ ctx }: { ctx: Ctx }) {
   if (tab === 'sites') return <AegisMappings ctx={ctx} tabs={tabs} />;
   return (
     <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-page 150ms var(--ease)' }}>
-      <div style={{ flex: 'none', padding: '24px 24px 20px' }}>
-        <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Infrastructure</div>
+      <div className="ae-ph" style={{ flex: 'none', padding: '24px 24px 20px' }}>
+        <div className="ae-kicker" style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Infrastructure</div>
         <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Mappings</h1>
         <p style={{ marginTop: 4, maxWidth: 880, color: 'var(--tx-2)' }}>{tab === 'reip' ? 'What a server’s address, name and domain become at the other site. Used by failovers and by migration cutovers.' : tab === 'network' ? 'What must be ready on the network so users and partners reach the servers after a failover.' : 'Who can sign in at each recovery site, kept apart from production so a compromise there does not reach the copies.'}</p>
       </div>

@@ -18,9 +18,9 @@ export function Page({ children, scroll }: { children: ReactNode; scroll?: boole
 
 export function PageHeader({ kicker, title, sub, actions, meta, info }: { kicker: ReactNode; title: ReactNode; sub?: ReactNode; actions?: ReactNode; meta?: ReactNode; info?: ReactNode }) {
   return (
-    <div style={{ flex: 'none', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: 16 }}>
+    <div className="ae-ph" style={{ flex: 'none', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: 16 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 6 }}>{kicker}</div>
+        <div className="ae-kicker" style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 6 }}>{kicker}</div>
         <h1 style={{ font: '600 22px/30px var(--f-head)', display: 'flex', alignItems: 'center', gap: 8 }}>
           {title}
           {info}
@@ -40,15 +40,15 @@ export function PageHeader({ kicker, title, sub, actions, meta, info }: { kicker
 export function Section<V extends string>({ kicker, title, sub, tabs, tab, onTab, actions, children }: { kicker: string; title: string; sub: ReactNode; tabs: Opt<V>[]; tab: V; onTab: (v: V) => void; actions?: ReactNode; children: ReactNode }) {
   return (
     <Page>
-      <div style={{ flex: 'none', padding: '24px 24px 0', display: 'flex', alignItems: 'flex-end', gap: 16 }}>
+      <div className="ae-ph ae-ph-tabs" style={{ flex: 'none', padding: '24px 24px 0', display: 'flex', alignItems: 'flex-end', gap: 16 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 6 }}>{kicker}</div>
+          <div className="ae-kicker" style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: 6 }}>{kicker}</div>
           <h1 style={{ font: '600 22px/30px var(--f-head)' }}>{title}</h1>
           <p style={{ marginTop: 4, maxWidth: 880, font: '14px/20px var(--f-body)', color: 'var(--tx-2)' }}>{sub}</p>
         </div>
         {actions ? <div style={{ display: 'flex', gap: 8, flex: 'none' }}>{actions}</div> : null}
       </div>
-      <Tabs label={`${title} sections`} value={tab} tabs={tabs} onChange={onTab} style={{ margin: '16px 24px 16px', padding: 0 }} />
+      <Tabs className="ae-ptabs" label={`${title} sections`} value={tab} tabs={tabs} onChange={onTab} style={{ margin: '16px 24px 16px', padding: 0 }} />
       <div key={tab} style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative', animation: 'ae-fade 150ms var(--ease)' }}>
         {children}
       </div>
@@ -70,7 +70,7 @@ export function Toolbar({ children, style }: { children: ReactNode; style?: CSSP
   const kids = flatKids(children);
   const at = kids.findIndex(c => isValidElement(c) && c.type === Spacer);
   return (
-    <div style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 12px', minHeight: 44, ...style }}>
+    <div className="ae-tb" style={{ flex: 'none', padding: '0 24px 12px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px 12px', minHeight: 44, ...style }}>
       {at < 0 ? kids : [...kids.slice(0, at), <div key="ae-right" style={{ marginLeft: 'auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', alignItems: 'center', gap: '8px 12px' }}>{kids.slice(at + 1)}</div>]}
     </div>
   );
@@ -115,8 +115,8 @@ export function Bar({ tone = 'warn', icon, children, actions, style, multiline }
 
 export function Panel({ title, right, children, style, bodyStyle, id }: { title: ReactNode; right?: ReactNode; children: ReactNode; style?: CSSProperties; bodyStyle?: CSSProperties; id?: string }) {
   return (
-    <section id={id} style={{ background: 'var(--panel)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', boxShadow: 'var(--sh-card)', minWidth: 0, ...style }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, height: 48, padding: '0 16px', borderBottom: '1px solid var(--ln)' }}>
+    <section id={id} className="ae-card" style={{ background: 'var(--panel)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', boxShadow: 'var(--sh-card)', minWidth: 0, ...style }}>
+      <div className="ae-card-h" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, height: 48, padding: '0 16px', borderBottom: '1px solid var(--ln)' }}>
         <h2 style={{ font: '600 14px/20px var(--f-body)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>{title}</h2>
         {right ? <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>{right}</div> : null}
       </div>
@@ -165,9 +165,9 @@ export function Tiles({ items }: { items: Kpi[] }) {
         );
         const st: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8, padding: items.length > 5 ? '16px 16px 18px' : '16px 20px 18px', background: 'var(--panel)', border: '1px solid var(--ln)', borderRadius: 'var(--r)', boxShadow: 'var(--sh-card)', minWidth: 0, transition: 'border-color 100ms,box-shadow 100ms' };
         return k.href ? (
-          <a key={i} href={k.href} className={pc('hover', 'border-color:var(--ln-2);box-shadow:var(--sh-menu)')} style={st}>{body}</a>
+          <a key={i} href={k.href} className={`ae-kpi ${pc('hover', 'border-color:var(--ln-2);box-shadow:var(--sh-menu)')}`} style={st}>{body}</a>
         ) : (
-          <div key={i} style={st}>{body}</div>
+          <div key={i} className="ae-kpi" style={st}>{body}</div>
         );
       })}
     </div>

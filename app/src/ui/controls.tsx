@@ -57,6 +57,7 @@ export function Btn({ kind = 'secondary', icon, iconAfter, spin, onClick, perm, 
       aria-disabled={off ? 'true' : undefined}
       aria-label={ariaLabel}
       data-tip={off ? reason : tip}
+      data-kind={kind}
       className={off ? undefined : k.cls}
       style={{
         height: size === 'sm' ? 28 : 32,
@@ -132,7 +133,7 @@ export function Seg<V extends string>({ value, options, onChange, label, panel =
 /** Tabs and sub-tabs: 40 px, Inter 500 14 px, 2 px --acc underline that slides.
  *  When the row is too narrow (a drawer with many sections), the tabs that do not fit move into a "More" menu
  *  instead of being cut off; the menu button carries the underline while one of its tabs is open. */
-export function Tabs<V extends string>({ value, tabs, onChange, label, style }: { value: V; tabs: Opt<NoInfer<V>>[]; onChange: (v: NoInfer<V>) => void; label: string; style?: CSSProperties }) {
+export function Tabs<V extends string>({ value, tabs, onChange, label, style, className }: { value: V; tabs: Opt<NoInfer<V>>[]; onChange: (v: NoInfer<V>) => void; label: string; style?: CSSProperties; className?: string }) {
   const host = useRef<HTMLDivElement>(null);
   const meas = useRef<HTMLDivElement>(null);
   const moreBtn = useRef<HTMLButtonElement>(null);
@@ -205,7 +206,7 @@ export function Tabs<V extends string>({ value, tabs, onChange, label, style }: 
     setMenu({ top: r.bottom + 4, left: Math.max(8, Math.min(r.left, window.innerWidth - 248)), host: (b.closest('[data-ae]') as HTMLElement | null) || document.body });
   };
   return (
-    <Ind mode="underline" role="tablist" aria-label={label} style={{ position: 'relative', flex: 'none', display: 'flex', padding: '0 16px', borderBottom: '1px solid var(--ln)', overflowX: 'hidden', overflowY: 'hidden', ...style }}>
+    <Ind mode="underline" role="tablist" aria-label={label} className={className} style={{ position: 'relative', flex: 'none', display: 'flex', padding: '0 16px', borderBottom: '1px solid var(--ln)', overflowX: 'hidden', overflowY: 'hidden', ...style }}>
       <div ref={meas} aria-hidden style={{ position: 'absolute', left: 0, top: 0, width: 0, height: 0, overflow: 'hidden', display: 'flex', visibility: 'hidden', pointerEvents: 'none' }}>
         {tabs.map(t => (
           <span key={t.v} style={tabStyle(t.v === value)}>{inner(t, t.v === value)}</span>

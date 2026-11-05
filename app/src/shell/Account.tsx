@@ -12,7 +12,7 @@ const ITEM = pc('hover', 'background:var(--hover)');
 export type AccountTab = 'profile' | 'mfa' | 'tokens';
 
 /** The user menu: who you are, your account, the reference pages and sign out. */
-export function UserMenu({ roleLine, side, themeIcon, themeLabel, onTheme, onAccount, links, onSignOut, onClose }: { roleLine: string; side: string; themeIcon: string; themeLabel: string; onTheme: () => void; onAccount: (t: AccountTab) => void; links: { href: string; label: string; icon: string }[]; onSignOut: () => void; onClose: () => void }) {
+export function UserMenu({ roleLine, side, themeIcon, themeLabel, onTheme, styleName, onStyle, onAccount, links, onSignOut, onClose }: { roleLine: string; side: string; themeIcon: string; themeLabel: string; onTheme: () => void; styleName?: string; onStyle?: () => void; onAccount: (t: AccountTab) => void; links: { href: string; label: string; icon: string }[]; onSignOut: () => void; onClose: () => void }) {
   const btn = (icon: string, label: string, onClick: () => void) => (
     <button type="button" role="menuitem" onClick={onClick} className={ITEM} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', height: 36, padding: '0 16px', transition: 'background-color 100ms' }}>
       <Icon name={icon} style={{ color: 'var(--tx-3)' }} />
@@ -32,6 +32,13 @@ export function UserMenu({ roleLine, side, themeIcon, themeLabel, onTheme, onAcc
         {btn('fingerprint', 'Sign-in and MFA', () => onAccount('mfa'))}
         {btn('key', 'API tokens', () => onAccount('tokens'))}
         {btn(themeIcon, themeLabel, onTheme)}
+        {onStyle ? (
+          <button type="button" role="menuitem" onClick={onStyle} aria-label={`Switch styles. Now ${styleName}`} className={ITEM} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', height: 36, padding: '0 16px', transition: 'background-color 100ms' }}>
+            <Icon name="palette" style={{ color: 'var(--tx-3)' }} />
+            <span style={{ flex: 1, textAlign: 'left' }}>Switch styles</span>
+            <span style={{ font: '12px var(--f-ui)', color: 'var(--tx-3)' }}>{styleName}</span>
+          </button>
+        ) : null}
       </div>
       <div style={{ padding: '4px 0', borderTop: '1px solid var(--ln)' }}>
         {links.map(l => (

@@ -4,6 +4,7 @@ import { DC, arr } from '../lib/dc';
 import { pc } from '../lib/pseudo';
 import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
+import { STYLES, nextStyle, onStyle, readStyle, writeStyle } from '../lib/uiStyle';
 import { AEGIS } from '../data/aegis';
 import AegisSites from '../screens/AegisSites';
 import { GuestsPage } from '../products/protection/Endpoints';
@@ -114,12 +115,14 @@ export default class AegisConsole extends DC {
     openId: null,
     nonce: 0,
     reading: false,
-    signedOut: false
+    signedOut: false,
+    uiStyle: readStyle()
   };
   seq = 0;
   searchRef = React.createRef<any>();
 
   componentDidMount() {
+    this.offStyle = onStyle(st => this.setState({ uiStyle: st }));
     try {
       const t = localStorage.getItem('aegis.theme.v2');
       if (t) this.setState({ theme: t });
@@ -160,6 +163,7 @@ export default class AegisConsole extends DC {
     window.addEventListener('resize', this.onResize);
   }
   componentWillUnmount() {
+    if (this.offStyle) this.offStyle();
     window.removeEventListener('hashchange', this.onHash);
     window.removeEventListener('keydown', this.onKey);
     window.removeEventListener('aegis:act-as', this.onActAs);
@@ -360,7 +364,7 @@ export default class AegisConsole extends DC {
   renderVals() {
     const A = AEGIS;
     const s = this.state;
-    if (!A || !s.ready) return { theme: s.theme, is: {}, ctx: null, products: [], productNav: [], groups: [], toasts: [], navW: '240px' };
+    if (!A || !s.ready) return { theme: s.theme, uiStyle: s.uiStyle, is: {}, ctx: null, products: [], productNav: [], groups: [], toasts: [], navW: '240px' };
     const up = p => this.setState(p);
     const menu = m => () => this.setState(st => ({ menu: st.menu === m ? null : m }));
     const [prod, page] = s.route.split('/');
@@ -492,6 +496,13 @@ export default class AegisConsole extends DC {
 
     return {
       theme: s.theme,
+      uiStyle: s.uiStyle,
+      styleName: STYLES[s.uiStyle as 'classic' | 'graphite'].name,
+      switchStyle: () => {
+        const n = nextStyle(s.uiStyle);
+        writeStyle(n);
+        this.setState({ uiStyle: n, menu: null });
+      },
       themeIcon: s.theme === 'dark' ? 'sun' : 'moon',
       themeLabel: s.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
       toggleTheme: () => {
@@ -631,11 +642,15 @@ export default class AegisConsole extends DC {
       <div
         data-ae=""
         data-theme={v.theme}
+        data-style={v.uiStyle}
+        className="ae-shell"
         style={{
           height: '100vh',
           minWidth: '1024px',
-          display: 'flex',
-          flexDirection: 'column',
+          display: 'grid',
+          gridTemplateColumns: 'auto minmax(0,1fr)',
+          gridTemplateRows: 'auto auto minmax(0,1fr)',
+          gridTemplateAreas: v.uiStyle === 'graphite' ? '"ban ban" "nav hdr" "nav main"' : '"ban ban" "hdr hdr" "nav main"',
           background: 'var(--app)',
           color: 'var(--tx)',
           font: '14px/20px var(--f-body)',
@@ -645,10 +660,16 @@ export default class AegisConsole extends DC {
         }}
       >
         {v.anyMenu ? <div onClick={v.closeMenu} style={{ position: 'absolute', inset: 0, zIndex: 40 }} /> : null}
-        {v.actingAs ? <ActingBanner customer={customerName(v.actingAs.customer)} owner={v.actingAs.owner} until={v.actingUntil} onReturn={v.stopActing} self={v.selfView} /> : null}
+        {v.actingAs ? (
+          <div style={{ gridArea: 'ban', display: 'flex', flexDirection: 'column' }}>
+            <ActingBanner customer={customerName(v.actingAs.customer)} owner={v.actingAs.owner} until={v.actingUntil} onReturn={v.stopActing} self={v.selfView} />
+          </div>
+        ) : null}
         <header
           className="ae-hdr"
           style={{
+            gridArea: 'hdr',
+            minWidth: 0,
             height: '52px',
             flex: 'none',
             display: 'flex',
@@ -663,15 +684,19 @@ export default class AegisConsole extends DC {
             transition: 'background-color 150ms,border-color 150ms'
           }}
         >
-          <a
-            href="#/backup/home"
-            aria-label="Host360 Aegis home"
-            style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 'none', height: '36px', paddingRight: '4px' }}
-          >
-            <Icon name="mark" size="24" />
-            <span style={{ font: '600 16px/24px var(--f-head)', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>Host360 <span style={{ fontWeight: 400, color: 'var(--tx-2)' }}>Aegis</span></span>
-          </a>
-          <span style={{ width: '1px', height: '24px', background: 'var(--ln-2)', flex: 'none', display: v.selfView ? 'none' : undefined }} />
+          {v.uiStyle === 'graphite' ? null : (
+            <>
+              <a
+                href="#/backup/home"
+                aria-label="Host360 Aegis home"
+                style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 'none', height: '36px', paddingRight: '4px' }}
+              >
+                <Icon name="mark" size="24" />
+                <span style={{ font: '600 16px/24px var(--f-head)', whiteSpace: 'nowrap', letterSpacing: '-0.01em' }}>Host360 <span style={{ fontWeight: 400, color: 'var(--tx-2)' }}>Aegis</span></span>
+              </a>
+              <span style={{ width: '1px', height: '24px', background: 'var(--ln-2)', flex: 'none', display: v.selfView ? 'none' : undefined }} />
+            </>
+          )}
           <div style={{ position: 'relative', flex: 'none', display: v.selfView ? 'none' : undefined }}>
             <button
               onClick={v.openProduct}
@@ -1220,6 +1245,8 @@ export default class AegisConsole extends DC {
                   themeIcon={v.themeIcon}
                   themeLabel={v.themeLabel}
                   onTheme={v.toggleTheme}
+                  styleName={v.styleName}
+                  onStyle={v.switchStyle}
                   onAccount={(t: AccountTab) => v.openAccount(t)}
                   links={[
                     { href: '#/coverage', label: 'Coverage', icon: 'list' },
@@ -1233,10 +1260,13 @@ export default class AegisConsole extends DC {
             </div>
           </div>
         </header>
-        <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
+        <div style={{ display: 'contents' }}>
           <aside
             aria-label="Navigation"
+            className="ae-side"
             style={{
+              gridArea: 'nav',
+              minHeight: 0,
               width: v.navW,
               flex: 'none',
               display: 'flex',
@@ -1247,6 +1277,19 @@ export default class AegisConsole extends DC {
               overflow: 'hidden'
             }}
           >
+            {v.uiStyle === 'graphite' ? (
+              <a
+                href="#/backup/home"
+                aria-label="Host360 Aegis home"
+                className="ae-side-brand"
+                style={{ height: '52px', flex: 'none', display: 'flex', alignItems: 'center', gap: '12px', padding: '0 16px', borderBottom: '1px solid var(--ln)', whiteSpace: 'nowrap', overflow: 'hidden' }}
+              >
+                <Icon name="mark" size="24" style={{ flex: 'none', color: 'var(--acc)' }} />
+                <span style={{ font: '600 15px/20px var(--f-head)', color: 'var(--tx)' }}>
+                  Host360 <span style={{ fontWeight: 300 }}>Aegis</span>
+                </span>
+              </a>
+            ) : null}
             {v.navProps ? <Nav {...v.navProps} /> : <nav style={{ flex: 1 }} />}
             <div
               style={{
@@ -1286,7 +1329,7 @@ export default class AegisConsole extends DC {
           <main
             id="ae-main"
             data-drawer-host=""
-            style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
+            style={{ gridArea: 'main', minHeight: 0, minWidth: 0, display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden' }}
           >
             {v.is?.sites ? (
               <div style={{ flex: 1, minHeight: 0 }}>
@@ -1357,8 +1400,8 @@ export default class AegisConsole extends DC {
             ) : null}
             {v.is?.pending ? (
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', animation: 'ae-page 150ms var(--ease)' }}>
-                <div style={{ padding: '24px 24px 20px' }}>
-                  <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>{v.ctx?.section}</div>
+                <div className="ae-ph" style={{ padding: '24px 24px 20px' }}>
+                  <div className="ae-kicker" style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>{v.ctx?.section}</div>
                   <h1 style={{ font: '600 22px/30px var(--f-head)' }}>{v.ctx?.title}</h1>
                   <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>{v.ctx?.sub}</p>
                 </div>

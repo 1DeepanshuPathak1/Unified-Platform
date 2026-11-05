@@ -58,3 +58,23 @@ The Design System page (`#/design-system`) and Handoff page (`#/handoff`) read t
 - Veeam Brand Resource Center: https://www.veeam.com/company/brand-resource-center.html
 
 These pages were found through web search. The build environment could not open them or their screenshots directly (network policy), so the conventions above come from their published descriptions, not from pixel measurements.
+
+## Second style: Graphite
+
+The console has two complete designs. Classic, described above, stays the default and is unchanged. Graphite is a second design for teams that prefer a flatter, denser enterprise look. Switch between them with **user menu › Switch styles**, directly under the theme switch (the internal portal has the same switch as a palette button beside its theme button). The choice is remembered in the browser and applies to every page, in light and dark.
+
+| | Classic | Graphite |
+|---|---|---|
+| Frame | Dark top bar across the window; white navigation pane under it | Dark navigation column the full height of the window, carrying the product name; white top bar over the content only |
+| Typeface | Inter | IBM Plex Sans (and Plex Mono for code) |
+| Page header | Title 22 px semibold on the grey working area | White band across the page: upper-case blue kicker, title 30 px light, tabs on the band; grey working area below |
+| Shape | 4 px controls, 6 px cards, 8 px dialogs, soft shadows | Square edges everywhere, flat surfaces separated by 1 px rules, no shadows |
+| Colour | Teal accent, cool-tinted neutrals | Blue accent, neutral greys with no hue |
+| Tabs | Underline everywhere | Underline on the page band; contained tabs (raised, blue top rule) in drawers and sub-sections |
+| Fields | White box with a 1 px border | Filled field with a strong rule underneath |
+| Buttons | Primary teal; secondary and outline white with a border | Primary blue; secondary solid charcoal; outline in the accent, filling on hover |
+| KPI tiles | Card with label, semibold value | Card with a blue top rule and a 34 px light value |
+| Tables | Medium headers on a tinted band | Bold headers on a grey band |
+
+How it is built: Graphite is one stylesheet, `src/styles/graphite.css`, scoped to `[data-style="graphite"]` on the page root. It redefines the tokens and restyles the shared components through class names they carry (`ae-ph` page header, `ae-kicker`, `ae-ptabs` page tabs, `ae-tb` toolbar, `ae-card`, `ae-kpi`, `ae-grid` table, `ae-drawer`, `ae-dialog`, `ae-side` navigation column, `data-kind` on buttons). The only structural change is the console frame: its root is a CSS grid whose areas put the navigation column beside the top bar in Graphite and under it in Classic (`pages/AegisConsole.tsx`). The setting lives in `src/lib/uiStyle.ts`.
+

@@ -5,10 +5,15 @@ import { pc } from '../lib/pseudo';
 import { Icon, ICON_NAMES } from '../lib/Icon';
 import { AEGIS_SPEC } from '../data/spec';
 import { RULES, SCREENS } from '../data/screens';
+import { onStyle, readStyle } from '../lib/uiStyle';
 
 export default class AegisHandoff extends DC {
   state: any = { theme: 'light', vals: null, css: 'Reading…' };
+  componentWillUnmount() {
+    if (this.offStyle) this.offStyle();
+  }
   componentDidMount() {
+    this.offStyle = onStyle(() => this.forceUpdate());
     try {
       const t = localStorage.getItem('aegis.theme.v2');
       if (t) this.setState({ theme: t });
@@ -154,6 +159,7 @@ export default class AegisHandoff extends DC {
     return (
       <div
         data-ae=""
+        data-style={readStyle()}
         data-theme={v.theme}
         style={{ minHeight: '100vh', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)' }}
       >

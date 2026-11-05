@@ -57,8 +57,8 @@ export function MigServersPage({ ctx }: { ctx: Ctx }) {
   if (tab === 'servers') return <AegisMigServers ctx={ctx} tabs={tabs} />;
   return (
     <div style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', animation: 'ae-page 150ms var(--ease)' }}>
-      <div style={{ flex: 'none', padding: '24px 24px 20px' }}>
-        <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Mobility</div>
+      <div className="ae-ph" style={{ flex: 'none', padding: '24px 24px 20px' }}>
+        <div className="ae-kicker" style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Mobility</div>
         <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Servers</h1>
         <p style={{ marginTop: 4, maxWidth: 880, color: 'var(--tx-2)' }}>{tab === 'replication' ? 'How each moving server is copied, how far behind the target is, and what was reset.' : 'Servers that were cut over and can still go back, with changes copied back to the source as they happen.'}</p>
       </div>

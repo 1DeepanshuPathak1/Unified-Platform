@@ -10,6 +10,7 @@ import { TemplatesSection } from '../admin/Templates';
 import { MaintenanceSection } from '../admin/Maintenance';
 import { OnPremSection } from '../admin/OnPrem';
 import { SignupsSection } from '../admin/Signups';
+import { STYLES, nextStyle, useUiStyle } from '../lib/uiStyle';
 
 type Sec = 'tenants' | 'signups' | 'managed' | 'hardware' | 'templates' | 'maintenance' | 'onprem';
 const NAV: { group: string; items: { id: Sec; label: string; icon: string }[] }[] = [
@@ -50,6 +51,7 @@ const TOAST_ICON: Record<ToastKind, [string, string]> = { ok: ['circle-check', '
  */
 export default function AdminPortal() {
   const [theme, setTheme] = useState(readTheme);
+  const [uiStyle, setUiStyle] = useUiStyle();
   const [r, setR] = useState(parse);
   const [nonce, setNonce] = useState(0);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -122,7 +124,7 @@ export default function AdminPortal() {
   }, [r, nonce, theme]);
   const sec = r.sec;
   return (
-    <div data-ae="" data-theme={theme} style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)' }}>
+    <div data-ae="" data-theme={theme} data-style={uiStyle} style={{ height: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--app)', color: 'var(--tx)', font: '14px/20px var(--f-body)' }}>
       <header className="ae-hdr" style={{ color: 'var(--tx)', height: 52, flex: 'none', display: 'flex', alignItems: 'center', gap: 12, padding: '0 16px 0 20px', background: 'var(--hdr)', borderBottom: '1px solid var(--ln)' }}>
         <Icon name="mark" size={24} />
         <span style={{ font: '600 16px/24px var(--f-head)', whiteSpace: 'nowrap' }}>Host360 Aegis</span>
@@ -141,10 +143,13 @@ export default function AdminPortal() {
         <button type="button" aria-label={theme === 'dark' ? 'Light theme' : 'Dark theme'} data-tip={theme === 'dark' ? 'Light theme' : 'Dark theme'} onClick={toggle} className={pc('hover', 'background:var(--hover)')} style={{ width: 32, height: 32, display: 'grid', placeItems: 'center', color: 'var(--tx-2)' }}>
           <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
         </button>
+        <button type="button" aria-label={`Switch styles. Now ${STYLES[uiStyle].name}`} data-tip={`Switch styles · now ${STYLES[uiStyle].name}`} onClick={() => setUiStyle(nextStyle(uiStyle))} className={pc('hover', 'background:var(--hover)')} style={{ width: 32, height: 32, display: 'grid', placeItems: 'center', color: 'var(--tx-2)' }}>
+          <Icon name="palette" />
+        </button>
         <span aria-label="Priya Raman, Host360" data-tip="priya.raman@host360.ai · Head of cloud operations" style={{ width: 28, height: 28, display: 'grid', placeItems: 'center', background: 'var(--panel-2)', border: '1px solid var(--ln-2)', font: '600 11px var(--f-ui)' }}>PR</span>
       </header>
       <div style={{ flex: 1, minHeight: 0, display: 'flex' }}>
-        <aside style={{ width: 232, flex: 'none', borderRight: '1px solid var(--ln)', background: 'var(--nav)', display: 'flex', flexDirection: 'column' }}>
+        <aside className="ae-side" style={{ width: 232, flex: 'none', borderRight: '1px solid var(--ln)', background: 'var(--nav)', display: 'flex', flexDirection: 'column' }}>
           <nav aria-label="Internal admin" style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }}>
             <Ind mode="fill" style={{ display: 'flex', flexDirection: 'column' }}>
               {NAV.map((g, gi) => (

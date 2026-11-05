@@ -1,0 +1,261 @@
+/* Graphite — the second visual style of Host360 Aegis.
+   Chosen with "Switch styles" in the user menu and kept per browser (data-style="graphite" on each page root).
+   Classic stays the default and is untouched; everything here is scoped to [data-style="graphite"].
+
+   What makes it a different design, not a different colour:
+   - Frame: a full-height dark navigation column carrying the product name; a white top bar over the content only.
+   - Type: IBM Plex Sans throughout; page titles large and light (30 px, weight 300); upper-case section kickers.
+   - Shape: square corners everywhere; flat surfaces separated by 1 px rules, no shadows.
+   - Pages: a white header band (title, then tabs on the band) above a grey working area.
+   - Controls: fields with a strong bottom rule, outline buttons in the accent, secondary buttons solid charcoal,
+     contained tabs inside drawers, bold table headers on a grey band, KPI tiles with an accent top rule.
+   - Colour: neutral greys with no hue, one blue accent. */
+
+[data-ae][data-style="graphite"],
+[data-ae][data-style="graphite"] .ae-hdr .ae-pop {
+  --f-head: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --f-body: var(--f-head);
+  --f-ui: var(--f-head);
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r-sm: 0px; --r: 0px; --r-lg: 0px;
+
+  --app: oklch(0.967 0 0);
+  --hdr: oklch(1 0 0);
+  --nav: oklch(0.225 0.006 265);
+  --panel: oklch(1 0 0);
+  --panel-2: oklch(0.967 0 0);
+  --panel-3: oklch(0.925 0 0);
+  --field: oklch(0.967 0 0);
+  --hover: oklch(0.935 0 0);
+  --overlay: oklch(1 0 0);
+  --ln: oklch(0.905 0 0);
+  --ln-2: oklch(0.8 0 0);
+  --ln-3: oklch(0.6 0 0);
+  --tx: oklch(0.205 0 0);
+  --tx-2: oklch(0.435 0 0);
+  --tx-3: oklch(0.525 0 0);
+  --skel: oklch(0.92 0 0);
+
+  --acc: oklch(0.52 0.19 263);
+  --acc-h: oklch(0.46 0.18 263);
+  --acc-p: oklch(0.4 0.16 263);
+  --acc-ink: oklch(1 0 0);
+  --acc-soft: oklch(0.52 0.19 263 / 0.1);
+  --acc-tx: oklch(0.48 0.19 263);
+
+  --ok: oklch(0.58 0.15 148);   --ok-s: oklch(0.62 0.15 148 / 0.12);
+  --warn: oklch(0.66 0.15 68);  --warn-s: oklch(0.86 0.15 90 / 0.28);
+  --err: oklch(0.55 0.21 27);   --err-s: oklch(0.62 0.2 27 / 0.1);
+  --run: oklch(0.55 0.17 252);  --run-s: oklch(0.58 0.16 252 / 0.1);
+
+  --scrim: oklch(0.2 0 0 / 0.5);
+  --sh-card: none;
+  --sh-menu: 0 2px 6px oklch(0 0 0 / 0.2);
+  --sh-over: 0 8px 28px oklch(0 0 0 / 0.26);
+  --tip-bg: oklch(0.32 0 0);
+  --tip-tx: oklch(0.97 0 0);
+  color-scheme: light;
+}
+
+[data-ae][data-style="graphite"][data-theme="dark"],
+[data-ae][data-style="graphite"][data-theme="dark"] .ae-hdr .ae-pop {
+  --app: oklch(0.205 0 0);
+  --hdr: oklch(0.235 0 0);
+  --nav: oklch(0.165 0 0);
+  --panel: oklch(0.255 0 0);
+  --panel-2: oklch(0.285 0 0);
+  --panel-3: oklch(0.325 0 0);
+  --field: oklch(0.29 0 0);
+  --hover: oklch(0.335 0 0);
+  --overlay: oklch(0.275 0 0);
+  --ln: oklch(0.345 0 0);
+  --ln-2: oklch(0.445 0 0);
+  --ln-3: oklch(0.6 0 0);
+  --tx: oklch(0.965 0 0);
+  --tx-2: oklch(0.84 0 0);
+  --tx-3: oklch(0.73 0 0);
+  --skel: oklch(0.32 0 0);
+
+  --acc: oklch(0.72 0.13 258);
+  --acc-h: oklch(0.77 0.12 258);
+  --acc-p: oklch(0.67 0.13 258);
+  --acc-ink: oklch(0.18 0 0);
+  --acc-soft: oklch(0.72 0.13 258 / 0.16);
+  --acc-tx: oklch(0.79 0.11 258);
+
+  --ok: oklch(0.76 0.16 148);   --ok-s: oklch(0.76 0.16 148 / 0.13);
+  --warn: oklch(0.85 0.15 88);  --warn-s: oklch(0.85 0.15 88 / 0.13);
+  --err: oklch(0.71 0.17 22);   --err-s: oklch(0.71 0.17 22 / 0.14);
+  --run: oklch(0.75 0.12 250);  --run-s: oklch(0.75 0.12 250 / 0.14);
+
+  --scrim: oklch(0 0 0 / 0.6);
+  --sh-menu: 0 2px 8px oklch(0 0 0 / 0.5);
+  --sh-over: 0 8px 28px oklch(0 0 0 / 0.6);
+  --tip-bg: oklch(0.93 0 0);
+  --tip-tx: oklch(0.2 0 0);
+  color-scheme: dark;
+}
+
+/* ---- Frame ---------------------------------------------------------------- */
+
+/* The top bar takes the page colours: white in light, charcoal in dark. */
+[data-ae][data-style="graphite"] .ae-hdr {
+  --tx: inherit; --tx-2: inherit; --tx-3: inherit;
+  --ln: inherit; --ln-2: inherit; --hover: inherit;
+  --panel: inherit; --panel-2: inherit;
+  --acc: inherit; --acc-ink: inherit; --acc-soft: inherit; --acc-tx: inherit;
+  color-scheme: inherit;
+  border-bottom: 1px solid var(--ln) !important;
+}
+[data-ae][data-style="graphite"] .ae-hdr [aria-label^="User menu"] > span:first-child { border-radius: 0 !important; }
+
+/* The navigation column is dark in both themes and runs the full height of the window. */
+[data-ae][data-style="graphite"] .ae-side {
+  --tx: oklch(0.97 0 0);
+  --tx-2: oklch(0.82 0 0);
+  --tx-3: oklch(0.66 0 0);
+  --ln: oklch(0.31 0.005 265);
+  --ln-2: oklch(0.42 0 0);
+  --hover: oklch(0.29 0.006 265);
+  --acc: oklch(0.72 0.13 258);
+  --acc-ink: oklch(0.18 0 0);
+  --acc-soft: oklch(0.32 0.012 265);
+  --acc-tx: oklch(0.99 0 0);
+  color-scheme: dark;
+  color: var(--tx);
+  border-right: 0 !important;
+}
+[data-ae][data-style="graphite"][data-theme="dark"] .ae-side { --ln: oklch(0.27 0 0); --hover: oklch(0.25 0 0); --acc-soft: oklch(0.28 0 0); }
+[data-ae][data-style="graphite"] .ae-side a[aria-current="page"] { box-shadow: inset 3px 0 0 var(--acc); }
+[data-ae][data-style="graphite"] .ae-side-brand:hover { background: var(--hover); }
+
+/* ---- Page header band ----------------------------------------------------- */
+
+[data-ae][data-style="graphite"] main .ae-ph { background: var(--panel); }
+[data-ae][data-style="graphite"] main .ae-ph:not(:has(+ .ae-ind[role="tablist"])) { border-bottom: 1px solid var(--ln); margin-bottom: 16px; }
+[data-ae][data-style="graphite"] main .ae-ph-tabs { padding-bottom: 12px !important; }
+[data-ae][data-style="graphite"] .ae-ph h1 {
+  font-weight: 300 !important;
+  font-size: 30px !important;
+  line-height: 38px !important;
+  letter-spacing: 0 !important;
+}
+[data-ae][data-style="graphite"] .ae-ph p { font-size: 14px; color: var(--tx-2); }
+[data-ae][data-style="graphite"] .ae-kicker {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acc-tx) !important;
+  margin-bottom: 8px !important;
+}
+
+/* Page tabs sit on the white band, under the title, with a blue rule under the open one. */
+[data-ae][data-style="graphite"] main .ae-ptabs,
+[data-ae][data-style="graphite"] main .ae-ph + .ae-ind[role="tablist"] {
+  margin: 0 0 16px !important;
+  padding: 0 12px !important;
+  background: var(--panel);
+  border-bottom: 1px solid var(--ln) !important;
+}
+
+/* Every tab label is regular weight; the open one is dark and underlined (page tabs) or raised (contained tabs). */
+[data-ae][data-style="graphite"] [role="tablist"] [role="tab"],
+[data-ae][data-style="graphite"] [role="tablist"] > div[aria-hidden] > span { font-weight: 400 !important; }
+[data-ae][data-style="graphite"] [role="tablist"] [role="tab"][aria-selected="true"] { color: var(--tx) !important; }
+
+/* Contained tabs: drawers and in-page sub-sections. */
+[data-ae][data-style="graphite"] .ae-ind[role="tablist"]:not(.ae-ptabs):not(.ae-ph + .ae-ind) {
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--ln) !important;
+}
+[data-ae][data-style="graphite"] .ae-ind[role="tablist"]:not(.ae-ptabs):not(.ae-ph + .ae-ind) [role="tab"] {
+  box-shadow: inset -1px 0 0 var(--ln);
+  transition: background-color 100ms, color 100ms;
+}
+[data-ae][data-style="graphite"] .ae-ind[role="tablist"]:not(.ae-ptabs):not(.ae-ph + .ae-ind) [role="tab"]:hover { background: var(--hover); }
+[data-ae][data-style="graphite"] .ae-ind[role="tablist"]:not(.ae-ptabs):not(.ae-ph + .ae-ind) [role="tab"][aria-selected="true"] {
+  background: var(--panel);
+  box-shadow: inset 0 3px 0 var(--acc), inset -1px 0 0 var(--ln);
+}
+[data-ae][data-style="graphite"] .ae-ind[role="tablist"]:not(.ae-ptabs):not(.ae-ph + .ae-ind) > .ae-ind-i { opacity: 0 !important; }
+
+/* ---- Working area --------------------------------------------------------- */
+
+/* Tables: bold headers on a grey band. */
+[data-ae][data-style="graphite"] [role="table"] > [role="row"]:first-child {
+  background: var(--panel-3) !important;
+  color: var(--tx) !important;
+  font-weight: 600 !important;
+  border-bottom-color: var(--ln-2) !important;
+}
+
+/* Cards and widgets: flat, 1 px rule, title in regular weight. */
+[data-ae][data-style="graphite"] .ae-card-h h2 { font-size: 16px !important; font-weight: 400 !important; }
+[data-ae][data-style="graphite"] .ae-kpi {
+  box-shadow: inset 0 3px 0 var(--acc) !important;
+  padding-top: 20px !important;
+  transition: background-color 100ms !important;
+}
+[data-ae][data-style="graphite"] a.ae-kpi:hover { background: var(--hover) !important; }
+[data-ae][data-style="graphite"] .ae-kpi > span:first-child { font-weight: 400 !important; }
+[data-ae][data-style="graphite"] .ae-kpi > span:nth-child(2) {
+  font-weight: 300 !important;
+  font-size: 34px !important;
+  line-height: 42px !important;
+  letter-spacing: 0 !important;
+}
+
+/* Buttons: primary solid blue, secondary solid charcoal, outline in the accent. */
+[data-ae][data-style="graphite"] button[data-kind] { font-weight: 400 !important; box-shadow: none !important; }
+[data-ae][data-style="graphite"] button[data-kind="secondary"]:not([aria-disabled="true"]) {
+  background: var(--tx) !important;
+  color: var(--panel) !important;
+  border-color: var(--tx) !important;
+}
+[data-ae][data-style="graphite"] button[data-kind="secondary"]:not([aria-disabled="true"]):hover { background: var(--tx-2) !important; border-color: var(--tx-2) !important; }
+[data-ae][data-style="graphite"] button[data-kind="outline"]:not([aria-disabled="true"]) {
+  border-color: var(--acc) !important;
+  color: var(--acc-tx) !important;
+}
+[data-ae][data-style="graphite"] button[data-kind="outline"]:not([aria-disabled="true"]):hover {
+  background: var(--acc) !important;
+  color: var(--acc-ink) !important;
+}
+[data-ae][data-style="graphite"] button[data-kind="outline"]:not([aria-disabled="true"]):hover svg { color: inherit !important; }
+
+/* Fields: filled, no box, a strong rule underneath. */
+[data-ae][data-style="graphite"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([style*="background: transparent"]),
+[data-ae][data-style="graphite"] select:not([style*="background: transparent"]),
+[data-ae][data-style="graphite"] textarea:not([style*="background: transparent"]) {
+  background-color: var(--field) !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--ln-3) !important;
+}
+[data-ae][data-style="graphite"] .ae-tb input:not([type="checkbox"]):not([type="radio"]):not([style*="background: transparent"]),
+[data-ae][data-style="graphite"] .ae-tb select:not([style*="background: transparent"]) { background-color: var(--panel) !important; }
+/* A labelled filter box ("Priority  All") keeps its own frame; Graphite gives the frame the strong bottom rule instead. */
+[data-ae][data-style="graphite"] :is(label, div):has(> select[style*="background: transparent"]) {
+  border-color: transparent !important;
+  border-bottom-color: var(--ln-3) !important;
+  background: var(--field) !important;
+}
+[data-ae][data-style="graphite"] .ae-tb :is(label, div):has(> select[style*="background: transparent"]),
+[data-ae][data-style="graphite"] main > div > div:has(> :is(label, div) > select[style*="background: transparent"]) :is(label, div):has(> select[style*="background: transparent"]) { background: var(--panel) !important; }
+[data-ae][data-style="graphite"] input:focus-visible,
+[data-ae][data-style="graphite"] select:focus-visible,
+[data-ae][data-style="graphite"] textarea:focus-visible,
+[data-ae][data-style="graphite"] input:focus,
+[data-ae][data-style="graphite"] textarea:focus { outline: 2px solid var(--acc) !important; outline-offset: -2px !important; }
+[data-ae][data-style="graphite"] [role="checkbox"] { border-radius: 0 !important; }
+
+/* Drawers and dialogs: the title in a larger, lighter weight. */
+[data-ae][data-style="graphite"] .ae-drawer > div:first-child h2,
+[data-ae][data-style="graphite"] .ae-dialog h2:first-of-type { font-size: 20px !important; font-weight: 400 !important; line-height: 28px !important; }
+[data-ae][data-style="graphite"] .ae-drawer { border-left: 0 !important; }
+
+/* Focus: a 2 px inset ring in the accent. */
+[data-ae][data-style="graphite"] :focus-visible { outline-offset: -2px !important; }
+
+/* Sliding highlights sit behind their items, so an opaque highlight never covers a label. */
+[data-ae][data-style="graphite"] .ae-ind-i { z-index: -1; }

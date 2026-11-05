@@ -9,6 +9,10 @@
   --f-head: Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
   --f-body: var(--f-head);
   --f-ui: var(--f-head);
+  --f-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --panel-3: oklch(0.955 0.005 240);
+  --field: oklch(1 0 0);
+  --ln-3: oklch(0.7 0.012 240);
   --ease: cubic-bezier(.2, .7, .3, 1);
   --t1: 100ms; --t2: 150ms;
   --r-sm: 4px; --r: 6px; --r-lg: 8px;

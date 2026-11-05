@@ -197,8 +197,8 @@ export default class AegisSettings extends DC {
         {/* Embedded as a tab of the Settings section: the section draws the header and tabs. */}
         {v.embedTab ? null : (
         <>
-        <div style={{ flex: 'none', padding: '24px 24px 4px' }}>
-          <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Administration</div>
+        <div className="ae-ph" style={{ flex: 'none', padding: '24px 24px 4px' }}>
+          <div className="ae-kicker" style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>Administration</div>
           <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Settings</h1>
           <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>Notifications, Aegis’s own backup, tunables and licence.</p>
         </div>

@@ -28,6 +28,9 @@ export function installTooltips() {
     const cs = root ? getComputedStyle(root) : null;
     T.style.background = cs ? cs.getPropertyValue('--tip-bg') : '#222';
     T.style.color = cs ? cs.getPropertyValue('--tip-tx') : '#fff';
+    // Follow the page's style: its typeface and corner radius.
+    T.style.fontFamily = (cs && cs.getPropertyValue('--f-ui').trim()) || 'Inter, Segoe UI, system-ui, sans-serif';
+    T.style.borderRadius = (cs && cs.getPropertyValue('--r-sm').trim()) || '4px';
     T.style.boxShadow = '0 4px 16px rgba(0,0,0,.22)';
     T.textContent = t;
     const r = el.getBoundingClientRect();

@@ -254,9 +254,9 @@ export default class AegisOverview extends DC {
     const v = this.vals();
     return (
       <div style={{ height: '100%', minHeight: 0, overflow: 'auto', animation: 'ae-page 150ms var(--ease)' }}>
-        <div style={{ padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
+        <div className="ae-ph" style={{ padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-end', gap: '16px' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>{v.section}</div>
+            <div className="ae-kicker" style={{ font: '500 12px/16px var(--f-ui)', color: 'var(--tx-3)', marginBottom: '6px' }}>{v.section}</div>
             <h1 style={{ font: '600 22px/30px var(--f-head)' }}>Overview</h1>
             <p style={{ marginTop: '4px', maxWidth: '880px', color: 'var(--tx-2)' }}>{v.sub}</p>
           </div>
@@ -329,7 +329,7 @@ export default class AegisOverview extends DC {
                       minWidth: 0,
                       transition: 'border-color 100ms,box-shadow 100ms'
                     }}
-                    className={pc('hover', 'border-color:var(--ln-2);box-shadow:var(--sh-menu)')}
+                    className={`ae-kpi ${pc('hover', 'border-color:var(--ln-2);box-shadow:var(--sh-menu)')}`}
                   >
                     <span
                       style={{ display: 'flex', alignItems: 'center', gap: '8px', font: '500 13px/18px var(--f-ui)', color: 'var(--tx-2)' }}
