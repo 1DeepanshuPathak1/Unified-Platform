@@ -1,0 +1,178 @@
+/* Command — operations centre.
+   Frame: an icon rail (labels in tooltips), a compact top bar, and a status bar along the bottom
+   (connection, version, project, jobs, alerts, clock).
+   Look: dark-first charcoal, Space Grotesk with IBM Plex Mono for figures, labels and kickers; 2 px corners; dense
+   32 px rows; signal-orange accent; readout-style KPI tiles. In the light theme the rail, top bar and status bar stay dark. */
+
+[data-ae][data-style="command"],
+[data-ae][data-style="command"] .ae-hdr .ae-pop {
+  --f-head: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --f-body: var(--f-head);
+  --f-ui: var(--f-head);
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --r-sm: 2px; --r: 2px; --r-lg: 4px;
+  --app: oklch(0.94 0.004 250);
+  --hdr: oklch(0.2 0.008 250);
+  --nav: oklch(0.155 0.006 250);
+  --status: oklch(0.155 0.006 250);
+  --panel: oklch(1 0 0);
+  --panel-2: oklch(0.965 0.004 250);
+  --panel-3: oklch(0.93 0.006 250);
+  --field: oklch(0.975 0.003 250);
+  --hover: oklch(0.935 0.006 250);
+  --overlay: oklch(1 0 0);
+  --ln: oklch(0.88 0.006 250);
+  --ln-2: oklch(0.78 0.01 250);
+  --ln-3: oklch(0.6 0.01 250);
+  --tx: oklch(0.2 0.01 250);
+  --tx-2: oklch(0.42 0.012 250);
+  --tx-3: oklch(0.52 0.012 250);
+  --skel: oklch(0.9 0.006 250);
+  --acc: oklch(0.66 0.18 48);
+  --acc-h: oklch(0.61 0.18 48);
+  --acc-p: oklch(0.56 0.17 48);
+  --acc-ink: oklch(0.16 0.01 250);
+  --acc-soft: oklch(0.7 0.17 50 / 0.14);
+  --acc-tx: oklch(0.55 0.17 45);
+  --ok: oklch(0.6 0.16 155);   --ok-s: oklch(0.62 0.16 155 / 0.14);
+  --warn: oklch(0.72 0.15 85); --warn-s: oklch(0.85 0.15 90 / 0.25);
+  --err: oklch(0.58 0.21 25);  --err-s: oklch(0.6 0.2 25 / 0.12);
+  --run: oklch(0.6 0.14 230);  --run-s: oklch(0.6 0.14 230 / 0.12);
+  --scrim: oklch(0.1 0.01 250 / 0.55);
+  --sh-card: none;
+  --sh-menu: 0 6px 20px oklch(0 0 0 / 0.25);
+  --sh-over: 0 16px 48px oklch(0 0 0 / 0.4);
+  --tip-bg: oklch(0.2 0.01 250);
+  --tip-tx: oklch(0.95 0.005 250);
+  color-scheme: light;
+}
+[data-ae][data-style="command"][data-theme="dark"],
+[data-ae][data-style="command"][data-theme="dark"] .ae-hdr .ae-pop {
+  --app: oklch(0.155 0.006 250);
+  --hdr: oklch(0.185 0.008 250);
+  --nav: oklch(0.13 0.005 250);
+  --status: oklch(0.13 0.005 250);
+  --panel: oklch(0.195 0.008 250);
+  --panel-2: oklch(0.215 0.009 250);
+  --panel-3: oklch(0.235 0.01 250);
+  --field: oklch(0.175 0.007 250);
+  --hover: oklch(0.25 0.01 250);
+  --overlay: oklch(0.215 0.009 250);
+  --ln: oklch(0.27 0.01 250);
+  --ln-2: oklch(0.35 0.012 250);
+  --ln-3: oklch(0.5 0.012 250);
+  --tx: oklch(0.93 0.005 250);
+  --tx-2: oklch(0.76 0.01 250);
+  --tx-3: oklch(0.64 0.012 250);
+  --skel: oklch(0.25 0.01 250);
+  --acc: oklch(0.76 0.16 55);
+  --acc-h: oklch(0.81 0.15 55);
+  --acc-p: oklch(0.71 0.16 55);
+  --acc-ink: oklch(0.15 0.01 250);
+  --acc-soft: oklch(0.76 0.16 55 / 0.15);
+  --acc-tx: oklch(0.82 0.14 60);
+  --ok: oklch(0.78 0.17 155);  --ok-s: oklch(0.78 0.17 155 / 0.14);
+  --warn: oklch(0.87 0.16 92); --warn-s: oklch(0.87 0.16 92 / 0.13);
+  --err: oklch(0.7 0.19 25);   --err-s: oklch(0.7 0.19 25 / 0.15);
+  --run: oklch(0.78 0.12 220); --run-s: oklch(0.78 0.12 220 / 0.14);
+  --tip-bg: oklch(0.93 0.005 250);
+  --tip-tx: oklch(0.18 0.01 250);
+  color-scheme: dark;
+}
+
+/* Frame: rail, top bar and status bar are dark in both themes. */
+[data-ae][data-style="command"] .ae-hdr,
+[data-ae][data-style="command"] .ae-side,
+[data-ae][data-style="command"] .ae-status {
+  --tx: oklch(0.93 0.005 250); --tx-2: oklch(0.76 0.01 250); --tx-3: oklch(0.62 0.012 250);
+  --ln: oklch(0.27 0.01 250); --ln-2: oklch(0.36 0.012 250);
+  --hover: oklch(0.25 0.01 250); --panel: oklch(0.22 0.009 250); --panel-2: oklch(0.2 0.008 250);
+  --acc: oklch(0.76 0.16 55); --acc-ink: oklch(0.15 0.01 250); --acc-soft: oklch(0.76 0.16 55 / 0.16); --acc-tx: oklch(0.84 0.13 60);
+  --field: oklch(0.15 0.006 250);
+  color-scheme: dark;
+  color: var(--tx);
+}
+[data-ae][data-style="command"] .ae-hdr { height: 44px !important; padding: 0 10px 0 12px !important; border-bottom: 1px solid var(--ln) !important; }
+[data-ae][data-style="command"] .ae-hdr button,
+[data-ae][data-style="command"] .ae-hdr input { height: 32px !important; }
+[data-ae][data-style="command"] .ae-hdr-clock { display: none !important; }
+[data-ae][data-style="command"] .ae-side { border-right: 1px solid var(--ln) !important; }
+[data-ae][data-style="command"] .ae-side-brand { height: 44px !important; padding: 0 16px !important; }
+[data-ae][data-style="command"] .ae-side-brand > span:not(.ae-icon) { display: none; }
+[data-ae][data-style="command"] .ae-side > div:last-child { display: none !important; }
+[data-ae][data-style="command"] .ae-side a[aria-current="page"] { box-shadow: inset 2px 0 0 var(--acc); }
+[data-ae][data-style="command"] .ae-side a[aria-current="page"] svg { color: var(--acc) !important; }
+[data-ae][data-style="command"] .ae-side [role="presentation"] { height: 14px !important; margin-top: 2px !important; }
+[data-ae][data-style="command"] .ae-status { font-family: var(--f-mono) !important; font-size: 11px !important; letter-spacing: 0.02em; }
+
+/* Monospaced figures, labels and kickers. */
+[data-ae][data-style="command"] [role="cell"][style*="tabular-nums"],
+[data-ae][data-style="command"] .ae-kpi > span:nth-child(2),
+[data-ae][data-style="command"] .ae-kicker,
+[data-ae][data-style="command"] [role="table"] > [role="row"]:has(> [role="columnheader"]),
+[data-ae][data-style="command"] [role="tablist"] [role="tab"],
+[data-ae][data-style="command"] [role="tablist"] > div[aria-hidden] > span,
+[data-ae][data-style="command"] button[data-kind] { font-family: var(--f-mono) !important; }
+
+/* Page header: compact. */
+[data-ae][data-style="command"] .ae-ph { padding: 16px 20px 12px !important; }
+[data-ae][data-style="command"] .ae-ph-tabs { padding-bottom: 0 !important; }
+[data-ae][data-style="command"] .ae-ph h1 { font-size: 20px !important; line-height: 28px !important; font-weight: 600 !important; letter-spacing: -0.01em !important; }
+[data-ae][data-style="command"] .ae-ph p { font-size: 13px; }
+[data-ae][data-style="command"] .ae-kicker {
+  font-size: 11px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--acc-tx) !important;
+}
+[data-ae][data-style="command"] .ae-kicker::before { content: "// "; color: var(--tx-3); }
+
+/* Tabs: upper-case, compact, accent rule. */
+[data-ae][data-style="command"] [role="tablist"] [role="tab"],
+[data-ae][data-style="command"] [role="tablist"] > div[aria-hidden] > span {
+  height: 34px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+[data-ae][data-style="command"] main .ae-ptabs,
+[data-ae][data-style="command"] main .ae-ph + .ae-ind[role="tablist"] { margin-bottom: 12px !important; }
+
+/* Dense tables. */
+[data-ae][data-style="command"] [role="table"] > [role="row"]:has(> [role="columnheader"]) {
+  height: 30px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 10.5px !important;
+  font-weight: 500 !important;
+  color: var(--tx-3) !important;
+  background: var(--panel-2) !important;
+}
+[data-ae][data-style="command"] .ae-grid [role="row"]:not(:first-child) { height: 32px !important; }
+[data-ae][data-style="command"] .ae-grid { font-size: 12.5px !important; }
+
+/* KPI tiles as readouts. */
+[data-ae][data-style="command"] .ae-kpi { padding: 12px 14px !important; gap: 6px !important; box-shadow: inset 2px 0 0 var(--acc) !important; }
+[data-ae][data-style="command"] .ae-kpi > span:first-child { text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px !important; color: var(--tx-3) !important; }
+[data-ae][data-style="command"] .ae-kpi > span:nth-child(2) { font-size: 26px !important; line-height: 32px !important; font-weight: 500 !important; letter-spacing: -0.02em !important; }
+
+/* Panels: tight headers. */
+[data-ae][data-style="command"] .ae-card-h { height: 40px !important; padding: 0 14px !important; background: var(--panel-2); }
+[data-ae][data-style="command"] .ae-card-h h2 { font-size: 13px !important; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600 !important; }
+
+/* Buttons: upper-case mono, flat. */
+[data-ae][data-style="command"] button[data-kind] { text-transform: uppercase; letter-spacing: 0.04em; font-size: 12px !important; box-shadow: none !important; }
+
+/* Fields. */
+[data-ae][data-style="command"] input:not([type="checkbox"]):not([type="radio"]):not([style*="background: transparent"]),
+[data-ae][data-style="command"] select:not([style*="background: transparent"]),
+[data-ae][data-style="command"] textarea { background-color: var(--field) !important; font-family: var(--f-mono) !important; font-size: 12.5px !important; }
+[data-ae][data-style="command"] :focus-visible { outline-color: var(--acc) !important; }
+
+/* Drawers and dialogs: a hard accent edge. */
+[data-ae][data-style="command"] .ae-drawer { border-left: 2px solid var(--acc) !important; }
+[data-ae][data-style="command"] .ae-dialog { border-top: 2px solid var(--acc) !important; }
+[data-ae][data-style="command"] .ae-drawer > div:first-child h2,
+[data-ae][data-style="command"] .ae-dialog h2:first-of-type { font-weight: 600 !important; letter-spacing: -0.01em !important; }

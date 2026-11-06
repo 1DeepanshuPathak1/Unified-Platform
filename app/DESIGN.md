@@ -59,7 +59,25 @@ The Design System page (`#/design-system`) and Handoff page (`#/handoff`) read t
 
 These pages were found through web search. The build environment could not open them or their screenshots directly (network policy), so the conventions above come from their published descriptions, not from pixel measurements.
 
-## Second style: Graphite
+## Seven styles
+
+The console has seven complete designs for the same content. **User menu › Switch styles** (under the theme switch) opens a picker with a drawing of each layout; picking one applies it at once, in light and dark, and the browser remembers it on every page. The internal portal has the same picker behind its palette button.
+
+Each style changes the frame (where the navigation and tools live), the typeface, shapes, density and colour, not just the palette.
+
+| Style | Frame | Typeface | Character |
+|---|---|---|---|
+| Classic | Dark top bar across the window, white navigation pane under it | Inter | The original: rounded cards with soft shadows on a light working area, teal accent |
+| Graphite | Dark navigation column the full height of the window carrying the product name; white top bar over the content only | IBM Plex Sans | Enterprise flat: square edges, white page header band with tabs, contained drawer tabs, filled fields with a strong rule, blue accent |
+| Horizon | No sidebar: a two-row top bar (tools, then the navigation as links and menus); the page centred in a 1408 px column | Plus Jakarta Sans | Modern SaaS: 8–16 px radii, softly lifted white cards, pill tabs and pill buttons, icon chips on KPI tiles, indigo accent |
+| Command | Icon rail (labels in tooltips), a compact 44 px top bar, and a status bar along the bottom with connection, version, project, jobs, alerts and the clock | Space Grotesk with IBM Plex Mono for figures, labels and buttons | Operations centre: dark-first charcoal, 2 px corners, dense 32 px rows, upper-case mono labels, readout KPI tiles, signal-orange accent |
+| Ledger | Paper masthead with a serif wordmark over a double rule; the navigation as a numbered text index with small-caps group names; wide margins | Source Serif 4 headings and figures, Source Sans 3 text | Editorial report: warm paper, sections divided by rules instead of boxes, 36–40 px serif titles and figures, underline fields, ink-green accent |
+| Lumen | Every part floats: navigation, top bar and working area are separate rounded panels inset on a soft gradient | Manrope | Frosted translucent surfaces, 12–20 px radii, a violet-to-magenta gradient for the current place and the primary action, a gradient rule under the open tab |
+| Atlas | A dark product rail (the three products and the style switch), then a section list headed by the product's name, then the top bar over the content | Work Sans | Cloud console: flat white panels with tinted header bands, striped tables with a copper header rule, breadcrumb kickers, copper accent |
+
+How it is built. Screens use only tokens and the shared components, so a style is one stylesheet in `src/styles/` (`graphite.css`, `horizon.css`, `command.css`, `ledger.css`, `lumen.css`, `atlas.css`), scoped to `[data-style]` on the page root. It redefines the tokens and restyles the shared components through the class names they carry (`ae-ph` page header, `ae-kicker`, `ae-ptabs` page tabs, `ae-tb` toolbar, `ae-card`, `ae-kpi`, `ae-grid` table, `ae-drawer`, `ae-dialog`, `ae-side` navigation, `ae-hdr-*` parts of the top bar, `data-kind` on buttons). The frame is a CSS grid on the console root whose areas each style sets (`FRAMES` in `pages/AegisConsole.tsx`); Horizon's top navigation, Atlas's product rail and section title, and Command's status bar are in `shell/Frames.tsx`. The registry of styles is `src/lib/uiStyle.ts`; the picker is `shell/StylePicker.tsx`. Typefaces other than Inter and Plex ship as Latin and Latin Extended subsets (`src/styles/fonts.ts`).
+
+### Graphite in detail
 
 The console has two complete designs. Classic, described above, stays the default and is unchanged. Graphite is a second design for teams that prefer a flatter, denser enterprise look. Switch between them with **user menu › Switch styles**, directly under the theme switch (the internal portal has the same switch as a palette button beside its theme button). The choice is remembered in the browser and applies to every page, in light and dark.
 

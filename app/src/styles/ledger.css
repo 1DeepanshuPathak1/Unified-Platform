@@ -1,0 +1,201 @@
+/* Ledger — editorial report.
+   Frame: a paper masthead with a serif wordmark over a double rule; the navigation as a numbered text index
+   (no icons, small-caps group names); wide margins around the page.
+   Look: Source Serif 4 headings and figures, Source Sans 3 text, warm paper, sections divided by rules instead of boxes,
+   underline fields, ink-green accent. */
+
+[data-ae][data-style="ledger"],
+[data-ae][data-style="ledger"] .ae-hdr .ae-pop {
+  --f-head: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --f-ui: var(--f-body);
+  --r-sm: 0px; --r: 0px; --r-lg: 2px;
+  --app: oklch(0.968 0.008 85);
+  --hdr: oklch(0.968 0.008 85);
+  --nav: oklch(0.968 0.008 85);
+  --panel: oklch(0.99 0.006 85);
+  --panel-2: oklch(0.945 0.012 85);
+  --panel-3: oklch(0.925 0.015 85);
+  --field: transparent;
+  --hover: oklch(0.935 0.014 85);
+  --overlay: oklch(0.985 0.007 85);
+  --ln: oklch(0.88 0.015 85);
+  --ln-2: oklch(0.78 0.02 85);
+  --ln-3: oklch(0.55 0.02 85);
+  --tx: oklch(0.24 0.012 80);
+  --tx-2: oklch(0.43 0.015 80);
+  --tx-3: oklch(0.53 0.018 80);
+  --skel: oklch(0.92 0.012 85);
+  --acc: oklch(0.43 0.08 165);
+  --acc-h: oklch(0.38 0.075 165);
+  --acc-p: oklch(0.33 0.07 165);
+  --acc-ink: oklch(0.98 0.006 85);
+  --acc-soft: oklch(0.43 0.08 165 / 0.09);
+  --acc-tx: oklch(0.4 0.08 165);
+  --ok: oklch(0.52 0.11 150);  --ok-s: oklch(0.55 0.11 150 / 0.1);
+  --warn: oklch(0.62 0.13 65); --warn-s: oklch(0.8 0.12 80 / 0.22);
+  --err: oklch(0.5 0.17 28);   --err-s: oklch(0.55 0.16 28 / 0.09);
+  --run: oklch(0.48 0.1 245);  --run-s: oklch(0.5 0.1 245 / 0.09);
+  --scrim: oklch(0.25 0.012 80 / 0.35);
+  --sh-card: none;
+  --sh-menu: 0 2px 10px oklch(0.25 0.02 80 / 0.14);
+  --sh-over: 0 12px 40px oklch(0.25 0.02 80 / 0.22);
+  --tip-bg: oklch(0.26 0.012 80);
+  --tip-tx: oklch(0.97 0.008 85);
+  color-scheme: light;
+}
+[data-ae][data-style="ledger"][data-theme="dark"],
+[data-ae][data-style="ledger"][data-theme="dark"] .ae-hdr .ae-pop {
+  --app: oklch(0.2 0.008 80);
+  --hdr: oklch(0.2 0.008 80);
+  --nav: oklch(0.2 0.008 80);
+  --panel: oklch(0.225 0.009 80);
+  --panel-2: oklch(0.245 0.01 80);
+  --panel-3: oklch(0.27 0.011 80);
+  --hover: oklch(0.27 0.011 80);
+  --overlay: oklch(0.235 0.009 80);
+  --ln: oklch(0.32 0.012 80);
+  --ln-2: oklch(0.42 0.014 80);
+  --ln-3: oklch(0.6 0.015 80);
+  --tx: oklch(0.93 0.012 85);
+  --tx-2: oklch(0.8 0.014 85);
+  --tx-3: oklch(0.69 0.016 85);
+  --skel: oklch(0.28 0.01 80);
+  --acc: oklch(0.75 0.09 165);
+  --acc-h: oklch(0.8 0.085 165);
+  --acc-p: oklch(0.7 0.09 165);
+  --acc-ink: oklch(0.18 0.01 80);
+  --acc-soft: oklch(0.75 0.09 165 / 0.13);
+  --acc-tx: oklch(0.8 0.08 165);
+  --ok: oklch(0.75 0.12 150);  --ok-s: oklch(0.75 0.12 150 / 0.13);
+  --warn: oklch(0.82 0.12 80); --warn-s: oklch(0.82 0.12 80 / 0.13);
+  --err: oklch(0.7 0.15 28);   --err-s: oklch(0.7 0.15 28 / 0.14);
+  --run: oklch(0.74 0.1 245);  --run-s: oklch(0.74 0.1 245 / 0.14);
+  --tip-bg: oklch(0.93 0.012 85);
+  --tip-tx: oklch(0.2 0.01 80);
+  color-scheme: dark;
+}
+
+/* Masthead: paper, a serif wordmark, a double rule underneath. */
+[data-ae][data-style="ledger"] .ae-hdr {
+  --tx: inherit; --tx-2: inherit; --tx-3: inherit; --ln: inherit; --ln-2: inherit; --hover: inherit;
+  --panel: inherit; --panel-2: inherit; --acc: inherit; --acc-ink: inherit; --acc-soft: inherit; --acc-tx: inherit;
+  color-scheme: inherit;
+  height: 60px !important;
+  padding: 0 28px !important;
+  border-bottom: 3px double var(--ln-3) !important;
+}
+[data-ae][data-style="ledger"] .ae-hdr-brand > svg { display: none; }
+[data-ae][data-style="ledger"] .ae-hdr-brand > span { font-family: var(--f-head) !important; font-size: 22px !important; font-weight: 600 !important; letter-spacing: -0.01em !important; }
+[data-ae][data-style="ledger"] .ae-hdr-brand > span > span { font-style: italic; font-weight: 400 !important; color: var(--acc-tx) !important; }
+[data-ae][data-style="ledger"] .ae-hdr input { border: 0 !important; border-bottom: 1px solid var(--ln-3) !important; background: transparent !important; }
+[data-ae][data-style="ledger"] .ae-hdr [aria-label^="User menu"] > span:first-child { background: transparent !important; color: var(--tx) !important; border: 1px solid var(--tx); font-family: var(--f-head) !important; }
+
+/* The navigation as a numbered index. */
+[data-ae][data-style="ledger"] .ae-side { border-right: 1px solid var(--ln) !important; counter-reset: ledger; }
+[data-ae][data-style="ledger"] .ae-side nav { padding: 20px 14px !important; }
+[data-ae][data-style="ledger"] .ae-side .ae-ind-i { opacity: 0 !important; }
+[data-ae][data-style="ledger"] .ae-side a[href^="#/"] .ae-icon { display: none; }
+[data-ae][data-style="ledger"] .ae-side a[href^="#/"] {
+  counter-increment: ledger;
+  gap: 10px !important;
+  height: 30px !important;
+  padding: 0 8px !important;
+  font-size: 15px !important;
+}
+[data-ae][data-style="ledger"] .ae-side a[href^="#/"]::before {
+  content: counter(ledger, decimal-leading-zero);
+  width: 20px;
+  flex: none;
+  font: 600 11px/1 var(--f-head);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--tx-3);
+}
+[data-ae][data-style="ledger"] .ae-side a[aria-current="page"] { color: var(--tx) !important; font-weight: 700 !important; box-shadow: inset 2px 0 0 var(--acc); }
+[data-ae][data-style="ledger"] .ae-side a[aria-current="page"]::before { color: var(--acc-tx); }
+[data-ae][data-style="ledger"] .ae-side [role="presentation"] span {
+  font-family: var(--f-head) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: lowercase !important;
+  font-variant: small-caps;
+  color: var(--tx-2) !important;
+}
+
+/* Wide margins. */
+[data-ae][data-style="ledger"] main > * { padding-inline: 20px; }
+
+/* Page header: small caps kicker, large serif title, a rule under the header. */
+[data-ae][data-style="ledger"] .ae-ph { padding-top: 32px !important; }
+[data-ae][data-style="ledger"] main .ae-ph:not(:has(+ .ae-ind[role="tablist"])) { border-bottom: 1px solid var(--tx); margin: 0 24px 20px; padding-inline: 0 !important; }
+[data-ae][data-style="ledger"] .ae-ph h1 { font-size: 36px !important; line-height: 44px !important; font-weight: 600 !important; letter-spacing: -0.015em !important; }
+[data-ae][data-style="ledger"] .ae-ph p { font-family: var(--f-head); font-style: italic; font-size: 16px; line-height: 24px; color: var(--tx-2); }
+[data-ae][data-style="ledger"] .ae-kicker {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  font-variant: small-caps;
+  color: var(--acc-tx) !important;
+  margin-bottom: 8px !important;
+}
+
+/* Tabs: small caps text with an ink rule. */
+[data-ae][data-style="ledger"] [role="tablist"] { border-bottom-color: var(--tx) !important; }
+[data-ae][data-style="ledger"] [role="tablist"] [role="tab"],
+[data-ae][data-style="ledger"] [role="tablist"] > div[aria-hidden] > span {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  font-variant: small-caps;
+}
+[data-ae][data-style="ledger"] [role="tablist"] [role="tab"][aria-selected="true"] { color: var(--tx) !important; }
+[data-ae][data-style="ledger"] [role="tablist"] .ae-ind-i { background: var(--tx) !important; height: 3px !important; }
+
+/* Sections ruled, not boxed. */
+[data-ae][data-style="ledger"] .ae-card,
+[data-ae][data-style="ledger"] .ae-kpi,
+[data-ae][data-style="ledger"] .ae-grid { background: transparent !important; border: 0 !important; box-shadow: none !important; }
+[data-ae][data-style="ledger"] .ae-card { border-top: 2px solid var(--tx) !important; }
+[data-ae][data-style="ledger"] .ae-card-h { padding: 0 !important; border-bottom-color: var(--ln) !important; }
+[data-ae][data-style="ledger"] .ae-card-h h2 { font-family: var(--f-head) !important; font-size: 18px !important; font-weight: 600 !important; }
+[data-ae][data-style="ledger"] .ae-card-h + div { padding-inline: 0; }
+[data-ae][data-style="ledger"] .ae-kpi { border-top: 1px solid var(--tx) !important; padding: 14px 4px 6px !important; }
+[data-ae][data-style="ledger"] .ae-kpi > span:first-child { font-size: 13px !important; font-weight: 600 !important; letter-spacing: 0.06em; text-transform: lowercase; font-variant: small-caps; color: var(--tx-2) !important; }
+[data-ae][data-style="ledger"] .ae-kpi > span:first-child .ae-icon { display: none; }
+[data-ae][data-style="ledger"] .ae-kpi > span:nth-child(2) { font-family: var(--f-head) !important; font-size: 40px !important; line-height: 46px !important; font-weight: 400 !important; letter-spacing: -0.02em !important; }
+[data-ae][data-style="ledger"] .ae-grid { border-top: 2px solid var(--tx) !important; }
+[data-ae][data-style="ledger"] [role="table"] > [role="row"]:has(> [role="columnheader"]) {
+  background: transparent !important;
+  border-bottom: 1px solid var(--tx) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  font-variant: small-caps;
+  color: var(--tx) !important;
+}
+[data-ae][data-style="ledger"] .ae-grid [role="row"]:not(:first-child) { height: 44px !important; }
+[data-ae][data-style="ledger"] [role="cell"][style*="tabular-nums"] { font-family: var(--f-head); font-size: 14px; }
+
+/* Buttons: ink outline; the primary one is solid ink green. */
+[data-ae][data-style="ledger"] button[data-kind] { font-weight: 600 !important; box-shadow: none !important; }
+[data-ae][data-style="ledger"] button[data-kind="secondary"]:not([aria-disabled="true"]),
+[data-ae][data-style="ledger"] button[data-kind="outline"]:not([aria-disabled="true"]) { background: transparent !important; border-color: var(--tx) !important; }
+
+/* Fields: a line to write on. */
+[data-ae][data-style="ledger"] input:not([type="checkbox"]):not([type="radio"]):not([style*="background: transparent"]),
+[data-ae][data-style="ledger"] select:not([style*="background: transparent"]),
+[data-ae][data-style="ledger"] textarea {
+  background-color: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--ln-3) !important;
+}
+[data-ae][data-style="ledger"] :is(label, div):has(> select[style*="background: transparent"]) { background: transparent !important; border-color: transparent !important; border-bottom-color: var(--ln-3) !important; }
+
+/* Drawers and dialogs: paper, serif titles. */
+[data-ae][data-style="ledger"] .ae-drawer { border-left: 1px solid var(--tx) !important; }
+[data-ae][data-style="ledger"] .ae-drawer > div:first-child h2,
+[data-ae][data-style="ledger"] .ae-dialog h2:first-of-type { font-family: var(--f-head) !important; font-size: 24px !important; line-height: 30px !important; font-weight: 600 !important; }

@@ -118,7 +118,7 @@ export function Drawer<V extends string>({ kicker, title, status, actions, tabs,
 type DialogProps = {
   title: ReactNode;
   sub?: ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   closing?: boolean;
   onClose: () => void;
   footer?: ReactNode;
@@ -128,7 +128,7 @@ type DialogProps = {
   bodyStyle?: CSSProperties;
 };
 
-const SIZE = { sm: 440, md: 600, lg: 720 };
+const SIZE = { sm: 440, md: 600, lg: 720, xl: 1040 };
 
 /** Dialog: centred on the scrim; small 440, medium 600, large 720 px; footer 56 px. */
 export function Dialog({ title, sub, size = 'md', closing, onClose, footer, footNote, children, alert, bodyStyle }: DialogProps) {

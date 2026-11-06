@@ -91,7 +91,7 @@ export function PlanCatalogue({ ctx }: { ctx: Ctx }) {
           <div style={{ padding: '0 16px 8px', overflowX: 'auto' }}>
             <MiniTable
               label="Feature matrix"
-              cols={[{ label: 'Feature', w: '230px' }, ...rows.map(e => ({ label: short(e), w: 'minmax(96px,1fr)' }))]}
+              cols={[{ label: 'Feature', w: 'minmax(170px,230px)' }, ...rows.map(e => ({ label: short(e), w: 'minmax(96px,1fr)' }))]}
               rows={FEATURES.map(f => [f, ...rows.map(e => (e.features.includes(f) ? <Icon key={e.id} name="check" style={{ color: 'var(--ok)' }} aria-label="Included" /> : <Icon key={e.id} name="minus" style={{ color: 'var(--tx-3)' }} aria-label="Not included" />))])}
             />
           </div>

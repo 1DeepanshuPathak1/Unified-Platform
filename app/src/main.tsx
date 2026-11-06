@@ -14,6 +14,12 @@ import '@fontsource/ibm-plex-mono/400.css';
 import './styles/tokens.css';
 import './styles/global.css';
 import './styles/graphite.css';
+import './styles/fonts';
+import './styles/horizon.css';
+import './styles/command.css';
+import './styles/ledger.css';
+import './styles/lumen.css';
+import './styles/atlas.css';
 import { installTooltips } from './lib/tooltip';
 import App from './App';
 

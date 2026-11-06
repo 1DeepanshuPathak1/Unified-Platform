@@ -1,0 +1,139 @@
+/* Atlas — cloud console.
+   Frame: a dark product rail on the far left (the three products and the style switch), then a section list headed by the
+   product's name, then the top bar over the content only.
+   Look: Work Sans, 4–8 px corners, flat white panels with tinted header bands, striped tables with a copper header rule,
+   breadcrumb-style kickers, a copper accent. */
+
+[data-ae][data-style="atlas"],
+[data-ae][data-style="atlas"] .ae-hdr .ae-pop {
+  --f-head: "Work Sans", "Segoe UI", system-ui, sans-serif;
+  --f-body: var(--f-head);
+  --f-ui: var(--f-head);
+  --r-sm: 4px; --r: 6px; --r-lg: 8px;
+  --app: oklch(0.962 0.004 75);
+  --hdr: oklch(1 0 0);
+  --nav: oklch(1 0 0);
+  --rail: oklch(0.24 0.012 70);
+  --panel: oklch(1 0 0);
+  --panel-2: oklch(0.982 0.003 75);
+  --panel-3: oklch(0.95 0.006 75);
+  --zebra: oklch(0.968 0.006 75);
+  --field: oklch(1 0 0);
+  --hover: oklch(0.95 0.008 70);
+  --overlay: oklch(1 0 0);
+  --ln: oklch(0.905 0.006 75);
+  --ln-2: oklch(0.82 0.01 75);
+  --ln-3: oklch(0.66 0.012 75);
+  --tx: oklch(0.25 0.012 70);
+  --tx-2: oklch(0.43 0.012 70);
+  --tx-3: oklch(0.53 0.012 70);
+  --skel: oklch(0.93 0.006 75);
+  --acc: oklch(0.55 0.17 42);
+  --acc-h: oklch(0.5 0.16 42);
+  --acc-p: oklch(0.45 0.15 42);
+  --acc-ink: oklch(1 0 0);
+  --acc-soft: oklch(0.55 0.17 42 / 0.1);
+  --acc-tx: oklch(0.5 0.16 42);
+  --ok: oklch(0.56 0.13 150);  --ok-s: oklch(0.6 0.13 150 / 0.12);
+  --warn: oklch(0.68 0.14 75); --warn-s: oklch(0.84 0.13 85 / 0.24);
+  --err: oklch(0.55 0.2 25);   --err-s: oklch(0.6 0.19 25 / 0.1);
+  --run: oklch(0.54 0.14 245); --run-s: oklch(0.56 0.14 245 / 0.1);
+  --scrim: oklch(0.2 0.01 70 / 0.4);
+  --sh-card: 0 1px 2px oklch(0.25 0.012 70 / 0.06);
+  --sh-menu: 0 4px 16px oklch(0.25 0.012 70 / 0.16);
+  --sh-over: 0 16px 48px oklch(0.25 0.012 70 / 0.24);
+  --tip-bg: oklch(0.25 0.012 70);
+  --tip-tx: oklch(0.97 0.004 75);
+  color-scheme: light;
+}
+[data-ae][data-style="atlas"][data-theme="dark"],
+[data-ae][data-style="atlas"][data-theme="dark"] .ae-hdr .ae-pop {
+  --app: oklch(0.19 0.006 70);
+  --hdr: oklch(0.225 0.007 70);
+  --nav: oklch(0.215 0.007 70);
+  --rail: oklch(0.14 0.006 70);
+  --panel: oklch(0.225 0.007 70);
+  --panel-2: oklch(0.245 0.008 70);
+  --panel-3: oklch(0.27 0.009 70);
+  --zebra: oklch(0.24 0.008 70);
+  --field: oklch(0.2 0.006 70);
+  --hover: oklch(0.28 0.009 70);
+  --overlay: oklch(0.24 0.008 70);
+  --ln: oklch(0.31 0.009 70);
+  --ln-2: oklch(0.4 0.01 70);
+  --ln-3: oklch(0.56 0.012 70);
+  --tx: oklch(0.94 0.005 75);
+  --tx-2: oklch(0.8 0.008 75);
+  --tx-3: oklch(0.69 0.01 75);
+  --skel: oklch(0.28 0.008 70);
+  --acc: oklch(0.72 0.15 50);
+  --acc-h: oklch(0.77 0.14 50);
+  --acc-p: oklch(0.67 0.15 50);
+  --acc-ink: oklch(0.16 0.01 70);
+  --acc-soft: oklch(0.72 0.15 50 / 0.15);
+  --acc-tx: oklch(0.79 0.13 52);
+  --ok: oklch(0.76 0.14 150);  --ok-s: oklch(0.76 0.14 150 / 0.13);
+  --warn: oklch(0.84 0.13 85); --warn-s: oklch(0.84 0.13 85 / 0.13);
+  --err: oklch(0.71 0.17 25);  --err-s: oklch(0.71 0.17 25 / 0.14);
+  --run: oklch(0.75 0.12 245); --run-s: oklch(0.75 0.12 245 / 0.14);
+  --tip-bg: oklch(0.94 0.005 75);
+  --tip-tx: oklch(0.2 0.01 70);
+  color-scheme: dark;
+}
+
+/* Frame. */
+[data-ae][data-style="atlas"] .ae-rail {
+  --tx: oklch(0.96 0.004 75); --tx-2: oklch(0.8 0.008 75); --hover: oklch(1 0 0 / 0.08);
+  --acc: oklch(0.68 0.16 45); --acc-ink: oklch(0.16 0.01 70);
+  color-scheme: dark;
+}
+[data-ae][data-style="atlas"] .ae-hdr {
+  --tx: inherit; --tx-2: inherit; --tx-3: inherit; --ln: inherit; --ln-2: inherit; --hover: inherit;
+  --panel: inherit; --panel-2: inherit; --acc: inherit; --acc-ink: inherit; --acc-soft: inherit; --acc-tx: inherit;
+  color-scheme: inherit;
+  border-bottom: 1px solid var(--ln) !important;
+}
+[data-ae][data-style="atlas"] .ae-hdr-prod,
+[data-ae][data-style="atlas"] .ae-hdr-prod + span { display: none !important; }
+[data-ae][data-style="atlas"] .ae-side { border-right: 1px solid var(--ln) !important; }
+[data-ae][data-style="atlas"] .ae-side .ae-ind-i { opacity: 0 !important; }
+[data-ae][data-style="atlas"] .ae-side a[aria-current="page"] { background: var(--panel-3); color: var(--tx) !important; box-shadow: inset 3px 0 0 var(--acc); border-radius: 0 var(--r-sm) var(--r-sm) 0 !important; }
+[data-ae][data-style="atlas"] .ae-side a[aria-current="page"] svg { color: var(--acc) !important; }
+[data-ae][data-style="atlas"] .ae-side [role="presentation"] span { text-transform: none !important; letter-spacing: 0 !important; font-size: 12px !important; font-weight: 600 !important; color: var(--tx-2) !important; }
+
+/* Page header: breadcrumb kicker, compact title. */
+[data-ae][data-style="atlas"] .ae-ph { padding-top: 20px !important; }
+[data-ae][data-style="atlas"] .ae-ph h1 { font-size: 24px !important; line-height: 32px !important; font-weight: 600 !important; letter-spacing: -0.01em !important; }
+[data-ae][data-style="atlas"] .ae-kicker { font-size: 13px !important; font-weight: 500 !important; color: var(--acc-tx) !important; }
+[data-ae][data-style="atlas"] .ae-kicker::after { content: "  /"; color: var(--tx-3); white-space: pre; }
+
+/* Tabs: a heavier copper rule. */
+[data-ae][data-style="atlas"] [role="tablist"] .ae-ind-i { height: 3px !important; }
+[data-ae][data-style="atlas"] [role="tablist"] [role="tab"][aria-selected="true"] { color: var(--tx) !important; }
+
+/* Panels with tinted header bands; KPI tiles with an accent edge. */
+[data-ae][data-style="atlas"] .ae-card-h { background: var(--panel-2); height: 44px !important; }
+[data-ae][data-style="atlas"] .ae-card-h h2 { font-size: 14px !important; font-weight: 600 !important; }
+[data-ae][data-style="atlas"] .ae-kpi { box-shadow: inset 4px 0 0 var(--acc), var(--sh-card) !important; padding-left: 22px !important; }
+[data-ae][data-style="atlas"] .ae-kpi > span:nth-child(2) { font-weight: 600 !important; font-size: 28px !important; }
+
+/* Striped tables with a copper header rule. */
+[data-ae][data-style="atlas"] [role="table"] > [role="row"]:has(> [role="columnheader"]) {
+  background: var(--panel-3) !important;
+  color: var(--tx) !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid var(--acc) !important;
+}
+[data-ae][data-style="atlas"] .ae-grid [role="row"]:nth-child(even):not([style*="acc-soft"]) { background-color: var(--zebra) !important; }
+[data-ae][data-style="atlas"] .ae-grid [role="row"]:not(:first-child):hover { background-color: var(--hover) !important; }
+[data-ae][data-style="atlas"] .ae-grid [role="row"]:not(:first-child) { height: 38px !important; }
+
+/* Buttons and fields. */
+[data-ae][data-style="atlas"] button[data-kind] { font-weight: 500 !important; }
+[data-ae][data-style="atlas"] button[data-kind="primary"]:not([aria-disabled="true"]) { box-shadow: inset 0 -2px 0 oklch(0 0 0 / 0.15) !important; }
+[data-ae][data-style="atlas"] input:focus,
+[data-ae][data-style="atlas"] select:focus,
+[data-ae][data-style="atlas"] textarea:focus { border-color: var(--acc) !important; }
+
+/* Drawers: a copper top edge. */
+[data-ae][data-style="atlas"] .ae-drawer { border-top: 3px solid var(--acc) !important; }

@@ -183,7 +183,7 @@
 /* ---- Working area --------------------------------------------------------- */
 
 /* Tables: bold headers on a grey band. */
-[data-ae][data-style="graphite"] [role="table"] > [role="row"]:first-child {
+[data-ae][data-style="graphite"] [role="table"] > [role="row"]:has(> [role="columnheader"]) {
   background: var(--panel-3) !important;
   color: var(--tx) !important;
   font-weight: 600 !important;

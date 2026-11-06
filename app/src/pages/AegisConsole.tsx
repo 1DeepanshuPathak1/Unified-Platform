@@ -4,7 +4,9 @@ import { DC, arr } from '../lib/dc';
 import { pc } from '../lib/pseudo';
 import { Icon } from '../lib/Icon';
 import { Ind } from '../lib/Ind';
-import { STYLES, nextStyle, onStyle, readStyle, writeStyle } from '../lib/uiStyle';
+import { STYLES, onStyle, readStyle, writeStyle, type UiStyle } from '../lib/uiStyle';
+import { StylePicker } from '../shell/StylePicker';
+import { ProductRail, SectionTitle, StatusBar, TopNav } from '../shell/Frames';
 import { AEGIS } from '../data/aegis';
 import AegisSites from '../screens/AegisSites';
 import { GuestsPage } from '../products/protection/Endpoints';
@@ -90,6 +92,20 @@ const PLATFORM = {
   support: 1
 };
 
+
+/** Where the top bar, navigation and working area sit in each style. */
+const FRAMES: Record<UiStyle, { cols: string; rows: string; areas: string }> = {
+  classic: { cols: 'auto minmax(0,1fr)', rows: 'auto auto minmax(0,1fr)', areas: '"ban ban" "hdr hdr" "nav main"' },
+  graphite: { cols: 'auto minmax(0,1fr)', rows: 'auto auto minmax(0,1fr)', areas: '"ban ban" "nav hdr" "nav main"' },
+  horizon: { cols: 'minmax(0,1fr)', rows: 'auto auto auto minmax(0,1fr)', areas: '"ban" "hdr" "tnav" "main"' },
+  command: { cols: 'auto minmax(0,1fr)', rows: 'auto auto minmax(0,1fr) auto', areas: '"ban ban" "nav hdr" "nav main" "stat stat"' },
+  ledger: { cols: 'auto minmax(0,1fr)', rows: 'auto auto minmax(0,1fr)', areas: '"ban ban" "hdr hdr" "nav main"' },
+  lumen: { cols: 'auto minmax(0,1fr)', rows: 'auto auto minmax(0,1fr)', areas: '"ban ban" "nav hdr" "nav main"' },
+  atlas: { cols: 'auto auto minmax(0,1fr)', rows: 'auto auto minmax(0,1fr)', areas: '"ban ban ban" "rail nav hdr" "rail nav main"' }
+};
+const BRAND_IN_SIDE: UiStyle[] = ['graphite', 'command', 'lumen'];
+const BRAND_IN_HEADER: UiStyle[] = ['classic', 'horizon', 'ledger'];
+
 export default class AegisConsole extends DC {
   state: any = {
     ready: !!AEGIS,
@@ -116,7 +132,9 @@ export default class AegisConsole extends DC {
     nonce: 0,
     reading: false,
     signedOut: false,
-    uiStyle: readStyle()
+    uiStyle: readStyle(),
+    stylePicker: null,
+    stylePickerClosing: false
   };
   seq = 0;
   searchRef = React.createRef<any>();
@@ -498,11 +516,14 @@ export default class AegisConsole extends DC {
       theme: s.theme,
       uiStyle: s.uiStyle,
       styleName: STYLES[s.uiStyle as 'classic' | 'graphite'].name,
-      switchStyle: () => {
-        const n = nextStyle(s.uiStyle);
-        writeStyle(n);
-        this.setState({ uiStyle: n, menu: null });
+      switchStyle: () => this.setState({ stylePicker: true, stylePickerClosing: false, menu: null }),
+      stylePicker: s.stylePicker,
+      stylePickerClosing: s.stylePickerClosing,
+      pickStyle: (st: UiStyle) => {
+        writeStyle(st);
+        this.setState({ uiStyle: st });
       },
+      closeStylePicker: () => this.closeDlg('stylePicker'),
       themeIcon: s.theme === 'dark' ? 'sun' : 'moon',
       themeLabel: s.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
       toggleTheme: () => {
@@ -589,7 +610,7 @@ export default class AegisConsole extends DC {
         product: prod,
         page,
         productItems: A.nav[prod],
-        collapsed,
+        collapsed: s.uiStyle === 'command' ? true : collapsed,
         provider: !s.actingAs,
         self: !!s.actingAs && s.selfView,
         counts: { inbox: inboxItems(ctx).length }
@@ -609,7 +630,7 @@ export default class AegisConsole extends DC {
       jobCtl: (id, a) => this.jobCtl(id, a),
       key,
       clock: fmtD(nowD()),
-      navW: collapsed ? '56px' : '240px',
+      navW: s.uiStyle === 'command' ? '56px' : s.uiStyle === 'atlas' ? '232px' : collapsed ? '56px' : '240px',
       labelOp: collapsed ? 0 : 1,
       collapseLabel: collapsed ? 'Expand navigation' : 'Collapse navigation',
       toggleNav: () => this.setState(st => ({ collapsed: !st.collapsed })),
@@ -648,9 +669,9 @@ export default class AegisConsole extends DC {
           height: '100vh',
           minWidth: '1024px',
           display: 'grid',
-          gridTemplateColumns: 'auto minmax(0,1fr)',
-          gridTemplateRows: 'auto auto minmax(0,1fr)',
-          gridTemplateAreas: v.uiStyle === 'graphite' ? '"ban ban" "nav hdr" "nav main"' : '"ban ban" "hdr hdr" "nav main"',
+          gridTemplateColumns: (FRAMES[v.uiStyle as UiStyle] || FRAMES.classic).cols,
+          gridTemplateRows: (FRAMES[v.uiStyle as UiStyle] || FRAMES.classic).rows,
+          gridTemplateAreas: (FRAMES[v.uiStyle as UiStyle] || FRAMES.classic).areas,
           background: 'var(--app)',
           color: 'var(--tx)',
           font: '14px/20px var(--f-body)',
@@ -684,10 +705,11 @@ export default class AegisConsole extends DC {
             transition: 'background-color 150ms,border-color 150ms'
           }}
         >
-          {v.uiStyle === 'graphite' ? null : (
+          {!BRAND_IN_HEADER.includes(v.uiStyle) ? null : (
             <>
               <a
                 href="#/backup/home"
+                className="ae-hdr-brand"
                 aria-label="Host360 Aegis home"
                 style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 'none', height: '36px', paddingRight: '4px' }}
               >
@@ -697,7 +719,7 @@ export default class AegisConsole extends DC {
               <span style={{ width: '1px', height: '24px', background: 'var(--ln-2)', flex: 'none', display: v.selfView ? 'none' : undefined }} />
             </>
           )}
-          <div style={{ position: 'relative', flex: 'none', display: v.selfView ? 'none' : undefined }}>
+          <div className="ae-hdr-prod" style={{ position: 'relative', flex: 'none', display: v.selfView ? 'none' : undefined }}>
             <button
               onClick={v.openProduct}
               aria-haspopup="menu"
@@ -1178,6 +1200,7 @@ export default class AegisConsole extends DC {
               {v.projectOpen ? <TenantMenu project={v.project} onPick={v.pickProject} actingAs={v.actingAs ? v.actingAs.customer : null} role={v.ctx?.role} /> : null}
             </div>
             <span
+              className="ae-hdr-clock"
               data-tip="Orchestrator time zone: India Standard Time (UTC+05:30)"
               style={{
                 padding: '0 8px',
@@ -1260,7 +1283,17 @@ export default class AegisConsole extends DC {
             </div>
           </div>
         </header>
+        {v.uiStyle === 'horizon' && v.navProps ? (
+          <div className="ae-tnav" style={{ gridArea: 'tnav', position: 'relative', zIndex: 44, minWidth: 0 }}>
+            <TopNav {...v.navProps} />
+          </div>
+        ) : null}
+        {v.uiStyle === 'atlas' ? <ProductRail products={arr(v.products)} onStyles={v.switchStyle} /> : null}
+        {v.uiStyle === 'command' ? (
+          <StatusBar runLabel={v.runLabel || 'No jobs running'} running={!!v.runLabel && !/^No /.test(v.runLabel)} onJobs={v.openTray} alerts={String(v.alertCount ?? 0)} onAlerts={v.openAlerts} project={v.projectLabel || 'All projects'} clock={v.clock || ''} />
+        ) : null}
         <div style={{ display: 'contents' }}>
+          {v.uiStyle === 'horizon' ? null : (
           <aside
             aria-label="Navigation"
             className="ae-side"
@@ -1277,7 +1310,8 @@ export default class AegisConsole extends DC {
               overflow: 'hidden'
             }}
           >
-            {v.uiStyle === 'graphite' ? (
+            {v.uiStyle === 'atlas' && v.navProps ? <SectionTitle product={v.navProps.product} /> : null}
+            {BRAND_IN_SIDE.includes(v.uiStyle) ? (
               <a
                 href="#/backup/home"
                 aria-label="Host360 Aegis home"
@@ -1326,6 +1360,7 @@ export default class AegisConsole extends DC {
               </button>
             </div>
           </aside>
+          )}
           <main
             id="ae-main"
             data-drawer-host=""
@@ -1494,6 +1529,7 @@ export default class AegisConsole extends DC {
           ))}
         </div>
         {v.account ? <AccountDialog ctx={v.ctx} tab={v.account} closing={v.accountClosing} onClose={v.closeAccount} /> : null}
+        {v.stylePicker ? <StylePicker value={v.uiStyle} onPick={v.pickStyle} closing={v.stylePickerClosing} onClose={v.closeStylePicker} /> : null}
         {v.loginAs ? <LoginAsDialog ctx={v.ctx} customerId={v.loginAs} closing={v.loginAsClosing} onClose={v.closeLoginAs} onStart={(reason: string) => v.startActing(v.loginAs, reason)} /> : null}
         {v.signedOut ? (
           <div

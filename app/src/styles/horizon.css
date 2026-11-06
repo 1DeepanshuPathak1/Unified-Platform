@@ -1,0 +1,187 @@
+/* Horizon — modern SaaS.
+   Frame: no sidebar; a two-row top bar (tools, then navigation menus); the page centred in a 1360 px column.
+   Look: Plus Jakarta Sans, 8–16 px radii, soft elevated white cards on a lavender-grey ground, pill tabs and pill buttons,
+   icon chips on KPI tiles, an indigo accent. */
+
+[data-ae][data-style="horizon"],
+[data-ae][data-style="horizon"] .ae-hdr .ae-pop {
+  --f-head: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --f-body: var(--f-head);
+  --f-ui: var(--f-head);
+  --r-sm: 8px; --r: 12px; --r-lg: 16px;
+  --app: oklch(0.972 0.007 275);
+  --hdr: oklch(1 0 0);
+  --nav: oklch(1 0 0);
+  --panel: oklch(1 0 0);
+  --panel-2: oklch(0.982 0.005 275);
+  --panel-3: oklch(0.955 0.012 275);
+  --field: oklch(1 0 0);
+  --hover: oklch(0.955 0.012 275);
+  --overlay: oklch(1 0 0);
+  --ln: oklch(0.925 0.012 275);
+  --ln-2: oklch(0.86 0.018 275);
+  --ln-3: oklch(0.7 0.02 275);
+  --tx: oklch(0.24 0.05 280);
+  --tx-2: oklch(0.45 0.035 275);
+  --tx-3: oklch(0.56 0.03 275);
+  --skel: oklch(0.94 0.01 275);
+  --acc: oklch(0.51 0.23 277);
+  --acc-h: oklch(0.46 0.22 277);
+  --acc-p: oklch(0.41 0.2 277);
+  --acc-ink: oklch(1 0 0);
+  --acc-soft: oklch(0.51 0.23 277 / 0.1);
+  --acc-tx: oklch(0.47 0.22 277);
+  --ok: oklch(0.6 0.15 155);   --ok-s: oklch(0.62 0.15 155 / 0.12);
+  --warn: oklch(0.7 0.15 70);  --warn-s: oklch(0.85 0.14 85 / 0.24);
+  --err: oklch(0.58 0.21 22);  --err-s: oklch(0.63 0.2 22 / 0.1);
+  --run: oklch(0.56 0.18 255); --run-s: oklch(0.58 0.17 255 / 0.1);
+  --scrim: oklch(0.25 0.05 280 / 0.35);
+  --sh-card: 0 1px 2px oklch(0.3 0.08 280 / 0.05), 0 6px 18px oklch(0.3 0.08 280 / 0.06);
+  --sh-menu: 0 2px 4px oklch(0.3 0.08 280 / 0.06), 0 12px 32px oklch(0.3 0.08 280 / 0.14);
+  --sh-over: 0 24px 64px oklch(0.3 0.08 280 / 0.22);
+  --tip-bg: oklch(0.24 0.05 280);
+  --tip-tx: oklch(0.98 0 0);
+  color-scheme: light;
+}
+[data-ae][data-style="horizon"][data-theme="dark"],
+[data-ae][data-style="horizon"][data-theme="dark"] .ae-hdr .ae-pop {
+  --app: oklch(0.17 0.025 280);
+  --hdr: oklch(0.205 0.03 280);
+  --nav: oklch(0.205 0.03 280);
+  --panel: oklch(0.215 0.03 280);
+  --panel-2: oklch(0.235 0.032 280);
+  --panel-3: oklch(0.26 0.035 280);
+  --field: oklch(0.235 0.032 280);
+  --hover: oklch(0.27 0.035 280);
+  --overlay: oklch(0.235 0.032 280);
+  --ln: oklch(0.3 0.035 280);
+  --ln-2: oklch(0.38 0.04 280);
+  --ln-3: oklch(0.55 0.04 280);
+  --tx: oklch(0.95 0.01 280);
+  --tx-2: oklch(0.8 0.02 280);
+  --tx-3: oklch(0.68 0.025 280);
+  --skel: oklch(0.28 0.03 280);
+  --acc: oklch(0.7 0.16 280);
+  --acc-h: oklch(0.75 0.15 280);
+  --acc-p: oklch(0.65 0.16 280);
+  --acc-ink: oklch(0.17 0.03 280);
+  --acc-soft: oklch(0.7 0.16 280 / 0.16);
+  --acc-tx: oklch(0.78 0.13 280);
+  --ok: oklch(0.76 0.15 155);  --ok-s: oklch(0.76 0.15 155 / 0.14);
+  --warn: oklch(0.83 0.14 85); --warn-s: oklch(0.83 0.14 85 / 0.14);
+  --err: oklch(0.72 0.17 22);  --err-s: oklch(0.72 0.17 22 / 0.15);
+  --run: oklch(0.75 0.13 255); --run-s: oklch(0.75 0.13 255 / 0.15);
+  --scrim: oklch(0.05 0.02 280 / 0.6);
+  --sh-card: 0 1px 2px oklch(0 0 0 / 0.3);
+  --sh-menu: 0 12px 32px oklch(0 0 0 / 0.45);
+  --sh-over: 0 24px 64px oklch(0 0 0 / 0.55);
+  --tip-bg: oklch(0.93 0.01 280);
+  --tip-tx: oklch(0.2 0.03 280);
+  color-scheme: dark;
+}
+
+/* Frame: the top bar and the navigation bar are one white band. */
+[data-ae][data-style="horizon"] .ae-hdr {
+  --tx: inherit; --tx-2: inherit; --tx-3: inherit; --ln: inherit; --ln-2: inherit; --hover: inherit;
+  --panel: inherit; --panel-2: inherit; --acc: inherit; --acc-ink: inherit; --acc-soft: inherit; --acc-tx: inherit;
+  color-scheme: inherit;
+  height: 60px !important;
+  padding: 0 24px !important;
+  border-bottom: 0 !important;
+}
+[data-ae][data-style="horizon"] .ae-hdr-brand span { font-weight: 700 !important; letter-spacing: -0.02em !important; }
+[data-ae][data-style="horizon"] .ae-hdr-brand svg { color: var(--acc); }
+[data-ae][data-style="horizon"] .ae-hdr input { border-radius: 999px !important; }
+[data-ae][data-style="horizon"] .ae-hdr [aria-label^="User menu"] > span:first-child { background: linear-gradient(135deg, var(--acc), oklch(0.6 0.2 320)) !important; }
+[data-ae][data-style="horizon"] .ae-tnav {
+  background: var(--hdr);
+  border-bottom: 1px solid var(--ln);
+  box-shadow: 0 6px 18px -12px oklch(0.3 0.08 280 / 0.25);
+}
+[data-ae][data-style="horizon"] .ae-tnav [role="navigation"] { max-width: 1408px; margin: 0 auto; }
+[data-ae][data-style="horizon"] .ae-tnav-link { border-radius: 999px !important; }
+
+/* The page sits in a centred column. */
+[data-ae][data-style="horizon"] main > * { width: 100%; max-width: 1408px; margin-inline: auto; }
+
+/* Page header. */
+[data-ae][data-style="horizon"] .ae-ph { padding-top: 32px !important; }
+[data-ae][data-style="horizon"] .ae-ph h1 { font-size: 28px !important; line-height: 36px !important; font-weight: 700 !important; letter-spacing: -0.025em !important; }
+[data-ae][data-style="horizon"] .ae-ph p { font-size: 15px; color: var(--tx-2); }
+[data-ae][data-style="horizon"] .ae-kicker {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--acc-soft);
+  color: var(--acc-tx) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  margin-bottom: 10px !important;
+}
+
+/* Pill tabs: no rule, the open tab is a tinted pill. */
+[data-ae][data-style="horizon"] [role="tablist"] { border-bottom: 0 !important; gap: 0; }
+[data-ae][data-style="horizon"] [role="tablist"] .ae-ind-i { opacity: 0 !important; }
+[data-ae][data-style="horizon"] [role="tablist"] [role="tab"],
+[data-ae][data-style="horizon"] [role="tablist"] > div[aria-hidden] > span {
+  height: 36px !important;
+  margin-right: 4px;
+  padding: 0 14px !important;
+  border-radius: 999px;
+  font-weight: 600 !important;
+}
+[data-ae][data-style="horizon"] [role="tablist"] [role="tab"]:hover { background: var(--hover); }
+[data-ae][data-style="horizon"] [role="tablist"] [role="tab"][aria-selected="true"] { background: var(--acc-soft); color: var(--acc-tx) !important; }
+[data-ae][data-style="horizon"] .ae-drawer [role="tablist"] { padding: 8px 20px !important; border-bottom: 1px solid var(--ln) !important; }
+
+/* Cards, tiles and tables: white, rounded, softly lifted, no hard rules. */
+[data-ae][data-style="horizon"] .ae-card,
+[data-ae][data-style="horizon"] .ae-kpi,
+[data-ae][data-style="horizon"] .ae-grid { border-color: transparent !important; }
+[data-ae][data-style="horizon"] .ae-card-h { height: 56px !important; padding: 0 20px !important; border-bottom-color: var(--ln) !important; }
+[data-ae][data-style="horizon"] .ae-card-h h2 { font-size: 15px !important; font-weight: 700 !important; }
+[data-ae][data-style="horizon"] .ae-kpi { padding: 20px 22px 22px !important; gap: 10px !important; }
+[data-ae][data-style="horizon"] .ae-kpi > span:first-child { font-weight: 600 !important; color: var(--tx-2) !important; }
+[data-ae][data-style="horizon"] .ae-kpi > span:first-child > .ae-icon {
+  margin-right: 2px;
+  box-sizing: content-box;
+  padding: 6px;
+  border-radius: 10px;
+  background: var(--acc-soft);
+  color: var(--acc) !important;
+}
+[data-ae][data-style="horizon"] .ae-kpi > span:nth-child(2) { font-size: 30px !important; line-height: 38px !important; font-weight: 700 !important; letter-spacing: -0.02em !important; }
+[data-ae][data-style="horizon"] [role="table"] > [role="row"]:has(> [role="columnheader"]) {
+  background: transparent !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--tx-3) !important;
+}
+[data-ae][data-style="horizon"] .ae-grid [role="row"]:not(:first-child) { height: 48px !important; }
+
+/* Pill buttons; the primary one carries a coloured shadow. */
+[data-ae][data-style="horizon"] button[data-kind],
+[data-ae][data-style="horizon"] [role="radiogroup"].ae-ind,
+[data-ae][data-style="horizon"] [role="radiogroup"].ae-ind button { border-radius: 999px !important; }
+[data-ae][data-style="horizon"] button[data-kind] { font-weight: 600 !important; }
+[data-ae][data-style="horizon"] button[data-kind="primary"]:not([aria-disabled="true"]) { box-shadow: 0 1px 2px oklch(0.51 0.23 277 / 0.3), 0 6px 14px -4px oklch(0.51 0.23 277 / 0.45) !important; }
+[data-ae][data-style="horizon"] button[data-kind="secondary"],
+[data-ae][data-style="horizon"] button[data-kind="outline"] { border-color: var(--ln-2) !important; }
+[data-ae][data-style="horizon"] [role="radiogroup"].ae-ind { --ind-r: 999px; }
+
+/* Fields: white, rounded, a soft focus halo. */
+[data-ae][data-style="horizon"] input:not([type="checkbox"]):not([type="radio"]):not([style*="background: transparent"]),
+[data-ae][data-style="horizon"] select:not([style*="background: transparent"]),
+[data-ae][data-style="horizon"] textarea { border-radius: 10px !important; }
+[data-ae][data-style="horizon"] input:focus,
+[data-ae][data-style="horizon"] select:focus,
+[data-ae][data-style="horizon"] textarea:focus { box-shadow: 0 0 0 4px var(--acc-soft) !important; border-color: var(--acc) !important; }
+
+/* Drawers and dialogs. */
+[data-ae][data-style="horizon"] .ae-drawer { border-left: 0 !important; border-radius: 16px 0 0 16px; }
+[data-ae][data-style="horizon"] .ae-drawer > div:first-child h2,
+[data-ae][data-style="horizon"] .ae-dialog h2:first-of-type { font-weight: 700 !important; letter-spacing: -0.02em !important; }
+
+[data-ae][data-style="horizon"] [role="checkbox"] { border-radius: 4px !important; }

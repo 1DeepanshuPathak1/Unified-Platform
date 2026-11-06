@@ -1,0 +1,195 @@
+/* Lumen — floating glass.
+   Frame: every part of the window floats: the navigation, the top bar and the working area are separate rounded panels
+   inset 12 px on a soft gradient.
+   Look: Manrope, frosted translucent surfaces, 12–20 px radii, a violet-to-magenta gradient for the current place and the
+   primary action, a gradient rule under the open tab. */
+
+[data-ae][data-style="lumen"],
+[data-ae][data-style="lumen"] .ae-hdr .ae-pop {
+  --f-head: Manrope, "Segoe UI", system-ui, sans-serif;
+  --f-body: var(--f-head);
+  --f-ui: var(--f-head);
+  --r-sm: 10px; --r: 16px; --r-lg: 20px;
+  --grad: linear-gradient(135deg, oklch(0.55 0.24 290), oklch(0.58 0.24 335));
+  --glass-bg:
+    radial-gradient(1100px 620px at 8% -12%, oklch(0.9 0.07 295) 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 0%, oklch(0.93 0.05 230) 0%, transparent 58%),
+    radial-gradient(900px 700px at 55% 120%, oklch(0.93 0.05 350) 0%, transparent 60%),
+    oklch(0.965 0.012 290);
+  --app: oklch(0.965 0.012 290);
+  --hdr: oklch(1 0 0 / 0.62);
+  --nav: oklch(1 0 0 / 0.62);
+  --panel: oklch(1 0 0 / 0.7);
+  --panel-2: oklch(1 0 0 / 0.5);
+  --panel-3: oklch(0.55 0.24 290 / 0.07);
+  --field: oklch(1 0 0 / 0.75);
+  --hover: oklch(0.55 0.24 290 / 0.08);
+  --overlay: oklch(0.99 0.006 290 / 0.92);
+  --ln: oklch(0.45 0.1 290 / 0.12);
+  --ln-2: oklch(0.45 0.1 290 / 0.22);
+  --ln-3: oklch(0.45 0.1 290 / 0.4);
+  --tx: oklch(0.25 0.07 290);
+  --tx-2: oklch(0.42 0.06 290);
+  --tx-3: oklch(0.52 0.05 290);
+  --skel: oklch(0.55 0.24 290 / 0.08);
+  --acc: oklch(0.53 0.24 292);
+  --acc-h: oklch(0.48 0.23 292);
+  --acc-p: oklch(0.43 0.21 292);
+  --acc-ink: oklch(1 0 0);
+  --acc-soft: oklch(0.53 0.24 292 / 0.12);
+  --acc-tx: oklch(0.48 0.24 292);
+  --ok: oklch(0.6 0.15 160);   --ok-s: oklch(0.62 0.15 160 / 0.13);
+  --warn: oklch(0.7 0.15 65);  --warn-s: oklch(0.85 0.14 80 / 0.25);
+  --err: oklch(0.58 0.22 15);  --err-s: oklch(0.62 0.21 15 / 0.11);
+  --run: oklch(0.58 0.18 255); --run-s: oklch(0.58 0.18 255 / 0.12);
+  --scrim: oklch(0.25 0.08 290 / 0.3);
+  --sh-card: 0 1px 1px oklch(0.3 0.12 290 / 0.04), 0 10px 30px -8px oklch(0.3 0.12 290 / 0.14);
+  --sh-menu: 0 16px 40px -8px oklch(0.3 0.12 290 / 0.28);
+  --sh-over: 0 30px 80px -10px oklch(0.3 0.12 290 / 0.35);
+  --tip-bg: oklch(0.25 0.07 290);
+  --tip-tx: oklch(0.98 0.005 290);
+  color-scheme: light;
+}
+[data-ae][data-style="lumen"][data-theme="dark"],
+[data-ae][data-style="lumen"][data-theme="dark"] .ae-hdr .ae-pop {
+  --glass-bg:
+    radial-gradient(1100px 620px at 8% -12%, oklch(0.32 0.12 295) 0%, transparent 60%),
+    radial-gradient(900px 600px at 100% 0%, oklch(0.3 0.08 230) 0%, transparent 58%),
+    radial-gradient(900px 700px at 55% 120%, oklch(0.3 0.1 350) 0%, transparent 60%),
+    oklch(0.16 0.03 290);
+  --app: oklch(0.16 0.03 290);
+  --hdr: oklch(0.22 0.04 290 / 0.62);
+  --nav: oklch(0.22 0.04 290 / 0.62);
+  --panel: oklch(0.24 0.045 290 / 0.62);
+  --panel-2: oklch(0.26 0.045 290 / 0.5);
+  --panel-3: oklch(0.72 0.15 295 / 0.08);
+  --field: oklch(0.2 0.035 290 / 0.7);
+  --hover: oklch(0.72 0.15 295 / 0.1);
+  --overlay: oklch(0.23 0.04 290 / 0.94);
+  --ln: oklch(0.85 0.05 290 / 0.1);
+  --ln-2: oklch(0.85 0.05 290 / 0.2);
+  --ln-3: oklch(0.85 0.05 290 / 0.4);
+  --tx: oklch(0.96 0.01 290);
+  --tx-2: oklch(0.82 0.03 290);
+  --tx-3: oklch(0.7 0.035 290);
+  --skel: oklch(0.72 0.15 295 / 0.1);
+  --acc: oklch(0.74 0.15 295);
+  --acc-h: oklch(0.79 0.14 295);
+  --acc-p: oklch(0.69 0.15 295);
+  --acc-ink: oklch(0.16 0.03 290);
+  --acc-soft: oklch(0.74 0.15 295 / 0.16);
+  --acc-tx: oklch(0.8 0.13 295);
+  --ok: oklch(0.78 0.15 160);  --ok-s: oklch(0.78 0.15 160 / 0.14);
+  --warn: oklch(0.84 0.14 80); --warn-s: oklch(0.84 0.14 80 / 0.14);
+  --err: oklch(0.72 0.18 15);  --err-s: oklch(0.72 0.18 15 / 0.15);
+  --run: oklch(0.76 0.13 255); --run-s: oklch(0.76 0.13 255 / 0.15);
+  --scrim: oklch(0.05 0.02 290 / 0.55);
+  --sh-card: 0 10px 30px -8px oklch(0 0 0 / 0.45);
+  --sh-menu: 0 16px 40px -8px oklch(0 0 0 / 0.6);
+  --sh-over: 0 30px 80px -10px oklch(0 0 0 / 0.7);
+  --tip-bg: oklch(0.95 0.01 290);
+  --tip-tx: oklch(0.2 0.04 290);
+  color-scheme: dark;
+}
+
+/* Frame: floating panels on the gradient. */
+[data-ae][data-style="lumen"].ae-shell { background: var(--glass-bg) !important; padding: 12px; gap: 12px; }
+[data-ae][data-style="lumen"] .ae-hdr,
+[data-ae][data-style="lumen"] .ae-side {
+  --tx: inherit; --tx-2: inherit; --tx-3: inherit; --ln: inherit; --ln-2: inherit; --hover: inherit;
+  --panel: inherit; --panel-2: inherit; --acc: inherit; --acc-ink: inherit; --acc-soft: inherit; --acc-tx: inherit;
+  color-scheme: inherit;
+  border: 1px solid oklch(1 0 0 / 0.55) !important;
+  border-radius: 20px;
+  box-shadow: var(--sh-card);
+  backdrop-filter: blur(18px) saturate(150%);
+}
+[data-ae][data-style="lumen"][data-theme="dark"] .ae-hdr,
+[data-ae][data-style="lumen"][data-theme="dark"] .ae-side { border-color: oklch(1 0 0 / 0.08) !important; }
+[data-ae][data-style="lumen"] .ae-hdr { height: 56px !important; padding: 0 12px 0 16px !important; }
+[data-ae][data-style="lumen"] .ae-hdr input { border-radius: 999px !important; }
+[data-ae][data-style="lumen"] .ae-hdr [aria-label^="User menu"] > span:first-child { background: var(--grad) !important; color: #fff !important; }
+[data-ae][data-style="lumen"] .ae-side { overflow: hidden; }
+[data-ae][data-style="lumen"] .ae-side-brand { height: 56px !important; border-bottom: 0 !important; }
+[data-ae][data-style="lumen"] .ae-side-brand svg { color: oklch(0.55 0.24 300) !important; }
+[data-ae][data-style="lumen"] .ae-side-brand > span { font-weight: 800 !important; letter-spacing: -0.02em; }
+[data-ae][data-style="lumen"] .ae-side-brand > span > span { font-weight: 500 !important; }
+[data-ae][data-style="lumen"] .ae-side .ae-ind-i { opacity: 0 !important; }
+[data-ae][data-style="lumen"] .ae-side a[href^="#/"] { border-radius: 12px !important; height: 34px !important; }
+[data-ae][data-style="lumen"] .ae-side a[aria-current="page"] { background: var(--grad); color: #fff !important; box-shadow: 0 6px 16px -6px oklch(0.55 0.24 300 / 0.6); }
+[data-ae][data-style="lumen"] .ae-side a[aria-current="page"] svg { color: #fff !important; }
+[data-ae][data-style="lumen"] main { border-radius: 20px; }
+
+/* Glass surfaces. */
+[data-ae][data-style="lumen"] .ae-card,
+[data-ae][data-style="lumen"] .ae-kpi,
+[data-ae][data-style="lumen"] .ae-grid,
+[data-ae][data-style="lumen"] .ae-drawer,
+[data-ae][data-style="lumen"] .ae-dialog,
+[data-ae][data-style="lumen"] [role="menu"] {
+  backdrop-filter: blur(18px) saturate(150%);
+  border-color: oklch(1 0 0 / 0.6) !important;
+}
+[data-ae][data-style="lumen"][data-theme="dark"] .ae-card,
+[data-ae][data-style="lumen"][data-theme="dark"] .ae-kpi,
+[data-ae][data-style="lumen"][data-theme="dark"] .ae-grid { border-color: oklch(1 0 0 / 0.08) !important; }
+
+/* Page header. */
+[data-ae][data-style="lumen"] .ae-ph { padding-top: 28px !important; }
+[data-ae][data-style="lumen"] .ae-ph h1 { font-size: 30px !important; line-height: 38px !important; font-weight: 800 !important; letter-spacing: -0.03em !important; }
+[data-ae][data-style="lumen"] .ae-kicker { font-weight: 700 !important; color: var(--acc-tx) !important; letter-spacing: 0.02em; }
+
+/* Tabs: a gradient rule under the open tab. */
+[data-ae][data-style="lumen"] [role="tablist"] { border-bottom-color: var(--ln) !important; }
+[data-ae][data-style="lumen"] [role="tablist"] .ae-ind-i { background: var(--grad) !important; height: 3px !important; border-radius: 3px; }
+[data-ae][data-style="lumen"] [role="tablist"] [role="tab"],
+[data-ae][data-style="lumen"] [role="tablist"] > div[aria-hidden] > span { font-weight: 600 !important; }
+[data-ae][data-style="lumen"] [role="tablist"] [role="tab"][aria-selected="true"] { color: var(--tx) !important; font-weight: 700 !important; }
+
+/* Tiles: large, soft, with a gradient glow. */
+[data-ae][data-style="lumen"] .ae-kpi { position: relative; overflow: hidden; padding: 18px 18px 20px !important; }
+[data-ae][data-style="lumen"] .ae-kpi::after {
+  content: "";
+  position: absolute;
+  right: -40px;
+  top: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--grad);
+  opacity: 0.1;
+  pointer-events: none;
+}
+[data-ae][data-style="lumen"] .ae-kpi > span:first-child { font-weight: 600 !important; }
+[data-ae][data-style="lumen"] .ae-kpi > span:nth-child(2) { font-size: 32px !important; line-height: 40px !important; font-weight: 800 !important; letter-spacing: -0.03em !important; }
+[data-ae][data-style="lumen"] .ae-card-h { height: 56px !important; padding: 0 20px !important; }
+[data-ae][data-style="lumen"] .ae-card-h h2 { font-size: 15px !important; font-weight: 800 !important; }
+[data-ae][data-style="lumen"] [role="table"] > [role="row"]:has(> [role="columnheader"]) { background: var(--panel-3) !important; font-weight: 700 !important; color: var(--tx-2) !important; }
+[data-ae][data-style="lumen"] .ae-grid [role="row"]:not(:first-child) { height: 46px !important; }
+
+/* Buttons: the primary one carries the gradient. */
+[data-ae][data-style="lumen"] button[data-kind] { font-weight: 700 !important; border-radius: 12px !important; }
+[data-ae][data-style="lumen"] button[data-kind="primary"]:not([aria-disabled="true"]) { background: var(--grad) !important; box-shadow: 0 8px 18px -8px oklch(0.55 0.24 300 / 0.7) !important; }
+[data-ae][data-style="lumen"] button[data-kind="secondary"],
+[data-ae][data-style="lumen"] button[data-kind="outline"] { background: var(--field) !important; box-shadow: none !important; }
+[data-ae][data-style="lumen"] [role="radiogroup"].ae-ind { border-radius: 12px !important; }
+
+/* Fields. */
+[data-ae][data-style="lumen"] input:not([type="checkbox"]):not([type="radio"]):not([style*="background: transparent"]),
+[data-ae][data-style="lumen"] select:not([style*="background: transparent"]),
+[data-ae][data-style="lumen"] textarea { background-color: var(--field) !important; border-radius: 12px !important; }
+[data-ae][data-style="lumen"] input:focus,
+[data-ae][data-style="lumen"] select:focus,
+[data-ae][data-style="lumen"] textarea:focus { box-shadow: 0 0 0 4px var(--acc-soft) !important; }
+
+/* Drawers: a rounded glass sheet. */
+[data-ae][data-style="lumen"] .ae-drawer { border-radius: 20px 0 0 20px; }
+[data-ae][data-style="lumen"] .ae-drawer > div:first-child h2,
+[data-ae][data-style="lumen"] .ae-dialog h2:first-of-type { font-weight: 800 !important; letter-spacing: -0.02em !important; }
+
+[data-ae][data-style="lumen"] [role="checkbox"] { border-radius: 5px !important; }
+
+/* The internal portal floats the same way. */
+[data-ae][data-style="lumen"].ae-admin { display: flex !important; }
+[data-ae][data-style="lumen"] .ae-admin-body { gap: 12px; }
+[data-ae][data-style="lumen"] .ae-admin-body > main { border-radius: 20px; overflow: hidden; }
