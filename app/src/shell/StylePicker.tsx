@@ -5,7 +5,9 @@ import { STYLES, STYLE_ORDER, type Frame, type StyleInfo, type UiStyle } from '.
 import { Btn } from '../ui/controls';
 import { Dialog } from '../ui/overlay';
 
-const box = (s: CSSProperties): ReactNode => <span aria-hidden style={{ position: 'absolute', display: 'block', ...s }} />;
+/** One shape of a layout drawing. Each gets its own key so the drawing's lists render cleanly. */
+let shapeKey = 0;
+const box = (s: CSSProperties): ReactNode => <span key={shapeKey++} aria-hidden style={{ position: 'absolute', display: 'block', ...s }} />;
 
 /** Lines standing in for text: a column of short bars. */
 const lines = (left: string, top: number, n: number, w: number, c: string, gap = 7) =>
